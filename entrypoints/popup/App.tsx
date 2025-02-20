@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import reactLogo from '@/assets/react.svg';
-import wxtLogo from '/wxt.svg';
 import './App.css';
 import { Search, Plus, MoreVertical } from "lucide-react";
+import 'bootstrap/dist/css/bootstrap.css';
+import 'style.css';
 
 function App() {
   const meniu = [
@@ -13,34 +13,41 @@ function App() {
   ];
 
   return (
-  <div className="main-window">
-    {/* Sidebar */}
-    <div className="w-96 bg-gray-800 p-4 flex flex-col">
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search className="absolute left-2 top-2.5 text-gray-400" size={18} />
+    <div className="main-window">
+      {/* Top Search Bar */}
+      <div className="top-bar">
+        <Search className="search-icon" size={18} />
         <input
           type="text"
           placeholder="Search"
-          className="pl-8 bg-gray-700 text-white border-none focus:ring-0 w-full p-2 rounded"
+          className="search-input"
         />
       </div>
 
-      {/* Saved items */}
-      <div>
-        <h2 className="text-sm text-gray-400">All items</h2>
-        <div className="mt-2 space-y-2">
-          {meniu.map((item, index) => (
-            <button key={index} className="menu-button">
-              <p className="menu-name">{item.name}</p>
-              <p className="menu-hint">{item.hint}</p>
-            </button>
-          ))}
+      {/* Middle Menu Section */}
+      <div className="middle-menu">
+        <div className="saved-items">
+          <h2 className="items-title">All items</h2>
+          <div className="items-list">
+            {meniu.map((item, index) => (
+              <button key={index} className="menu-button">
+                <p className="menu-name">{item.name}</p>
+                <p className="menu-hint">{item.hint}</p>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Bottom Page Selection Buttons */}
+      <div className="bottom-buttons">
+        <button className="page-button">Settings</button>
+        <button className="page-button">Timeline</button>
+        <button className="page-button">Button 3</button>
+        <button className="page-button">Button 4</button>
+      </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default App;
