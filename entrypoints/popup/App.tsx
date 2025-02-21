@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="main-window">
       {/* Top Search Bar */}
-      <div className="top-bar">
+      <div className="top-bar fixed-top">
         <Search className="search-icon" size={18} />
         <input
           type="text"
@@ -25,7 +25,6 @@ function App() {
 
       {/* Middle Menu Section */}
       <div className="middle-menu">
-        <div className="saved-items">
           <h2 className="items-title">All items</h2>
           <div className="items-list">
             {meniu.map((item, index) => (
@@ -35,11 +34,10 @@ function App() {
               </button>
             ))}
           </div>
-        </div>
       </div>
 
       {/* Bottom Page Selection Buttons */}
-      <div className="bottom-buttons">
+      <div className="bottom-buttons fixed-bottom">
         <button className="page-button">Settings</button>
         <button className="page-button">Timeline</button>
         <button className="page-button">Button 3</button>
