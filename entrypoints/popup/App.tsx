@@ -2,7 +2,6 @@ import { useState } from 'react';
 import './App.css';
 import { Search, Plus, MoreVertical } from "lucide-react";
 import 'bootstrap/dist/css/bootstrap.css';
-import 'style.css';
 
 function App() {
   const meniu = [
