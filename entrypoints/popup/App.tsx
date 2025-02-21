@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import reactLogo from '@/assets/react.svg';
-import wxtLogo from '/wxt.svg';
 import './App.css';
 
 function App() {
@@ -8,26 +6,20 @@ function App() {
 
   return (
     <>
-      <div>
-        <a href="https://wxt.dev" target="_blank">
-          <img src={wxtLogo} className="logo" alt="WXT logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>WXT + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the WXT and React logos to learn more
-      </p>
+      <h2>Slaptažodžio saugumo <br></br>bendri patarimai</h2>
+      <ul>
+        <li>Slaptažodžio ilgis ženkliai svarbiau nei simbolių sudėtingumas.</li>
+        <li>Slaptažodžiai turėtų būti minimaliai 8 simbolių ilgio.</li>
+        <li>Pakartoninai nevartoti slaptažodžių kurie buvo kompromituoti.</li>
+        <li>Vengti slaptažodyje vartoti įprastus žodyno žodžius.</li>
+        <li>Vengti slaptažodyje vartoti pasikartojančias ar nuspėjamas simbolių sekas ('aaaa' arba '1234' ir pan.)</li>
+        <li>Vengti slaptaždoyje naudoti asmeninę informaciją (gimimo data, artimųjų vardai ir pan.)</li>
+        <li>Saugoti slaptažodžius specializuotoje tvarkyklėje (password manager).</li>
+        <li>Įvykus duomenų nutekėjimui nedelsiant keisti savo slaptažodį.</li>
+        <li>Nenaudoti identiškų slaptažodžių keliose skirtingose sistemose.</li>
+        <li>Nenaudoti slaptažodžio priminimo klausimų arba užuominų.</li>
+        <li>Apsaugoti savo prisijungimus 2FA.</li>
+      </ul>
     </>
   );
 }
