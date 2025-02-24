@@ -12,8 +12,8 @@ export default defineContentScript({
       button.id = "password-action-button"; // Give it a unique ID
       button.innerText = "?"; // Button text
       button.style.position = "absolute"; // Absolute positioning
-      button.style.top = `${passwordField.getBoundingClientRect().top + window.scrollY + passwordField.offsetHeight + 5}px`; // Position it below the password field
-      button.style.left = `${passwordField.getBoundingClientRect().left + window.scrollX + passwordField.offsetWidth - 32}px`; // Align it to the left of the password field
+      button.style.top = `${passwordField.getBoundingClientRect().top + window.scrollY + passwordField.offsetHeight + 5}px`;
+      button.style.left = `${passwordField.getBoundingClientRect().left + window.scrollX + passwordField.offsetWidth - 32}px`;
       button.style.padding = "8px 12px";
       button.style.backgroundColor = "#4CAF50";
       button.style.color = "white";
@@ -26,18 +26,24 @@ export default defineContentScript({
       document.body.appendChild(button);
     
       // Add a click event listener (optional)
+      console.log("Button created:", button);
+
+      // Add event listener to send message to background
       button.addEventListener("click", () => {
-        alert("Button clicked!");
+      console.log("Button clicked, sending message to background script...");
+
+      chrome.runtime.sendMessage({ type: "OPEN_EXTENSION_POPUP" }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error("Error sending message:", chrome.runtime.lastError);
+        } else {
+          console.log("Message sent successfully:", response);
+        }
       });
-    }
-    
-    // Function to remove the button
-    function removeButton() {
-      const button = document.getElementById("password-action-button");
-      if (button) {
-        button.remove();
-      }
-    }
+
+      // Optional: Remove button after click
+      button.remove();
+  });
+}
     
     // Listen for focus events on password fields
     document.addEventListener("focusin", (event) => {
@@ -55,9 +61,10 @@ export default defineContentScript({
       const target = event.target as HTMLInputElement;
       if (target && target.type === "password") {
         console.log("Password field blurred");
-    
-        // Remove the button
-        removeButton();
+        setTimeout(() => {
+          const button = document.getElementById("password-action-button");
+          if (button) button.remove();
+        }, 100);
       }
     });
   },
