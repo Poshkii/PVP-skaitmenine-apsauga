@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="main-window">
       {/* Top Search Bar */}
-      <div className="top-bar fixed-top">
+      <div className="top-bar">
         <Search className="search-icon" size={18} />
         <input
           type="text"
@@ -37,7 +37,7 @@ function App() {
       </div>
 
       {/* Bottom Page Selection Buttons */}
-      <div className="bottom-buttons fixed-bottom">
+      <div className="bottom-buttons">
         <button className="page-button">Settings</button>
         <button className="page-button">Timeline</button>
         <button className="page-button">Button 3</button>
