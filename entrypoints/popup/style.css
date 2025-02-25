@@ -14,10 +14,6 @@
   display: flex;
   align-items: center;
   background-color: #374151; /* Tailwind bg-gray-700 */
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
 }
 
 .search-icon {
@@ -37,9 +33,9 @@
 
 /* Middle Menu Section */
 .middle-menu {
+  flex-grow: 1;
   width: 100%;
   padding: 16px;
-  padding-top: 60px; /* Ensures content is not hidden under fixed top bar */
   background-color: #1f2937; /* Match top and bottom sections */
 }
 
@@ -49,6 +45,8 @@
 }
 
 .items-list {
+  max-height: 300px;
+  overflow-y: auto;
   margin-top: 8px;
   display: flex;
   flex-direction: column;
@@ -94,9 +92,6 @@
   display: flex;
   justify-content: space-around;
   background-color: #374151; /* Tailwind bg-gray-700 */
-  position: fixed;
-  bottom: 0;
-  left: 0;
 }
 
 .page-button {
