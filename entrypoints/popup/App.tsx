@@ -1,5 +1,6 @@
 import { useState} from 'react';
 import './App.css';
+import PasswordStrength from './passwordStrength';
 
 const slides = [
   { id: 1, content: "Slaptažodžio ilgis ženkliai svarbiau nei simbolių sudėtingumas." },
@@ -15,7 +16,7 @@ const slides = [
   { id: 11, content: "Apsaugoti savo prisijungimus 2FA." }
 ];
 
-function App() {
+export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const nextSlide = () => {
@@ -27,20 +28,22 @@ function App() {
 
   return (
     <>
+      <PasswordStrength />
       <div>
-        <div style={{paddingBottom: '1rem'}}>
+        <div style={{paddingBottom: '0.5rem'}}>
+          <h2>Patarimai slaptažodžiui</h2>
           {slides.map((slide, index) => (
             <div key={slide.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+              <div style={{textAlign: 'left', fontSize: "0.9rem"}}>{slide.content}</div>
+              <br></br>
               <div>{slide.id} / {slides.length}</div>
-              <div style={{textAlign: 'left', paddingTop:'1rem'}}>{slide.content}</div>
             </div>
           ))}
         </div>
-        <button style={{marginRight:'1rem'}} onClick={prevSlide}>❮</button>
+        <button style={{marginRight:'0.5rem'}} onClick={prevSlide}>❮</button>
         <button onClick={nextSlide}>❯</button>
       </div>
     </>
   );
 }
 
-export default App;

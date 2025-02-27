@@ -14,6 +14,12 @@ npm i
 
 To install all the required dependencies.
 
+Also install [zxcvbn](https://github.com/dropbox/zxcvbn) password strength estimator:
+
+```bash
+npm install zxcvbn
+```
+
 ## Build
 
 To build:
