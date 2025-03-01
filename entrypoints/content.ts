@@ -7,9 +7,6 @@ export default defineContentScript({
     const moduleManager = new ModuleManager()
 
     const passwordChecker = new PasswordChecker();
-    moduleManager.registerModule(passwordChecker);
-
-    // TODO: messaging between modules
-    // TODO: a way to send/receive messages to bg?
+    moduleManager.registerModule(passwordChecker, true);
   },
 });

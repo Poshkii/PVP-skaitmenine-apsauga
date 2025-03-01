@@ -1,9 +1,8 @@
 import {Module, ModuleId} from "../../types/module.ts";
-import {BgMessageId} from "@/entrypoints/content/types/bg-message-id.ts";
+import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 
-export class PasswordChecker implements Module {
+export class PasswordChecker extends Module {
     readonly id = ModuleId.PasswordChecker;
-    isEnabled: boolean = true;
     private buttonId = "password-action-button";
 
     load(): void {
@@ -48,13 +47,7 @@ export class PasswordChecker implements Module {
         button.addEventListener("click", () => {
             console.log("Button clicked, sending message to background script...");
 
-            browser.runtime.sendMessage({id: BgMessageId.OpenPopup}, (response) => {
-                if (browser.runtime.lastError) {
-                    console.error("Error sending message:", browser.runtime.lastError);
-                } else {
-                    console.log("Message sent successfully:", response);
-                }
-            });
+            this.sendToBackground({id: BgMessageId.OpenPopup});
 
             // Optional: Remove button after click
             button.remove();

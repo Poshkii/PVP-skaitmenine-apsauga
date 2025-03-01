@@ -4,10 +4,10 @@ export class ModuleManager {
     private modules: Map<ModuleId, Module> = new Map();
     private activeModules: Set<ModuleId> = new Set();
 
-    registerModule(module: Module) {
+    registerModule(module: Module, load: boolean = false) {
         this.modules.set(module.id, module);
 
-        if (module.isEnabled) {
+        if (load) {
             this.loadModule(module.id);
         }
     }
@@ -19,7 +19,6 @@ export class ModuleManager {
         try {
             module.load();
             this.activeModules.add(id);
-            module.isEnabled = true;
             return true;
         } catch (error) {
             console.error(`Failed to load module ${id}:`, error);
@@ -34,7 +33,6 @@ export class ModuleManager {
         try {
             module.unload();
             this.activeModules.delete(id);
-            module.isEnabled = false;
             return true;
         } catch (error) {
             console.error(`Failed to unload module ${id}:`, error);

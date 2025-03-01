@@ -4,5 +4,5 @@ export enum BgMessageId {
 
 export interface BgMessage {
     id: BgMessageId;
-    data: any;
+    data?: any;
 }

@@ -1,4 +1,4 @@
-import {BgMessage, BgMessageId} from "@/entrypoints/content/types/bg-message-id.ts";
+import {BgMessage, BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 
 export default defineBackground(() => {
   // Listen for messages from the content script
