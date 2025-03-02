@@ -6,7 +6,7 @@ function AppRoutes(){
     return (
         <Routes>
             <Route path="/" element={<FeatureList />}></Route>
-            <Route path="password-checker" element={<PasswordChecker />}/>
+            <Route path="/password-checker/:password?" element={<PasswordChecker />}/>
         </Routes>
     );
 }

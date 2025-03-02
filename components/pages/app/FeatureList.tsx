@@ -6,7 +6,7 @@ const meniu = [
     { name: "El. pašto apsauga", hint: "Laiško tikrinimas, pavojingų failų analizė..", route: "/" },
     { name: "Tracker tikrintojas", hint: "Kažką tikrina...", route: "/" },
     { name: "Slapukų analizė", hint: "Sausainiai, mmmm...", route: "/" },
-    { name: "Slaptažodžio patikra", hint: "Jautiesi saugus?", route: "password-checker" },
+    { name: "Slaptažodžio patikra", hint: "Jautiesi saugus?", route: "/password-checker" },
 ];
 
 function FeatureList(){

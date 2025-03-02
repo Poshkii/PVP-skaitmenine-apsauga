@@ -1,8 +1,8 @@
 import {useState} from 'react';
 import zxcvbn from 'zxcvbn';
 
-function PasswordStrength() {
-    const [password, setPassword] = useState('');
+function PasswordStrength({ inputPassword } : {inputPassword: string }) {
+    const [password, setPassword] = useState(inputPassword);
     const [score, setScore] = useState(0);
     const [feedback, setFeedback] = useState<string[]>([]);
 
