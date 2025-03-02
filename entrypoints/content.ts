@@ -1,6 +1,12 @@
+import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
+import {PasswordChecker} from "@/entrypoints/content/modules/password-checker/password-checker.ts";
+
 export default defineContentScript({
-  matches: ['*://*.google.com/*'],
+  matches: ['*://*/*'],
   main() {
-    console.log('Hello content.');
+    const moduleManager = new ModuleManager()
+
+    const passwordChecker = new PasswordChecker();
+    moduleManager.registerModule(passwordChecker, true);
   },
 });
