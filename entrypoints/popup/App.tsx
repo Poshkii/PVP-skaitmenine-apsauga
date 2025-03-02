@@ -1,16 +1,10 @@
-import { useState } from 'react';
 import './App.css';
-import { Search, Plus, MoreVertical } from "lucide-react";
+import { Search } from "lucide-react";
 import 'bootstrap/dist/css/bootstrap.css';
+import AppRoutes from "@/components/pages/app/AppRoutes.tsx";
+import NavBar from "@/components/pages/app/NavBar.tsx";
 
 function App() {
-  const meniu = [
-    { name: "URL apsauga", hint: "SSL sertifikatų tikrinimas..." },
-    { name: "El. pašto apsauga", hint: "Laiško tikrinimas, pavojingų failų analizė.." },
-    { name: "Tracker tikrintojas", hint: "Kažką tikrina..." },
-    { name: "Slapukų analizė", hint: "Sausainiai, mmmm..." },
-  ];
-
   return (
     <div className="main-window">
       {/* Top Search Bar */}
@@ -25,24 +19,11 @@ function App() {
 
       {/* Middle Menu Section */}
       <div className="middle-menu">
-          <h2 className="items-title">All items</h2>
-          <div className="items-list">
-            {meniu.map((item, index) => (
-              <button key={index} className="menu-button">
-                <p className="menu-name">{item.name}</p>
-                <p className="menu-hint">{item.hint}</p>
-              </button>
-            ))}
-          </div>
+          <AppRoutes/>
       </div>
 
       {/* Bottom Page Selection Buttons */}
-      <div className="bottom-buttons">
-        <button className="page-button">Settings</button>
-        <button className="page-button">Timeline</button>
-        <button className="page-button">Button 3</button>
-        <button className="page-button">Button 4</button>
-      </div>
+        <NavBar/>
     </div>
   );
 }

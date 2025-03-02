@@ -15,7 +15,7 @@ const slides = [
 ];
 
 
-export function PasswordTips(){
+function PasswordTips() {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const nextSlide = () => {
@@ -30,16 +30,18 @@ export function PasswordTips(){
             <div style={{paddingBottom: '0.5rem'}}>
                 <h2>Patarimai slaptažodžiui</h2>
                 {slides.map((slide, index) => (
-                    <div key={slide.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+                    <div key={slide.id} style={{display: index === currentIndex ? "block" : "none"}}>
                         <div style={{textAlign: 'left', fontSize: "0.9rem"}}>{slide.content}</div>
                         <br></br>
                         <div>{slide.id} / {slides.length}</div>
                     </div>
                 ))}
             </div>
-            <button style={{marginRight:'0.5rem'}} onClick={prevSlide}>❮</button>
+            <button style={{marginRight: '0.5rem'}} onClick={prevSlide}>❮</button>
             <button onClick={nextSlide}>❯</button>
         </>
 
     );
 }
+
+export default PasswordTips;
