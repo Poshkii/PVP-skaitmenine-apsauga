@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import zxcvbn from 'zxcvbn';
 
-const PasswordStrength = () => {
+export function PasswordStrength() {
     const [password, setPassword] = useState('');
     const [score, setScore] = useState(0);
     const [feedback, setFeedback] = useState<string[]>([]);
@@ -61,6 +61,4 @@ const PasswordStrength = () => {
         <div style={{border: '1px solid white', width: '100%'}}></div>
         </>
     );
-};
-
-export default PasswordStrength;
+}
