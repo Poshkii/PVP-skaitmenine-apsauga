@@ -36,6 +36,7 @@
   flex-grow: 1;
   width: 100%;
   padding: 16px;
+  color: #9ca3af;;
   background-color: #1f2937; /* Match top and bottom sections */
 }
 
@@ -47,6 +48,7 @@
 .items-list {
   max-height: 300px;
   overflow-y: auto;
+  scrollbar-width: thin;
   margin-top: 8px;
   display: flex;
   flex-direction: column;

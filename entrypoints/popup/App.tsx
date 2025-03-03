@@ -1,50 +1,57 @@
-import { useState } from 'react';
 import './App.css';
-import { Search, Plus, MoreVertical } from "lucide-react";
+import {Search} from "lucide-react";
 import 'bootstrap/dist/css/bootstrap.css';
+import AppRoutes from "@/components/pages/app/AppRoutes.tsx";
+import NavBar from "@/components/pages/app/NavBar.tsx";
+import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
+import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
+import {useNavigate} from "react-router";
 
 function App() {
-  const meniu = [
-    { name: "URL apsauga", hint: "SSL sertifikatų tikrinimas..." },
-    { name: "El. pašto apsauga", hint: "Laiško tikrinimas, pavojingų failų analizė.." },
-    { name: "Tracker tikrintojas", hint: "Kažką tikrina..." },
-    { name: "Slapukų analizė", hint: "Sausainiai, mmmm..." },
-  ];
+    const navigate = useNavigate();
 
-  return (
-    <div className="main-window">
-      {/* Top Search Bar */}
-      <div className="top-bar">
-        <Search className="search-icon" size={18} />
-        <input
-          type="text"
-          placeholder="Search"
-          className="search-input"
-        />
-      </div>
+    // setup background and ui messaging
+    useEffect(() => {
+        // send a popup opened sync message
+        browser.runtime.sendMessage({id: BgMessageId.PopupOpened});
 
-      {/* Middle Menu Section */}
-      <div className="middle-menu">
-          <h2 className="items-title">All items</h2>
-          <div className="items-list">
-            {meniu.map((item, index) => (
-              <button key={index} className="menu-button">
-                <p className="menu-name">{item.name}</p>
-                <p className="menu-hint">{item.hint}</p>
-              </button>
-            ))}
-          </div>
-      </div>
+        const onMessage = (message: UiMessage) => {
+            switch (message.id) {
+                case UiMessageId.NavigateTo: {
+                    navigate(message.data);
+                }
+            }
+        };
 
-      {/* Bottom Page Selection Buttons */}
-      <div className="bottom-buttons">
-        <button className="page-button">Settings</button>
-        <button className="page-button">Timeline</button>
-        <button className="page-button">Button 3</button>
-        <button className="page-button">Button 4</button>
-      </div>
-    </div>
-  );
+        browser.runtime.onMessage.addListener(onMessage);
+
+        return () => {
+            browser.runtime.onMessage.removeListener(onMessage);
+        }
+    }, [navigate]);
+
+
+    return (
+        <div className="main-window">
+            {/* Top Search Bar */}
+            <div className="top-bar">
+                <Search className="search-icon" size={18}/>
+                <input
+                    type="text"
+                    placeholder="Search"
+                    className="search-input"
+                />
+            </div>
+
+            {/* Middle Menu Section */}
+            <div className="middle-menu">
+                <AppRoutes/>
+            </div>
+
+            {/* Bottom Page Selection Buttons */}
+            <NavBar/>
+        </div>
+    );
 }
 
 export default App;
