@@ -5,15 +5,21 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
     const [password, setPassword] = useState(inputPassword);
     const [score, setScore] = useState(0);
     const [feedback, setFeedback] = useState<string[]>([]);
+    const initialized = useRef(false);
 
     // biblioteka apskaiciuoja stipruma
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newPassword = event.target.value;
+    const handleChange = (newPassword: string) => {
+        initialized.current = true;
         setPassword(newPassword);
         const result = zxcvbn(newPassword);
         setScore(result.score);
         setFeedback(result.feedback.suggestions);
     };
+
+    // if input password is not empty, it should be initialized to display the results immediately
+    if (!initialized.current && inputPassword){
+        handleChange(inputPassword);
+    }
 
     // gauna stiprumo reiksme
     const getLabel = (score: number) => {
@@ -42,7 +48,7 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
                     type="password"
                     placeholder="Enter password"
                     value={password}
-                    onChange={handleChange}
+                    onChange={(e) => handleChange(e.target.value)}
                     style={{padding: "0.5rem", width: "90%"}}
                 />
                 <div style={{marginTop: "0.5rem", fontWeight: "bold"}}>
