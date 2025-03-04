@@ -6,8 +6,16 @@ import NavBar from "@/components/pages/app/NavBar.tsx";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {useNavigate} from "react-router";
+import {ConfigProvider} from "@/components/providers/ConfigProvider.tsx";
 
 function App() {
+    const config = useMemo(() => {
+        const config = new Configuration();
+        // FIXME: unsafe as this is an async function
+        config.load();
+        return config;
+    }, []);
+
     const navigate = useNavigate();
 
     // setup background and ui messaging
@@ -32,25 +40,27 @@ function App() {
 
 
     return (
-        <div className="main-window">
-            {/* Top Search Bar */}
-            <div className="top-bar">
-                <Search className="search-icon" size={18}/>
-                <input
-                    type="text"
-                    placeholder="Search"
-                    className="search-input"
-                />
-            </div>
+        <ConfigProvider config={config}>
+            <div className="main-window">
+                {/* Top Search Bar */}
+                <div className="top-bar">
+                    <Search className="search-icon" size={18}/>
+                    <input
+                        type="text"
+                        placeholder="Search"
+                        className="search-input"
+                    />
+                </div>
 
-            {/* Middle Menu Section */}
-            <div className="middle-menu">
-                <AppRoutes/>
-            </div>
+                {/* Middle Menu Section */}
+                <div className="middle-menu">
+                    <AppRoutes/>
+                </div>
 
-            {/* Bottom Page Selection Buttons */}
-            <NavBar/>
-        </div>
+                {/* Bottom Page Selection Buttons */}
+                <NavBar/>
+            </div>
+        </ConfigProvider>
     );
 }
 
