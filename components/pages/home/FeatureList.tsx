@@ -2,7 +2,7 @@ import {useNavigate} from "react-router";
 
 // TODO: define routes in a more global file
 const meniu = [
-    { name: "URL apsauga", hint: "SSL sertifikatų tikrinimas...", route: "/"},
+    { name: "URL patikra", hint: "Ar tikrai nori čia apsilankyti?", route: "/url-checker"},
     { name: "El. pašto apsauga", hint: "Laiško tikrinimas, pavojingų failų analizė..", route: "/" },
     { name: "Tracker tikrintojas", hint: "Kažką tikrina...", route: "/" },
     { name: "Slapukų analizė", hint: "Sausainiai, mmmm...", route: "/" },
