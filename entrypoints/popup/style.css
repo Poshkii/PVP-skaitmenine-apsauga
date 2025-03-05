@@ -120,6 +120,13 @@ ul li {
   justify-content: space-around;
   background-color: #374151; /* Tailwind bg-gray-700 */
 }
+.bottom-slide-buttons {
+  width: 100%;
+  padding: 16px;
+  display: flex;
+  justify-content: space-around;
+  background-color: #374151; /* Tailwind bg-gray-700 */
+}
 
 .page-button {
   width: 60px;

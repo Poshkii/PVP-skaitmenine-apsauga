@@ -34,20 +34,21 @@ function PasswordTips() {
             textAlign: "center", 
             backgroundColor: "#1f2937", /* Dark background similar to your theme */
             color: "#9ca3af", /* Light gray text */
-            borderRadius: "8px" 
+            borderRadius: "8px",
+            height: "100px"
             }}>
                 <h2 className="menu-name">Patarimai slaptažodžiui</h2>
-    
+            
                 {slides.map((slide, index) => (
                     <div key={slide.id} style={{ display: index === currentIndex ? "block" : "none" }}>
-                        <div style={{textAlign: 'left', fontSize: "0.9rem"}}>{slide.content}</div>
+                        <div style={{textAlign: 'left', fontSize: "0.9rem", height: "65px"}}>{slide.content}</div>
                         <br />
                         <div>{slide.id} / {slides.length}</div>
                     </div>
                 ))}
             </div>
-
-            <div className="bottom-buttons" style={{ backgroundColor: "#1f2937" }}>
+            
+            <div className="bottom-slide-buttons" style={{ backgroundColor: "#1f2937" }}>
                 <button className="slide-button" onClick={prevSlide}>❮</button>
                 <button className="slide-button" onClick={nextSlide}>❯</button>
             </div>
