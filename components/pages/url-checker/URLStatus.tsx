@@ -11,7 +11,7 @@ function URLStatus({ inputURL } : {inputURL: string }) {
         return (
             <>
                 <div style={{ marginTop: "1em" }}>
-                    <h2>Patikrinkite svetainės saugumą</h2>
+                    <h2 style={{color: "white"}}>Patikrinkite svetainės saugumą</h2>
                     <input
                         type="text"
                         placeholder="Įveskite svetainės nuorodą..."
@@ -26,7 +26,7 @@ function URLStatus({ inputURL } : {inputURL: string }) {
                     >   
                         Tikrinti
                     </button>
-                    <div style={{ marginTop: "0.5rem", fontWeight: "bold" }}>
+                    <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white" }}>
                         {result}
                     </div>
                 </div>

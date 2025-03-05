@@ -63,7 +63,7 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
                 )}
             </div>
             <br></br>
-            <div style={{border: '1px solid white', width: '100%'}}></div>
+            <div style={{border: '1px solid white'}}></div>
         </>
     );
 }

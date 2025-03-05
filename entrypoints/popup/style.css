@@ -9,6 +9,21 @@ ul li {
   text-align: left;
   padding-bottom: 0.5rem;
 }
+
+/* Customize scrollbar */
+::-webkit-scrollbar {
+  width: 6px; /* Adjust scrollbar width */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* Darker gray scrollbar */
+  border-radius: 8px; /* Smooth rounded edges */
+}
+
+::-webkit-scrollbar-track {
+  background-color: #1f2937; /* Match background */
+}
+
 /* Main Window */
 .main-window {
   display: flex;
@@ -59,7 +74,6 @@ ul li {
 .items-list {
   max-height: 300px;
   overflow-y: auto;
-  scrollbar-width: thin;
   margin-top: 8px;
   display: flex;
   flex-direction: column;
