@@ -5,6 +5,7 @@ import {Search} from "lucide-react";
 const meniu = [
     { name: "URL patikra", hint: "Ar tikrai nori čia apsilankyti?", route: "/url-checker"},
     { name: "El. pašto apsauga", hint: "Laiško tikrinimas, pavojingų failų analizė..", route: "/" },
+    { name: "Failų patikra", hint: "Failų naudojimo saugumo tikrinimas", route: "/file-checker" },
     { name: "Tracker tikrintojas", hint: "Kažką tikrina...", route: "/" },
     { name: "Slapukų analizė", hint: "Sausainiai, mmmm...", route: "/" },
     { name: "Slaptažodžio patikra", hint: "Jautiesi saugus?", route: "/password-checker" },
