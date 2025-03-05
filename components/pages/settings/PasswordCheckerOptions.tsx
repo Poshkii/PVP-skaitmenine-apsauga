@@ -1,11 +1,11 @@
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {useConfig} from "@/components/providers/ConfigProvider.tsx";
-import {useMessageSender} from "@/hooks/useMessageSender.ts";
+import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 
 function PasswordCheckerOptions() {
     const config = useConfig();
     const [enabled, setEnabled] = useState(config.isModuleEnabled(ModuleId.PasswordChecker));
-    const { sendModuleChangeMessage } = useMessageSender();
+    const { sendModuleChangeMessage } = useContentMessaging();
 
     function handleChange(checked: boolean) {
         config.setModuleEnabled(ModuleId.PasswordChecker, checked);

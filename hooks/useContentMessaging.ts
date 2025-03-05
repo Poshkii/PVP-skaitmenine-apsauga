@@ -10,7 +10,7 @@ function sendMessage(message: ContentMessage) {
     });
 }
 
-export function useMessageSender() {
+export function useContentMessaging() {
     const sendModuleChangeMessage = useCallback((moduleId: ModuleId, enabled: boolean) => {
         sendMessage({
             id: ContentMessageId.ModuleChange,

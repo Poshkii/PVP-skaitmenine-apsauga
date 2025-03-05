@@ -1,9 +1,9 @@
 import {Route, Routes} from "react-router";
 import PasswordChecker from "@/components/pages/password-checker/PasswordChecker.tsx";
-import FeatureList from "@/components/pages/app/FeatureList.tsx";
+import FeatureList from "@/components/pages/home/FeatureList.tsx";
 import Settings from "@/components/pages/settings/Settings.tsx";
 
-function AppRoutes(){
+function HomeRoutes(){
     return (
         <Routes>
             <Route path="/" element={<FeatureList />}></Route>
@@ -13,4 +13,4 @@ function AppRoutes(){
     );
 }
 
-export default AppRoutes;
+export default HomeRoutes;
