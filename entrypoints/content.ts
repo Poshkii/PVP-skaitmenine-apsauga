@@ -1,18 +1,31 @@
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {PasswordChecker} from "@/entrypoints/content/modules/password-checker/password-checker.ts";
 import {Configuration} from "@/utils/config.ts";
+import {ContentMessage, ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
 
 export default defineContentScript({
-  matches: ['*://*/*'],
-  async main() {
-    // TODO: messaging with the settings frontend so modules get loaded and unloaded dynamically
+    matches: ['*://*/*'],
+    async main() {
+        const config = new Configuration();
+        await config.load();
 
-    const config = new Configuration();
-    await config.load();
+        const moduleManager = new ModuleManager()
 
-    const moduleManager = new ModuleManager()
+        const passwordChecker = new PasswordChecker();
+        moduleManager.registerModule(passwordChecker, config.isModuleEnabled(passwordChecker.id));
 
-    const passwordChecker = new PasswordChecker();
-    moduleManager.registerModule(passwordChecker, config.isModuleEnabled(passwordChecker.id));
-  },
+        browser.runtime.onMessage.addListener((message: ContentMessage) => {
+            switch (message.id) {
+                case ContentMessageId.ModuleChange: {
+                    const {moduleId, enabled} = message.data;
+
+                    if (enabled) {
+                        moduleManager.loadModule(moduleId);
+                    } else {
+                        moduleManager.unloadModule(moduleId);
+                    }
+                }
+            }
+        });
+    },
 });

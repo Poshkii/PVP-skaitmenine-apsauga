@@ -1,5 +1,6 @@
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {useConfig} from "@/components/providers/ConfigProvider.tsx";
+import {ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
 
 function PasswordCheckerOptions() {
     const config = useConfig();
@@ -9,6 +10,19 @@ function PasswordCheckerOptions() {
         config.setModuleEnabled(ModuleId.PasswordChecker, checked);
         config.save();
         setEnabled(checked);
+
+        // Send message to content script
+        browser.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+            if (tabs[0]?.id) {
+                browser.tabs.sendMessage(tabs[0].id, {
+                    id: ContentMessageId.ModuleChange,
+                    data: {
+                        moduleId: ModuleId.PasswordChecker,
+                        enabled: checked
+                    }
+                });
+            }
+        });
     }
 
     return (
