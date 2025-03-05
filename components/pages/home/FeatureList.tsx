@@ -40,5 +40,4 @@ function FeatureList(){
     );
 }
 
-
 export default FeatureList;
