@@ -4,7 +4,7 @@ function NavBar() {
     const navigate = useNavigate();
 
     return (
-        <div className="bottom-buttons">
+        <div className="bottom-buttons fixed-bottom">
             <button className="page-button" onClick={() => navigate("/")}>Home</button>
             <button className="page-button">Timeline</button>
             <button className="page-button">Button 3</button>

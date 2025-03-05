@@ -1,4 +1,5 @@
 import {useNavigate} from "react-router";
+import {Search} from "lucide-react";
 
 // TODO: define routes in a more global file
 const meniu = [
@@ -14,6 +15,16 @@ function FeatureList(){
 
     return (
     <>
+        <div className="top-bar">
+                <Search className="search-icon" size={18}/>
+                <input
+                    type="text"
+                    placeholder="Search"
+                    className="search-input"
+                />
+        </div>
+        {/* Middle Menu Section */}
+        <div className="middle-menu">
         <h2 className="items-title">All items</h2>
         <div className="items-list">
             {meniu.map((item, index) => (
@@ -23,6 +34,8 @@ function FeatureList(){
                 </button>
             ))}
         </div>
+        </div>
+
     </>
     );
 }
