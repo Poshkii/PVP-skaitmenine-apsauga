@@ -72,9 +72,9 @@ ul li {
 }
 
 .items-list {
+  padding: 8px;
   max-height: 300px;
   overflow-y: auto;
-  scrollbar-width: thin;
   margin-top: 8px;
   display: flex;
   flex-direction: column;
