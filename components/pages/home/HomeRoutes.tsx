@@ -3,7 +3,7 @@ import PasswordChecker from "@/components/pages/password-checker/PasswordChecker
 import FeatureList from "@/components/pages/home/FeatureList.tsx";
 import Settings from "@/components/pages/settings/Settings.tsx";
 import URLChecker from "../url-checker/URLChecker";
-import FileChecker from "../file-checker/fileChecker";
+import FileChecker from "../file-checker/FileChecker";
 
 
 function HomeRoutes(){
