@@ -27,18 +27,31 @@ function PasswordTips() {
 
     return (
         <>
-            <div style={{paddingBottom: '0.5rem'}}>
-                <h2>Patarimai slaptažodžiui</h2>
+
+            <div style={{ 
+            width: "100%", 
+            padding: "16px", 
+            textAlign: "center", 
+            backgroundColor: "#1f2937", /* Dark background similar to your theme */
+            color: "#9ca3af", /* Light gray text */
+            borderRadius: "8px",
+            height: "100px"
+            }}>
+                <h2 className="menu-name">Patarimai slaptažodžiui</h2>
+            
                 {slides.map((slide, index) => (
-                    <div key={slide.id} style={{display: index === currentIndex ? "block" : "none"}}>
-                        <div style={{textAlign: 'left', fontSize: "0.9rem"}}>{slide.content}</div>
-                        <br></br>
+                    <div key={slide.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+                        <div style={{textAlign: 'left', fontSize: "0.9rem", height: "65px"}}>{slide.content}</div>
+                        <br />
                         <div>{slide.id} / {slides.length}</div>
                     </div>
                 ))}
             </div>
-            <button style={{marginRight: '0.5rem'}} onClick={prevSlide}>❮</button>
-            <button onClick={nextSlide}>❯</button>
+            
+            <div className="bottom-slide-buttons" style={{ backgroundColor: "#1f2937" }}>
+                <button className="slide-button" onClick={prevSlide}>❮</button>
+                <button className="slide-button" onClick={nextSlide}>❯</button>
+            </div>
         </>
 
     );

@@ -7,8 +7,15 @@ function PasswordChecker() {
 
     return (
         <>
-            <PasswordStrength inputPassword={password ?? ''} />
-            <PasswordTips/>
+            
+            <div style={{ 
+            flexDirection: "column", 
+            maxHeight: "calc(100vh - 100px)",
+            overflowY: "auto",
+            }}>
+                <PasswordStrength inputPassword={password ?? ''} />
+                <PasswordTips/>
+            </div>
         </>
     );
 }

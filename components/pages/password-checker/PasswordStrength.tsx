@@ -43,7 +43,7 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
     return (
         <>
             <div style={{marginTop: "1em"}}>
-                <h2>Slaptažodžio stiprumas</h2>
+                <h2 style={{color: "white"}}>Slaptažodžio stiprumas</h2>
                 <input
                     type="password"
                     placeholder="Enter password"
@@ -51,7 +51,7 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
                     onChange={(e) => handleChange(e.target.value)}
                     style={{padding: "0.5rem", width: "90%"}}
                 />
-                <div style={{marginTop: "0.5rem", fontWeight: "bold"}}>
+                <div style={{marginTop: "0.5rem", fontWeight: "bold", color: "white"}}>
                     Stiprumas: {getLabel(score)}
                 </div>
                 {feedback.length > 0 && (
@@ -63,7 +63,7 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
                 )}
             </div>
             <br></br>
-            <div style={{border: '1px solid white', width: '100%'}}></div>
+            <div style={{border: '1px solid white'}}></div>
         </>
     );
 }
