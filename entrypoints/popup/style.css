@@ -74,11 +74,11 @@ ul li {
 .items-list {
   max-height: 300px;
   overflow-y: auto;
-  scrollbar-width: thin;
   margin-top: 8px;
   display: flex;
   flex-direction: column;
   gap: 8px; /* Reduced space between menu buttons */
+  padding: 8px;
 }
 
 /* Menu Button Styles */
