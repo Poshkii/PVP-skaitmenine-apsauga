@@ -1,13 +1,11 @@
 import { useState } from "react";
 
-
-
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const API_KEY = "AIzaSyDU4h_Mh8zGTkPwzm_5HK7jAw_tv71Lf1U";  // Replace with your actual API Key
+    const API_KEY = useAppConfig().safeBrowsingApiKey;
     const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${API_KEY}`;
 
     const normalizeURL = (str: string) => {
