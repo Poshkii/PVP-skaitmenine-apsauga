@@ -1,5 +1,6 @@
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {PasswordChecker} from "@/entrypoints/content/modules/password-checker/password-checker.ts";
+import {FileChecker} from "@/entrypoints/content/modules/file-checker/file-checker.ts";
 import {Configuration} from "@/utils/config.ts";
 import {ContentMessage, ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
 
@@ -13,6 +14,9 @@ export default defineContentScript({
 
         const passwordChecker = new PasswordChecker();
         moduleManager.registerModule(passwordChecker, config.isModuleEnabled(passwordChecker.id));
+
+        const fileChecker = new FileChecker();
+        moduleManager.registerModule(fileChecker, config.isModuleEnabled(fileChecker.id));
 
         browser.runtime.onMessage.addListener((message: ContentMessage) => {
             switch (message.id) {
