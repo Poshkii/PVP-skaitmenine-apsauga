@@ -5,85 +5,109 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const API_KEY = useAppConfig().safeBrowsingApiKey;
-    const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${API_KEY}`;
+    const API_KEY = String(useAppConfig().safeBrowsingApiKey);
+    const API_URL = "https://www.virustotal.com/api/v3/urls";
 
     const normalizeURL = (str: string) => {
-        // If the URL is missing "http://" or "https://", add "https://"
         if (!/^https?:\/\//i.test(str)) {
             return "https://" + str;
         }
         return str;
-    }
+    };
 
     const isValidURL = (str: string) => {
         try {
             new URL(str);
-            if (!str.includes(".")) {
-                return false;
-            }
-            return true;
+            return str.includes(".");
         } catch (_) {
             return false;
         }
-    }
+    };
 
     const UrlChecker = async () => {
-        setResult("Tikrinama...");
-
+        setResult("🔍 Tikrinama...");
         setLoading(true);
-
+        
+        /* URL formatavimas
         let formattedUrl = normalizeURL(url);
         if (!isValidURL(formattedUrl)) {
             setLoading(false);
             setResult("❌ Įveskite tinkamą nuorodą.");
             return;
         }
-
-        const requestBody = {
-            client: {
-                clientId: "1016620479265-v07ai9hm7toqd47d221nntccrg825vcr.apps.googleusercontent.com",  // Optional but useful for tracking
-                clientVersion: "1.0"
-            },
-            threatInfo: {
-                threatTypes: [
-                    "MALWARE", 
-                    "SOCIAL_ENGINEERING", 
-                    "UNWANTED_SOFTWARE", 
-                    "POTENTIALLY_HARMFUL_APPLICATION"
-                ],
-                platformTypes: ["ANY_PLATFORM"],
-                threatEntryTypes: ["URL"],
-                threatEntries: [{ url: formattedUrl }]
-            }
-        };
+        */
 
         try {
-            const response = await fetch(apiUrl, {
+            // REQUEST for analysis
+            const response = await fetch(API_URL, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "x-apikey": API_KEY,
+                    "Content-Type": "application/x-www-form-urlencoded"
                 },
-                body: JSON.stringify(requestBody)
+                body: `url=${url}`
             });
 
-            const data = await response.json();
-            console.log(data);
+            if (!response.ok) {
+                // Handle HTTP errors
+                const errorData = await response.json();
+                const errorCode = response.status; // Get the HTTP error code
+    
+                let errorMessage = "❌ Klaida tikrinant URL.";
+                switch (errorCode) {
+                    case 400:
+                        errorMessage = "❌ Neteisinga užklausa.";
+                        break;
+                    case 401:
+                        errorMessage = "❌ Netinkamas API raktas.";
+                        break;
+                    case 403:
+                        errorMessage = "❌ Nepakanka leidimų.";
+                        break;
+                    case 429:
+                        errorMessage = "❌ API kvotų limitas viršytas.";
+                        break;
+                    case 500:
+                        errorMessage = "❌ Serverio klaida. Bandykite vėliau.";
+                        break;
+                }
+                setResult(errorMessage);
+                setLoading(false);
+                return;
+            }
 
-            if (data.matches) {
-                setTimeout(() => {
-                    setLoading(false);
-                    setResult("⚠️ Pavojinga svetainė!");
-                }, 2000); 
+            // GET analysis
+            const data = await response.json();
+            const analysisId = data.data.id;
+            const resultUrl = `https://www.virustotal.com/api/v3/analyses/${analysisId}`;
+
+            await new Promise(res => setTimeout(res, 3000)); // Wait a few seconds before fetching the result
+
+            const resultResponse = await fetch(resultUrl, {
+                method: "GET",
+                headers: {
+                    "x-apikey": API_KEY
+                }
+            });
+
+            const resultData = await resultResponse.json();
+            const stats = resultData.data.attributes.stats;
+            const totalDetections = stats.malicious + stats.suspicious;
+            const totalVendors = stats.malicious + stats.suspicious + stats.harmless + stats.undetected;
+            
+            if (totalDetections > 0) {
+                if(stats.malicious >= 5)
+                    setResult(`🚨 Svetainė yra kenksminga! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`);
+                else
+                    setResult(`⚠️ Pavojinga svetainė! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`);
             } else {
-                setTimeout(() => {
-                    setLoading(false);
-                    setResult("✅ Svetainė saugi.");
-                }, 2000); 
+                setResult(`✅ Svetainė saugi. Neaptikta jokių grėsmių iš ${totalVendors} tiekėjo/-ų.`);
             }
         } catch (error) {
             console.error("Klaida tikrinant URL:", error);
             setResult("❌ Klaida tikrinant URL.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -104,11 +128,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 >   
                     Tikrinti
                 </button>
-                <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white" }}>
+                <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white", padding: "5px"}}>
                     {result}
                 </div>
                 <div style={{ paddingTop: "0.8rem"}}>
-                        {loading && <div className="loader"></div>}
+                    {loading && <div className="loader"></div>}
                 </div>
             </div>
             <br />
