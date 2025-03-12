@@ -62,7 +62,7 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                         Tikrinti
                     </button>
                     <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white" }}>
-                        {result}                        
+                        {email.match(emailPattern) ? result : (email.length > 0 ? "Patikrinkite el. pašto formatą" : "")}                        
                     </div>
                     <div style={{ paddingTop: "0.8rem"}}>
                         {loading && <div className="loader"></div>}
