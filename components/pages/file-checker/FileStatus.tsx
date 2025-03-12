@@ -50,25 +50,25 @@ function FileStatus({inputFile}: { inputFile: string }) {
     const API_URL = `https://api.metadefender.com/v4/file`;
     const HASH_URL = "https://api.metadefender.com/v4/hash";
 
-	const setFileState = async (file: File)=> {
-		setSelectedFile(file);
-		setFileName(file.name);
-		setSafety("unknown");
-		setResult("");
-		setHashValues({
-			md5: "",
-			sha1: "",
-			sha256: ""
-		});
-	}
+    const setFileState = async (file: File) => {
+        setSelectedFile(file);
+        setFileName(file.name);
+        setSafety("unknown");
+        setResult("");
+        setHashValues({
+            md5: "",
+            sha1: "",
+            sha256: ""
+        });
+    }
 
     // default reiksmes ikelus faila
     const fileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
+        const file = event.target.files?.[0];
 
-		if (file){
-			setSelectedFile(file);
-		}
+        if (file) {
+            setSelectedFile(file);
+        }
     };
 
     // default reiksmes nutempus faila
@@ -83,6 +83,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
         }
     };
 
+    // Situ reikia, kad tempiant failus nesuveiktu iprasti HTML event'ai
     const preventDefaults = (event: React.DragEvent<HTMLLabelElement>) => {
         event.preventDefault();
         event.stopPropagation();
@@ -106,11 +107,10 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 }
             });
 
-            if (res.ok){
+            if (res.ok) {
                 return await res.json();
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error while getting file scan results by hash:", error);
         }
 
@@ -126,14 +126,14 @@ function FileStatus({inputFile}: { inputFile: string }) {
         try {
             const results = await checkFileByHash(selectedFile);
 
-            if (results){
+            if (results) {
                 processApiResponse(results);
-            }
-            else {
+            } else {
                 // upload if checking by hash failed
                 const formData = new FormData();
                 formData.append('file', selectedFile);
 
+                // ikelia faila skenavimui
                 const uploadResponse = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
@@ -142,6 +142,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                     body: formData
                 });
 
+                // bando gaut rezultatus jei sekmingai ikelia
                 if (uploadResponse.ok) {
                     const uploadData = await uploadResponse.json();
                     await pollForResults(uploadData.data_id);
@@ -160,14 +161,15 @@ function FileStatus({inputFile}: { inputFile: string }) {
     };
 
     const pollForResults = async (dataId: string) => {
+        // 12 bandymu po 5 sekundes => 1 minute gauti skenavimo rezultatui
         let attempts = 0;
-        const maxAttempts = 10;
+        const maxAttempts = 12;
 
         const DATA_URL = API_URL + '/' + dataId;
 
         const checkResult = async () => {
             try {
-                //const response = await fetch(`${API_URL}/${dataId}`, {
+                // tikrina failo skenavimo rezultatus pagal anksciau gauta failo id
                 const response = await fetch(DATA_URL, {
                     method: 'GET',
                     headers: {
@@ -179,12 +181,13 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 if (response.ok) {
                     const data = await response.json();
 
+                    // progress_percantage yra API dokumentacijoj, bet nezinau kaip patikrinti/istestuoti ar grazina kazka kito nei 0 arba 100
                     if (data.scan_results?.progress_percentage === 100) {
                         processApiResponse(data);
                         return true;
                     }
 
-                    setResult(`Tikrinama... ${data.scan_results?.progress_percentage || 0}%`);
+                    setResult(`Tikrinama... ${data.scan_results?.progress_percentage}%`);
                 }
 
                 return false;
@@ -193,15 +196,16 @@ function FileStatus({inputFile}: { inputFile: string }) {
             }
         };
 
-        // Poll until complete or max attempts reached
+        // Periodiskai siuncia uzklausa patikrinti ar gautas skenavimo rezultatas
         while (attempts < maxAttempts) {
             const isComplete = await checkResult();
             if (isComplete) break;
 
             attempts++;
-            await new Promise(resolve => setTimeout(resolve, 2000)); // kas 2 sekundes poll'ina
+            await new Promise(resolve => setTimeout(resolve, 5000)); // kas 5 sekundes poll'ina
         }
 
+        // Jei daugiau nei 1 min uztrunka (per didele eile API turbut)
         if (attempts >= maxAttempts) {
             setResult("Patikrinimas užtruko per ilgai. Bandykite vėliau.");
             setSafety("unknown");
@@ -212,6 +216,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
         const scanResults = data.scan_results;
 
         if (scanResults) {
+            // skenavimo "varikliu" kiekis gaunamas
             const detectedCount = scanResults.total_detected_avs || 0;
             const totalEngines = scanResults.total_avs || 1;
 
@@ -221,13 +226,10 @@ function FileStatus({inputFile}: { inputFile: string }) {
                     sha1: data.file_info.sha1 || "",
                     sha256: data.file_info.sha256 || ""
                 });
-
-                console.log("File info:", data.file_info);
-                console.log("MD5:", data.file_info.md5);
-                console.log("SHA1:", data.file_info.sha1);
-                console.log("SHA256:", data.file_info.sha256);
             }
 
+            // esant poreikiui butu galima prideti arba pakeisti su
+            // severity_index, severity, threatLevel ir verdict API parametrais
             if (detectedCount > 0) {
                 setSafety("unsafe");
                 setResult(`Aptikta grėsmių: ${detectedCount} iš ${totalEngines} saugos variklių.`);
@@ -256,7 +258,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
             }}
             >
                 <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>Patikrinkite failo saugumą</h2>
-
                 <div style={{margin: "1rem auto", width: "90%"}}>
                     <label
                         htmlFor="file-upload"
