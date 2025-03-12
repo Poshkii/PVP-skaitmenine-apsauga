@@ -4,6 +4,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
+    const [debug, setDebug] = useState("");
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
@@ -25,8 +26,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     };
 
     const UrlChecker = async () => {
-        setResult("🔍 Tikrinama...");
+
         setLoading(true);
+        setResult("🔍 Tikrinama...");
         
         /* URL formatavimas
         let formattedUrl = normalizeURL(url);
@@ -45,9 +47,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     "x-apikey": API_KEY,
                     "Content-Type": "application/x-www-form-urlencoded"
                 },
-                body: `url=${url}`
+                body: `url=${encodeURIComponent(url)}`
             });
-
+            // Klaidu apdorojimas
             if (!response.ok) {
                 // Handle HTTP errors
                 const errorData = await response.json();
@@ -75,39 +77,80 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 setLoading(false);
                 return;
             }
-
-            // GET analysis
-            const data = await response.json();
-            const analysisId = data.data.id;
-            const resultUrl = `https://www.virustotal.com/api/v3/analyses/${analysisId}`;
-
-            await new Promise(res => setTimeout(res, 3000)); // Wait a few seconds before fetching the result
-
-            const resultResponse = await fetch(resultUrl, {
-                method: "GET",
-                headers: {
-                    "x-apikey": API_KEY
-                }
-            });
-
-            const resultData = await resultResponse.json();
-            const stats = resultData.data.attributes.stats;
-            const totalDetections = stats.malicious + stats.suspicious;
-            const totalVendors = stats.malicious + stats.suspicious + stats.harmless + stats.undetected;
-            
-            if (totalDetections > 0) {
-                if(stats.malicious >= 5)
-                    setResult(`🚨 Svetainė yra kenksminga! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`);
-                else
-                    setResult(`⚠️ Pavojinga svetainė! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`);
-            } else {
-                setResult(`✅ Svetainė saugi. Neaptikta jokių grėsmių iš ${totalVendors} tiekėjo/-ų.`);
+            // Jei viskas gerai, bandom gauti analize
+            else{
+                const data = await response.json();
+                await pollResults(data.data.id);
             }
         } catch (error) {
             console.error("Klaida tikrinant URL:", error);
             setResult("❌ Klaida tikrinant URL.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const pollResults = async (dataId : string) => {
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        const resultUrl = `https://www.virustotal.com/api/v3/analyses/${dataId}`;
+
+        const checkResult = async() => {
+            try {
+                // GET analysis
+                const resultResponse = await fetch(resultUrl, {
+                method: "GET",
+                headers: {
+                    "x-apikey": API_KEY
+                }
+            });
+
+            if(resultResponse.ok) {
+                const resultData = await resultResponse.json();
+                processResponse(resultData);
+                return true;
+            }
+
+            return false;
+
+            }
+            catch (error){
+                return false;
+            }
+        };
+
+        while (attempts < maxAttempts) {
+            const isComplete = await checkResult();
+            if (isComplete) break;
+            
+            attempts++;
+            await new Promise(resolve => setTimeout(resolve, 6000)); // kas 5 sekundes poll'ina
+        }
+        
+		// Jei daugiau nei 1 min uztrunka (per didele eile API turbut)
+        if (attempts >= maxAttempts) {
+            setResult("Patikrinimas užtruko per ilgai. Bandykite vėliau.");
+        }
+    }
+
+    const processResponse = (resultData : any) => {
+        const stats = resultData.data.attributes.stats;
+        const totalDetections = stats.malicious + stats.suspicious;
+        const totalVendors = stats.malicious + stats.suspicious + stats.harmless + stats.undetected;
+
+        if (totalVendors === 0) {
+            setResult("⚠️ URL dar nebuvo analizuotas. Bandykite vėliau.");
+            return;
+        }
+            
+        if (totalDetections > 0) {
+            if(stats.malicious >= 5)
+                setResult(`🚨 Svetainė yra kenksminga! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`);
+            else
+                setResult(`⚠️ Pavojinga svetainė! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`);
+        } else {
+            setResult(`✅ Svetainė saugi. Neaptikta jokių grėsmių iš ${totalVendors} tiekėjo/-ų.`);
         }
     };
 
@@ -133,6 +176,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 </div>
                 <div style={{ paddingTop: "0.8rem"}}>
                     {loading && <div className="loader"></div>}
+                </div>
+                <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white", padding: "5px"}}>
+                    {debug}
                 </div>
             </div>
             <br />
