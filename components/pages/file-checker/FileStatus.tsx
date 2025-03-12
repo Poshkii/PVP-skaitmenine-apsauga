@@ -1,6 +1,11 @@
 import {Upload} from "lucide-react";
 import {useEffect, useState} from "react";
 
+const API_KEY = String(useAppConfig().fileCheckerApiKey);
+const API_URL = "https://api.metadefender.com/v4";
+const HASH_ENDPOINT = "/hash";
+const FILE_ENDPOINT = "/file";
+
 async function calculateSHA256(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -34,6 +39,34 @@ async function calculateSHA256(file: File): Promise<string> {
     });
 };
 
+async function checkFileByHash(file: File): Promise<any | null> {
+    let sha256Hash: string;
+
+    try {
+        sha256Hash = await calculateSHA256(file);
+    } catch (error) {
+        console.error("Failed to calculate hash:", error);
+        return null;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha256Hash}`, {
+            method: "GET",
+            headers: {
+                'apikey': API_KEY,
+            }
+        });
+
+        if (res.ok) {
+            return await res.json();
+        }
+    } catch (error) {
+        console.error("Error while getting file scan results by hash:", error);
+    }
+
+    return null;
+}
+
 function FileStatus({inputFile}: { inputFile: string }) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState(inputFile || "");
@@ -45,10 +78,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
         sha256: ""
     });
     const [safety, setSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
-
-    const API_KEY = String(useAppConfig().fileCheckerApiKey);
-    const API_URL = `https://api.metadefender.com/v4/file`;
-    const HASH_URL = "https://api.metadefender.com/v4/hash";
 
     const setFileState = async (file: File) => {
         setSelectedFile(file);
@@ -67,7 +96,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
         const file = event.target.files?.[0];
 
         if (file) {
-            setSelectedFile(file);
+            setFileState(file);
         }
     };
 
@@ -89,34 +118,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
         event.stopPropagation();
     };
 
-    async function checkFileByHash(file: File): Promise<any | null> {
-        let sha256Hash: string;
-
-        try {
-            sha256Hash = await calculateSHA256(file);
-        } catch (error) {
-            console.error("Failed to calculate hash:", error);
-            return null;
-        }
-
-        try {
-            const res = await fetch(`${HASH_URL}/${sha256Hash}`, {
-                method: "GET",
-                headers: {
-                    'apikey': API_KEY,
-                }
-            });
-
-            if (res.ok) {
-                return await res.json();
-            }
-        } catch (error) {
-            console.error("Error while getting file scan results by hash:", error);
-        }
-
-        return null;
-    }
-
     const FileChecker = async () => {
         if (!selectedFile) return;
 
@@ -134,7 +135,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 formData.append('file', selectedFile);
 
                 // ikelia faila skenavimui
-                const uploadResponse = await fetch(API_URL, {
+                const uploadResponse = await fetch(API_URL + FILE_ENDPOINT, {
                     method: 'POST',
                     headers: {
                         'apikey': API_KEY
@@ -165,7 +166,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
         let attempts = 0;
         const maxAttempts = 12;
 
-        const DATA_URL = API_URL + '/' + dataId;
+        const DATA_URL = API_URL + FILE_ENDPOINT + '/' + dataId;
 
         const checkResult = async () => {
             try {
