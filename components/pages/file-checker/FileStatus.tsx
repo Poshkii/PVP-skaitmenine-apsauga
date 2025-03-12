@@ -72,10 +72,10 @@ function FileStatus({inputFile}: { inputFile: string }) {
     const [fileName, setFileName] = useState(inputFile || "");
     const [result, setResult] = useState("");
     const [isChecking, setIsChecking] = useState(false);
-    const [hashValues, setHashValues] = useState({
-        md5: "",
-        sha1: "",
-        sha256: ""
+    const [params, setParams] = useState({
+        time: 0,
+        scan_results_all: "",
+        size: 0,
     });
     const [safety, setSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
 
@@ -84,10 +84,10 @@ function FileStatus({inputFile}: { inputFile: string }) {
         setFileName(file.name);
         setSafety("unknown");
         setResult("");
-        setHashValues({
-            md5: "",
-            sha1: "",
-            sha256: ""
+        setParams({
+            time: 0,
+            scan_results_all: "",
+            size: 0,
         });
     }
 
@@ -222,15 +222,13 @@ function FileStatus({inputFile}: { inputFile: string }) {
             const totalEngines = scanResults.total_avs || 1;
 
             if (data.file_info) {
-                setHashValues({
-                    md5: data.file_info.md5 || "",
-                    sha1: data.file_info.sha1 || "",
-                    sha256: data.file_info.sha256 || ""
+                setParams ({
+                    time: scanResults.total_time || 0,
+                    scan_results_all: scanResults.scan_all_result_a || "",
+                    size: data.file_info.file_size || 0,
                 });
             }
 
-            // esant poreikiui butu galima prideti arba pakeisti su
-            // severity_index, severity, threatLevel ir verdict API parametrais
             if (detectedCount > 0) {
                 setSafety("unsafe");
                 setResult(`Aptikta grėsmių: ${detectedCount} iš ${totalEngines} saugos variklių.`);
@@ -249,6 +247,21 @@ function FileStatus({inputFile}: { inputFile: string }) {
             setFileName(inputFile);
         }
     }, [inputFile]);
+
+    const formatFileSize = (bytes: number) => {
+        if (bytes < 1024) {
+          return bytes + " bytes";
+        } 
+        else if (bytes < 1024 * 1024) {
+          return (bytes / 1024).toFixed(2) + " KB";
+        } 
+        else if (bytes < 1024 * 1024 * 1024) {
+          return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+        } 
+        else {
+          return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+        }
+      }
 
     return (
         <>
@@ -339,48 +352,48 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             <div>{result}</div>
                         </div>
 
-                        {(hashValues.md5 || hashValues.sha1 || hashValues.sha256) && (
+                        {(params.time || params.scan_results_all || params.size) && (
                             <div style={{
                                 backgroundColor: "#374151",
                                 padding: "0.75rem",
                                 borderRadius: "8px",
                                 color: "white"
                             }}>
-                                <h3 style={{marginBottom: "0.5rem", fontSize: "1rem"}}>Maišos reikšmės:</h3>
+                                <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Papildoma informacija:</h3>
                                 <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
-                                    {hashValues.md5 && (
+                                    {params.time && (
                                         <div>
-                                            <span style={{fontWeight: "bold"}}>MD5:</span>
+                                            <span style={{fontWeight: "bold"}}>Skenavimo laikas:</span>
                                             <span style={{
                                                 display: "block",
                                                 wordBreak: "break-all",
                                                 overflowWrap: "break-word"
                                             }}>
-											{hashValues.md5}
+											{params.time / 1000 + ' s'}
 										</span>
                                         </div>
                                     )}
-                                    {hashValues.sha1 && (
+                                    {params.scan_results_all && (
                                         <div>
-                                            <span style={{fontWeight: "bold"}}>SHA-1:</span>
+                                            <span style={{fontWeight: "bold"}}>Antivirusinių verdiktas:</span>
                                             <span style={{
                                                 display: "block",
                                                 wordBreak: "break-all",
                                                 overflowWrap: "break-word"
                                             }}>
-											{hashValues.sha1}
+											{params.scan_results_all}
 										</span>
                                         </div>
                                     )}
-                                    {hashValues.sha256 && (
+                                    {params.size && (
                                         <div>
-                                            <span style={{fontWeight: "bold"}}>SHA-256:</span>
+                                            <span style={{fontWeight: "bold"}}>Failo dydis:</span>
                                             <span style={{
                                                 display: "block",
                                                 wordBreak: "break-all",
                                                 overflowWrap: "break-word"
                                             }}>
-											{hashValues.sha256}
+											{formatFileSize(params.size)}
 										</span>
                                         </div>
                                     )}
