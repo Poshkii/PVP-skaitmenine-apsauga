@@ -75,9 +75,9 @@ function FileStatus({inputFile}: { inputFile: string }) {
     const [params, setParams] = useState({
         time: 0,
         scan_results_all: "",
-        size: 0,
     });
     const [safety, setSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
+    const [avThreats, setAvThreats] = useState ({});
 
     const setFileState = async (file: File) => {
         setSelectedFile(file);
@@ -87,8 +87,8 @@ function FileStatus({inputFile}: { inputFile: string }) {
         setParams({
             time: 0,
             scan_results_all: "",
-            size: 0,
         });
+        setAvThreats({});
     }
 
     // default reiksmes ikelus faila
@@ -122,7 +122,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
         if (!selectedFile) return;
 
         setIsChecking(true);
-        setResult("Skaičiuojama...");
 
         try {
             const results = await checkFileByHash(selectedFile);
@@ -187,8 +186,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
                         processApiResponse(data);
                         return true;
                     }
-
-                    setResult(`Tikrinama... ${data.scan_results?.progress_percentage}%`);
                 }
 
                 return false;
@@ -215,6 +212,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
 
     const processApiResponse = (data: any) => {
         const scanResults = data.scan_results;
+        const scanDetails = data.scan_results.scan_details;
 
         if (scanResults) {
             // skenavimo "varikliu" kiekis gaunamas
@@ -225,8 +223,11 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 setParams ({
                     time: scanResults.total_time || 0,
                     scan_results_all: scanResults.scan_all_result_a || "",
-                    size: data.file_info.file_size || 0,
                 });
+            }
+            if (scanDetails) {
+                const threats = extractAVThreats(data);
+                setAvThreats(threats);
             }
 
             if (detectedCount > 0) {
@@ -242,6 +243,23 @@ function FileStatus({inputFile}: { inputFile: string }) {
         }
     };
 
+    const extractAVThreats = (scanData: any): Record<string, string> => {
+        if (!scanData || !scanData.scan_results || !scanData.scan_results.scan_details) {
+            return {};
+        }
+
+        const scanDetails = scanData.scan_results.scan_details;
+        const threats: Record<string, string> = {};
+
+        for (const avName in scanDetails) {
+            if (scanDetails[avName].threat_found) {
+                threats[avName] = scanDetails[avName].threat_found;
+            }
+        }
+
+        return threats;
+    }
+
     useEffect(() => {
         if (inputFile) {
             setFileName(inputFile);
@@ -250,7 +268,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
 
     const formatFileSize = (bytes: number) => {
         if (bytes < 1024) {
-          return bytes + " bytes";
+          return bytes + " B";
         } 
         else if (bytes < 1024 * 1024) {
           return (bytes / 1024).toFixed(2) + " KB";
@@ -266,8 +284,8 @@ function FileStatus({inputFile}: { inputFile: string }) {
     return (
         <>
             <div style={{
-                flexDirection: "column",
-                maxHeight: "calc(100vh - 100px)",
+                //flexDirection: "column",
+                maxHeight: "calc(100vh - 70px)",
                 overflowY: "auto"
             }}
             >
@@ -332,10 +350,16 @@ function FileStatus({inputFile}: { inputFile: string }) {
                         cursor: !selectedFile || isChecking ? "not-allowed" : "pointer"
                     }}
                 >
-                    {isChecking ? "Tikrinama..." : "Tikrinti failo saugumą"}
+                    
+                    <div >
+                        {isChecking ? "Tikrinama..." : "Tikrinti failo saugumą"}
+                    </div>
                 </button>
+                <div>
+                    {isChecking && <div className="loader" style={{marginTop:'2rem'}}></div>}
+                </div>
 
-                {result && (
+                {!isChecking && result && (
                     <div style={{margin: "1rem auto", width: "90%"}}>
                         <div style={{
                             padding: "0.75rem",
@@ -350,9 +374,12 @@ function FileStatus({inputFile}: { inputFile: string }) {
                                         ""
                             }</div>
                             <div>{result}</div>
+                            { params.time > 0 && (
+                                <div>Skenavimas užtruko { params.time / 1000 + ' s'}</div>
+                            )}
                         </div>
 
-                        {(params.time || params.scan_results_all || params.size) && (
+                        {(params.scan_results_all && Object.entries(avThreats).length > 0) && (
                             <div style={{
                                 backgroundColor: "#374151",
                                 padding: "0.75rem",
@@ -361,42 +388,20 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             }}>
                                 <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Papildoma informacija:</h3>
                                 <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
-                                    {params.time && (
-                                        <div>
-                                            <span style={{fontWeight: "bold"}}>Skenavimo laikas:</span>
-                                            <span style={{
-                                                display: "block",
-                                                wordBreak: "break-all",
-                                                overflowWrap: "break-word"
-                                            }}>
-											{params.time / 1000 + ' s'}
-										</span>
-                                        </div>
-                                    )}
                                     {params.scan_results_all && (
-                                        <div>
-                                            <span style={{fontWeight: "bold"}}>Antivirusinių verdiktas:</span>
-                                            <span style={{
-                                                display: "block",
-                                                wordBreak: "break-all",
-                                                overflowWrap: "break-word"
-                                            }}>
-											{params.scan_results_all}
-										</span>
+                                        <div style={{padding: '1rem 0'}}>
+                                            <span style={{fontWeight: 'bold'}}>Bendras antivirusinių verdiktas: </span>
+											<span>{params.scan_results_all}</span>
                                         </div>
                                     )}
-                                    {params.size && (
-                                        <div>
-                                            <span style={{fontWeight: "bold"}}>Failo dydis:</span>
-                                            <span style={{
-                                                display: "block",
-                                                wordBreak: "break-all",
-                                                overflowWrap: "break-word"
-                                            }}>
-											{formatFileSize(params.size)}
-										</span>
+                                    {Object.entries(avThreats).map(([key, value], index, array) => (
+                                        <div key={key}>
+                                            <strong>{key}:</strong>
+                                            <br />
+                                            {typeof value === "string" ? value : JSON.stringify(value)}
+                                            {index < array.length - 1 && <hr style={{ border: "1px solidrgb(123, 127, 135)", margin: "0.5rem 0" }} />}
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
                             </div>
                         )}
