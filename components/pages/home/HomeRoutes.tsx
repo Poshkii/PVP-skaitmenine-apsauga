@@ -4,7 +4,7 @@ import FeatureList from "@/components/pages/home/FeatureList.tsx";
 import Settings from "@/components/pages/settings/Settings.tsx";
 import URLChecker from "../url-checker/URLChecker";
 import EmailChecker from "../email-checker/EmailChecker";
-import FileChecker from "../file-checker/FileChecker";
+import FileChecker from "@/components/pages/file-checker/FileChecker";
 
 
 function HomeRoutes(){

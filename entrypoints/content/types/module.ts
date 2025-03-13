@@ -4,6 +4,7 @@ import EventEmitter from "eventemitter3";
 export enum ModuleId {
     PasswordChecker,
     EmailChecker,
+    FileChecker,
 }
 
 export abstract class Module extends EventEmitter {
