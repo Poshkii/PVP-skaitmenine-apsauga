@@ -1,5 +1,6 @@
 import {Upload} from "lucide-react";
 import {useEffect, useState} from "react";
+import SparkMD5 from 'spark-md5';
 
 const API_KEY = String(useAppConfig().fileCheckerApiKey);
 const API_URL = "https://api.metadefender.com/v4";
@@ -39,29 +40,132 @@ async function calculateSHA256(file: File): Promise<string> {
     });
 };
 
+async function calculateSHA1(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                if (!event.target?.result) {
+                    throw new Error("Failed to read file");
+                }
+                const arrayBuffer = event.target.result as ArrayBuffer;
+                const hashBuffer = await crypto.subtle.digest('SHA-1', arrayBuffer);
+
+                // convert the hash to a hex string
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray
+                    .map(byte => byte.toString(16).padStart(2, '0'))
+                    .join('');
+                resolve(hashHex);
+            } catch (error) {
+                reject(error);
+            }
+        };
+        reader.onerror = () => {
+            reject(new Error("Error reading file"));
+        };
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+async function calculateMD5(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                if (!event.target?.result) {
+                    throw new Error("Failed to read file");
+                }
+
+                const arrayBuffer = event.target.result as ArrayBuffer;
+                const spark = new SparkMD5.ArrayBuffer();
+                spark.append(arrayBuffer);
+                const hashHex = spark.end();
+                resolve(hashHex);
+                
+            } catch (error) {
+                reject(error);
+            }
+        };
+        reader.onerror = () => {
+            reject(new Error("Error reading file"));
+        };
+        reader.readAsArrayBuffer(file);
+    });
+}
+
 async function checkFileByHash(file: File): Promise<any | null> {
     let sha256Hash: string;
+    let sha1Hash: string;
+    let md5Hash: string;
 
     try {
         sha256Hash = await calculateSHA256(file);
     } catch (error) {
-        console.error("Failed to calculate hash:", error);
-        return null;
+        console.error("Failed to calculate sha256:", error);
+        sha256Hash = "";
+    }
+
+    if (sha256Hash) {
+        try {
+            const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha256Hash}`, {
+                method: "GET",
+                headers: {
+                    'apikey': API_KEY,
+                }
+            });
+            if (res.ok) {
+                return await res.json();
+            }
+        } catch (error) {
+            console.error("Error while checking SHA-256 hash:", error);
+        }
     }
 
     try {
-        const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha256Hash}`, {
-            method: "GET",
-            headers: {
-                'apikey': API_KEY,
-            }
-        });
-
-        if (res.ok) {
-            return await res.json();
-        }
+        sha1Hash = await calculateSHA1(file);
     } catch (error) {
-        console.error("Error while getting file scan results by hash:", error);
+        console.error("Failed to calculate sha1:", error);
+        sha1Hash = "";
+    }
+
+    if (sha1Hash) {
+        try {
+            const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha1Hash}`, {
+                method: "GET",
+                headers: {
+                    'apikey': API_KEY,
+                }
+            });
+            if (res.ok) {
+                return await res.json();
+            }
+        } catch (error) {
+            console.error("Error while checking SHA-1 hash:", error);
+        }
+    }
+
+    try {
+        md5Hash = await calculateMD5(file);
+    } catch (error) {
+        console.error("Failed to calculate sha1:", error);
+        md5Hash = "";
+    }
+
+    if (md5Hash) {
+        try {
+            const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${md5Hash}`, {
+                method: "GET",
+                headers: {
+                    'apikey': API_KEY,
+                }
+            });
+            if (res.ok) {
+                return await res.json();
+            }
+        } catch (error) {
+            console.error("Error while checking MD5 hash:", error);
+        }
     }
 
     return null;
@@ -120,7 +224,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
 
     const FileChecker = async () => {
         if (!selectedFile) return;
-
         setIsChecking(true);
 
         try {
@@ -265,21 +368,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
             setFileName(inputFile);
         }
     }, [inputFile]);
-
-    const formatFileSize = (bytes: number) => {
-        if (bytes < 1024) {
-          return bytes + " B";
-        } 
-        else if (bytes < 1024 * 1024) {
-          return (bytes / 1024).toFixed(2) + " KB";
-        } 
-        else if (bytes < 1024 * 1024 * 1024) {
-          return (bytes / (1024 * 1024)).toFixed(2) + " MB";
-        } 
-        else {
-          return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
-        }
-      }
 
     return (
         <>
