@@ -100,6 +100,11 @@ ul li {
   background-color: #4b5563; /* Slightly lighter gray for hover effect */
 }
 
+.slide-image {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
 .menu-name {
   font-size: 16px;
   font-weight: 600;
@@ -123,7 +128,6 @@ ul li {
 }
 .bottom-slide-buttons {
   width: 100%;
-  padding: 16px;
   display: flex;
   justify-content: space-around;
   background-color: #374151; /* Tailwind bg-gray-700 */
