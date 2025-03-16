@@ -5,12 +5,14 @@ import Settings from "@/components/pages/settings/Settings.tsx";
 import URLChecker from "../url-checker/URLChecker";
 import EmailChecker from "../email-checker/EmailChecker";
 import FileChecker from "@/components/pages/file-checker/FileChecker";
+import InfoPage from "../info-page/InfoPage";
 
 
 function HomeRoutes(){
     return (
         <Routes>
             <Route path="/" element={<FeatureList />}></Route>
+            <Route path="/info-page" element={<InfoPage />}></Route>
             <Route path="/password-checker/:password?" element={<PasswordChecker />}/>
             <Route path="/url-checker/:url?" element={<URLChecker />}/>
             <Route path="/file-checker/:file?" element={<FileChecker />}/>

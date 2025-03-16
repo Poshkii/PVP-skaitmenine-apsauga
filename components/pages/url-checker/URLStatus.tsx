@@ -167,7 +167,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 />
                 <button 
                     onClick={UrlChecker}
-                    style={{ width: "200px", height: "40px", backgroundColor: "#4b5563", color: "white", border: "none", borderRadius: "8px", outline: "none", transition: "background-color 0.2s ease-in-out", marginTop: "0.5rem" }}
+                    disabled={!url || loading}
+                    style={{ width: "200px", height: "40px", backgroundColor: "#4b5563", color: "white", border: "none", 
+                        borderRadius: "8px", outline: "none", transition: "background-color 0.2s ease-in-out", 
+                        marginTop: "0.5rem", cursor: !url || loading ? "not-allowed" : "pointer" }}
                 >   
                     Tikrinti
                 </button>

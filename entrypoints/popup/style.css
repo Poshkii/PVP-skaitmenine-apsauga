@@ -56,6 +56,22 @@ ul li {
   border-radius: 8px;
   outline: none;
 }
+/* Info button styles in the search bar */
+.info-button {
+  margin-left: 8px;
+  padding: 7px 12px;
+  background-color: #4b5563;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-items: center;
+}
+
+.info-button:hover {
+  background-color: #6b7280; /* Tailwind bg-gray-900 */
+}
 
 /* Middle Menu Section */
 .middle-menu {
