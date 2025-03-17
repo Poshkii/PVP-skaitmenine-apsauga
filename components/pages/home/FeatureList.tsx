@@ -1,5 +1,7 @@
 import {useNavigate} from "react-router";
 import {Search} from "lucide-react";
+import { Info } from 'lucide-react';
+
 
 // TODO: define routes in a more global file
 const meniu = [
@@ -23,6 +25,7 @@ function FeatureList(){
                     placeholder="Search"
                     className="search-input"
                 />
+                <button onClick={() => navigate("/info-page")} className="info-button"><Info/></button>
         </div>
         {/* Middle Menu Section */}
         <div className="middle-menu">
