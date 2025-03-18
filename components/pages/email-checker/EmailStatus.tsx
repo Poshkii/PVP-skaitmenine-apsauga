@@ -35,6 +35,8 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                     : `Rasti ${data.found} nutekėjimai!`;
                 setResult(pluralizedText);
                 setBreachDetails({ sources: data.sources, fields: data.fields });
+                console.log("API response sources:", data.sources);
+                console.log("Rendering breachDetails.sources:", breachDetails.sources);
             } else {
                 setResult("El. paštas saugus!");
             }
@@ -96,7 +98,8 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                                 padding: "1rem",
                                 borderRadius: "8px",
                                 color: "white",
-                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                paddingBottom: "0.1rem"
                             }}>
                                 <h3 style={{ margin: 0, borderBottom: "2px solid #e5e7eb", paddingBottom: "5px" }}>
                                     Nutekinta informacija:
@@ -115,7 +118,8 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                                 padding: "1rem",
                                 borderRadius: "8px",
                                 color: "white",
-                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                paddingBottom: "3.5rem"
                             }}>
                                 <h3 style={{ margin: 0, borderBottom: "2px solid #e5e7eb", paddingBottom: "5px" }}>
                                     Nutekėjimo šaltiniai:
