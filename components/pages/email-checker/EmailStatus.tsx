@@ -5,6 +5,13 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
     const [loading, setLoading] = useState(false);
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const [breachDetails, setBreachDetails] = useState<{ sources: any[], fields: string[] }>({ sources: [], fields: [] });
+
+    const getResultColor = () => {
+        if (breachDetails.sources.length === 0) return { color: "green"}; 
+        if (breachDetails.sources.length <= 3) return { color: "orange"}; 
+        return { color: "red"}; 
+    };
 
     const EmailCheck = async () => {
 
@@ -21,7 +28,13 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
             const data = await response.json();
     
             if (data.success && data.found > 0) {
-                setResult("El. paštas buvo nutekintas!");
+                const pluralizedText = data.found % 10 === 1 && data.found % 100 !== 11 
+                    ? `Rastas ${data.found} nutekėjimas!` 
+                    : (data.found < 21 && data.found > 9) || data.found % 10 == 0 
+                    ? `Rasta ${data.found} nutekėjimų` 
+                    : `Rasti ${data.found} nutekėjimai!`;
+                setResult(pluralizedText);
+                setBreachDetails({ sources: data.sources, fields: data.fields });
             } else {
                 setResult("El. paštas saugus!");
             }
@@ -61,9 +74,61 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                         >   
                         Tikrinti
                     </button>
-                    <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white" }}>
-                        {result}                        
-                    </div>
+                    
+                    {/* STATUS CARD */}
+                        {breachDetails.fields.length > 0 && (
+                            <div style={{
+                                padding: "1rem",
+                                borderRadius: "8px",
+                                color: getResultColor().color,
+                                fontWeight: "bold",
+                                fontSize: "1.2rem",
+                                textAlign: "center",
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+                            }}>
+                                {result}
+                            </div>
+                        )}
+
+                        {/* LEAKED INFORMATION CARD */}
+                        {breachDetails.fields.length > 0 && (
+                            <div style={{
+                                padding: "1rem",
+                                borderRadius: "8px",
+                                color: "white",
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+                            }}>
+                                <h3 style={{ margin: 0, borderBottom: "2px solid #e5e7eb", paddingBottom: "5px" }}>
+                                    Nutekinta informacija:
+                                </h3>
+                                <ul style={{ paddingLeft: "1rem", marginTop: "0.5rem" }}>
+                                    {breachDetails.fields.map((field, index) => (
+                                        <li key={index} style={{ padding: "5px 0" }}>{field}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* BREACH SOURCES CARD */}
+                        {breachDetails.sources.length > 0 && (
+                            <div style={{
+                                padding: "1rem",
+                                borderRadius: "8px",
+                                color: "white",
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+                            }}>
+                                <h3 style={{ margin: 0, borderBottom: "2px solid #e5e7eb", paddingBottom: "5px" }}>
+                                    Nutekėjimo šaltiniai:
+                                </h3>
+                                <ul style={{ paddingLeft: "1rem", marginTop: "0.5rem" }}>
+                                    {breachDetails.sources.map((source, index) => (
+                                        <li key={index} style={{ padding: "5px 0" }}>
+                                            <strong>{source.name}</strong> <span style={{ color: "#6b7280" }}>({source.date})</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     <div style={{ paddingTop: "0.8rem"}}>
                         {loading && <div className="loader"></div>}
                     </div>                    
