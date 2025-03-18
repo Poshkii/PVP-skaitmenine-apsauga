@@ -39,6 +39,7 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                 console.log("Rendering breachDetails.sources:", breachDetails.sources);
             } else {
                 setResult("El. paštas saugus!");
+                setBreachDetails({ sources: [], fields: [] });
             }
         } catch (error) {
             console.error("API klaida:", error);
@@ -78,7 +79,7 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                     </button>
                     
                     {/* STATUS CARD */}
-                        {breachDetails.fields.length > 0 && (
+                        {result.length > 0 && (
                             <div style={{
                                 padding: "1rem",
                                 borderRadius: "8px",
