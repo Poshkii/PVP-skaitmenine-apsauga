@@ -1,4 +1,4 @@
-import {Upload} from "lucide-react";
+import {Upload, Link} from "lucide-react";
 import {useEffect, useState} from "react";
 import SparkMD5 from 'spark-md5';
 
@@ -6,6 +6,7 @@ const API_KEY = String(useAppConfig().fileCheckerApiKey);
 const API_URL = "https://api.metadefender.com/v4";
 const HASH_ENDPOINT = "/hash";
 const FILE_ENDPOINT = "/file";
+const URL_ENDPOINT = "/sandbox";
 
 async function calculateSHA256(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -171,6 +172,67 @@ async function checkFileByHash(file: File): Promise<any | null> {
     return null;
 }
 
+async function checkUrlWithSandbox(url: string): Promise<any> {
+    try {
+        const submitResponse = await fetch("https://api.metadefender.com/v4/sandbox", {
+            method: "POST",
+            headers: {
+                "apikey": API_KEY,
+                "Content-Type": "application/json"  
+            },
+            body: JSON.stringify({ url: url }) 
+        });
+        
+        if (!submitResponse.ok) {
+            const errorData = await submitResponse.json();
+            throw new Error(errorData.error?.messages || 'Failed to submit URL for scanning');
+            
+        }
+        
+        const submitData = await submitResponse.json();
+        const dataId = submitData.sandbox_id;
+        
+        // Poll for results
+        return await pollForUrlResults(dataId);
+    } catch (error) {
+        console.error("Error checking URL:", error);
+        throw error;
+    }
+}
+
+async function pollForUrlResults(dataId: string): Promise<any> {
+    let attempts = 0;
+    const maxAttempts = 12;
+    
+    const URL_RESULT_ENDPOINT = API_URL + URL_ENDPOINT + '/' + dataId;
+    
+    while (attempts < maxAttempts) {
+        try {
+            const response = await fetch(URL_RESULT_ENDPOINT, {
+                method: 'GET',
+                headers: {
+                    'apikey': API_KEY
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data.final_verdict) {
+                    return data;
+                }
+            }
+        } catch (error) {
+            console.error("Error polling for URL results:", error);
+        }
+        
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 5000)); 
+    }
+    
+    throw new Error("URL check timed out. Please try again later.");
+}
+
 function FileStatus({inputFile}: { inputFile: string }) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState(inputFile || "");
@@ -182,6 +244,12 @@ function FileStatus({inputFile}: { inputFile: string }) {
     });
     const [safety, setSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
     const [avThreats, setAvThreats] = useState ({});
+    
+    const [urlToCheck, setUrlToCheck] = useState("");
+    const [isCheckingUrl, setIsCheckingUrl] = useState(false);
+    const [urlResult, setUrlResult] = useState("");
+    const [urlSafety, setUrlSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
+    const [activeTab, setActiveTab] = useState<"file" | "url">("file");
 
     const setFileState = async (file: File) => {
         setSelectedFile(file);
@@ -260,6 +328,24 @@ function FileStatus({inputFile}: { inputFile: string }) {
             setSafety("unknown");
         } finally {
             setIsChecking(false);
+        }
+    };
+
+    const UrlChecker = async () => {
+        if (!urlToCheck) return;
+        
+        setIsCheckingUrl(true);
+        setUrlSafety("unknown");
+        setUrlResult("");
+        
+        try {
+            const results = await checkUrlWithSandbox(urlToCheck);
+            processUrlApiResponse(results);
+        } catch (error) {
+            setUrlResult(`Klaida: ${error instanceof Error ? error.message : 'Nepavyko patikrinti failo'}`);
+            setUrlSafety("unknown");
+        } finally {
+            setIsCheckingUrl(false);
         }
     };
 
@@ -346,6 +432,28 @@ function FileStatus({inputFile}: { inputFile: string }) {
         }
     };
 
+    const processUrlApiResponse = (data: any) => {
+        const scanResults = data.final_verdict;
+        
+        if (scanResults) {
+            if (scanResults.threatLevel > 0 && scanResults.verdict === "MALICIOUS") {
+                setUrlSafety("unsafe");
+                setUrlResult(`Verdiktas: ${scanResults.verdict} \n 
+                             Grėsmės lygis: ${scanResults.threatLevel} \n 
+                             Pasitikėjimas: ${scanResults.confidence} \n`);
+            } else {
+                setUrlSafety("safe");
+                //setUrlResult(`URL patikrintas. Grėsmių nerasta.`);
+                setUrlResult(`Verdiktas: ${scanResults.verdict} \n 
+                    Grėsmės lygis: ${scanResults.threatLevel} \n 
+                    Pasitikėjimas: ${scanResults.confidence} \n`);
+            }
+        } else {
+            setUrlSafety("unknown");
+            setUrlResult("Nepavyko nustatyti failo saugumo.");
+        }
+    };
+
     const extractAVThreats = (scanData: any): Record<string, string> => {
         if (!scanData || !scanData.scan_results || !scanData.scan_results.scan_details) {
             return {};
@@ -372,134 +480,239 @@ function FileStatus({inputFile}: { inputFile: string }) {
     return (
         <>
             <div style={{
-                //flexDirection: "column",
                 maxHeight: "calc(100vh - 70px)",
                 overflowY: "auto"
-            }}
-            >
-                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>Patikrinkite failo saugumą</h2>
-                <div style={{margin: "1rem auto", width: "90%"}}>
-                    <label
-                        htmlFor="file-upload"
+            }}>
+                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>Patikrinkite saugumą</h2>
+                
+                {/* Tab'ai testinei aplinkai */}
+                <div style={{
+                    display: "flex", 
+                    justifyContent: "center", 
+                    margin: "1rem auto",
+                    width: "90%"
+                }}>
+                    <button 
+                        onClick={() => setActiveTab("file")} 
                         style={{
-                            display: "block",
-                            backgroundColor: "#374151",
+                            backgroundColor: activeTab === "file" ? "#4b5563" : "#374151",
                             color: "white",
-                            padding: "1rem",
-                            borderRadius: "8px",
-                            textAlign: "center",
+                            border: "none",
+                            borderRadius: "8px 0 0 8px",
+                            padding: "0.5rem 1rem",
                             cursor: "pointer",
-                            border: "2px dashed #6b7280"
+                            width: "50%"
                         }}
-                        onDragOver={preventDefaults}
-                        onDragEnter={preventDefaults}
-                        onDragLeave={preventDefaults}
-                        onDrop={dropZoneUpload}
                     >
-                        <Upload/>
-                        <div>Pasirinkite arba nutempkite failą čia</div>
-                        {fileName && (
-                            <div style={{
-                                maxWidth: "90%",
-                                marginTop: "0.5rem",
-                                fontSize: "1rem",
-                                fontWeight: 'bold',
-                                overflow: "hidden",
-                                whiteSpace: "nowrap",
-                                textOverflow: "ellipsis",
-                                display: "inline-block"
-                            }}
-                                 title={fileName}>
-
-                                Pasirinktas: <br></br> {fileName}
-                            </div>
-                        )}
-                    </label>
-                    <input
-                        id="file-upload"
-                        type="file"
-                        onChange={fileUpload}
-                        style={{display: "none"}}
-                    />
-                </div>
-
-                <button
-                    onClick={FileChecker}
-                    disabled={!selectedFile || isChecking}
-                    style={{
-                        width: "60%",
-                        height: "40px",
-                        margin: "auto",
-                        backgroundColor: !selectedFile || isChecking ? "#6b7280" : "#4b5563",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "8px",
-                        outline: "none",
-                        cursor: !selectedFile || isChecking ? "not-allowed" : "pointer"
-                    }}
-                >
-                    
-                    <div >
-                        {isChecking ? "Tikrinama..." : "Tikrinti failo saugumą"}
-                    </div>
-                </button>
-                <div>
-                    {isChecking && <div className="loader" style={{marginTop:'2rem'}}></div>}
-                </div>
-
-                {!isChecking && result && (
-                    <div style={{margin: "1rem auto", width: "90%"}}>
-                        <div style={{
-                            padding: "0.75rem",
-                            borderRadius: "8px",
-                            backgroundColor: safety === "safe" ? "#065f46" : safety === "unsafe" ? "#7f1d1d" : "#374151",
+                        Failas
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab("url")} 
+                        style={{
+                            backgroundColor: activeTab === "url" ? "#4b5563" : "#374151",
                             color: "white",
-                            marginBottom: "1rem"
-                        }}>
-                            <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Rezultatas: {
-                                safety === "safe" ? "Failas saugus" :
-                                    safety === "unsafe" ? "Failas nesaugus" :
-                                        ""
-                            }</div>
-                            <div>{result}</div>
-                            { params.time > 0 && (
-                                <div>Skenavimas užtruko { params.time / 1000 + ' s'}</div>
-                            )}
+                            border: "none",
+                            borderRadius: "0 8px 8px 0",
+                            padding: "0.5rem 1rem",
+                            cursor: "pointer",
+                            width: "50%"
+                        }}
+                    >
+                        Failas <br></br> (be download)
+                    </button>
+                </div>
+                
+
+                {activeTab === "file" && (
+                    <>
+                        <div style={{margin: "1rem auto", width: "90%"}}>
+                            <label
+                                htmlFor="file-upload"
+                                style={{
+                                    display: "block",
+                                    backgroundColor: "#374151",
+                                    color: "white",
+                                    padding: "1rem",
+                                    borderRadius: "8px",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                    border: "2px dashed #6b7280"
+                                }}
+                                onDragOver={preventDefaults}
+                                onDragEnter={preventDefaults}
+                                onDragLeave={preventDefaults}
+                                onDrop={dropZoneUpload}
+                            >
+                                <Upload/>
+                                <div>Pasirinkite arba nutempkite failą čia</div>
+                                {fileName && (
+                                    <div style={{
+                                        maxWidth: "90%",
+                                        marginTop: "0.5rem",
+                                        fontSize: "1rem",
+                                        fontWeight: 'bold',
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                        display: "inline-block"
+                                    }}
+                                        title={fileName}>
+
+                                        Pasirinktas: <br></br> {fileName}
+                                    </div>
+                                )}
+                            </label>
+                            <input
+                                id="file-upload"
+                                type="file"
+                                onChange={fileUpload}
+                                style={{display: "none"}}
+                            />
                         </div>
 
-                        {(params.scan_results_all && Object.entries(avThreats).length > 0) && (
-                            <div style={{
-                                backgroundColor: "#374151",
-                                padding: "0.75rem",
+                        <button
+                            onClick={FileChecker}
+                            disabled={!selectedFile || isChecking}
+                            style={{
+                                width: "60%",
+                                height: "40px",
+                                margin: "auto",
+                                backgroundColor: !selectedFile || isChecking ? "#6b7280" : "#4b5563",
+                                color: "white",
+                                border: "none",
                                 borderRadius: "8px",
-                                color: "white"
-                            }}>
-                                <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Papildoma informacija:</h3>
-                                <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
-                                    {params.scan_results_all && (
-                                        <div style={{padding: '1rem 0'}}>
-                                            <span style={{fontWeight: 'bold'}}>Bendras antivirusinių verdiktas: </span>
-											<span>{params.scan_results_all}</span>
-                                        </div>
+                                outline: "none",
+                                cursor: !selectedFile || isChecking ? "not-allowed" : "pointer"
+                            }}
+                        >
+                            <div>
+                                {isChecking ? "Tikrinama..." : "Tikrinti failo saugumą"}
+                            </div>
+                        </button>
+                        <div>
+                            {isChecking && <div className="loader" style={{marginTop:'2rem'}}></div>}
+                        </div>
+
+                        {!isChecking && result && (
+                            <div style={{margin: "1rem auto", width: "90%"}}>
+                                <div style={{
+                                    padding: "0.75rem",
+                                    borderRadius: "8px",
+                                    backgroundColor: safety === "safe" ? "#065f46" : safety === "unsafe" ? "#7f1d1d" : "#374151",
+                                    color: "white",
+                                    marginBottom: "1rem"
+                                }}>
+                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Rezultatas: {
+                                        safety === "safe" ? "Failas saugus" :
+                                            safety === "unsafe" ? "Failas nesaugus" :
+                                                ""
+                                    }</div>
+                                    <div>{result}</div>
+                                    { params.time > 0 && (
+                                        <div>Skenavimas užtruko { params.time / 1000 + ' s'}</div>
                                     )}
-                                    {Object.entries(avThreats).map(([key, value], index, array) => (
-                                        <div key={key}>
-                                            <strong>{key}:</strong>
-                                            <br />
-                                            {typeof value === "string" ? value : JSON.stringify(value)}
-                                            {index < array.length - 1 && <hr style={{ border: "1px solidrgb(123, 127, 135)", margin: "0.5rem 0" }} />}
+                                </div>
+
+                                {(params.scan_results_all && Object.entries(avThreats).length > 0) && (
+                                    <div style={{
+                                        backgroundColor: "#374151",
+                                        padding: "0.75rem",
+                                        borderRadius: "8px",
+                                        color: "white"
+                                    }}>
+                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Papildoma informacija:</h3>
+                                        <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
+                                            {params.scan_results_all && (
+                                                <div style={{padding: '1rem 0'}}>
+                                                    <span style={{fontWeight: 'bold'}}>Bendras antivirusinių verdiktas: </span>
+                                                    <span>{params.scan_results_all}</span>
+                                                </div>
+                                            )}
+                                            {Object.entries(avThreats).map(([key, value], index, array) => (
+                                                <div key={key}>
+                                                    <strong>{key}:</strong>
+                                                    <br />
+                                                    {typeof value === "string" ? value : JSON.stringify(value)}
+                                                    {index < array.length - 1 && <hr style={{ border: "1px solidrgb(123, 127, 135)", margin: "0.5rem 0" }} />}
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
+                
+
+                {activeTab === "url" && (
+                    <>
+                        <div style={{margin: "1rem auto", width: "90%"}}>
+                        <div style={{marginBottom: "1rem", color: "white"}}>Įveskite failo URL adresą patikrinimui</div>
+                                <input
+                                    type="text"
+                                    value={urlToCheck}
+                                    onChange={(e) => setUrlToCheck(e.target.value)}
+                                    placeholder="https://example.com"
+                                    style={{
+                                        width: "100%",
+                                        padding: "0.75rem",
+                                        borderRadius: "4px",
+                                        border: "1px solid #6b7280",
+                                        backgroundColor: "#1f2937",
+                                        color: "white",
+                                        outline: "none"
+                                    }}
+                                />
+                        </div>
+                        
+                        <button
+                            onClick={UrlChecker}
+                            disabled={!urlToCheck || isCheckingUrl}
+                            style={{
+                                width: "60%",
+                                height: "40px",
+                                margin: "auto",
+                                backgroundColor: !urlToCheck || isCheckingUrl ? "#6b7280" : "#4b5563",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "8px",
+                                outline: "none",
+                                cursor: !urlToCheck || isCheckingUrl ? "not-allowed" : "pointer"
+                            }}
+                        >
+                            <div>
+                                {isCheckingUrl ? "Tikrinama..." : "Tikrinti failo saugumą"}
+                            </div>
+                        </button>
+                        <div>
+                            {isCheckingUrl && <div className="loader" style={{marginTop:'2rem'}}></div>}
+                        </div>
+                        
+                        {!isCheckingUrl && urlResult && (
+                            <div style={{margin: "1rem auto", width: "90%"}}>
+                                <div style={{
+                                    padding: "0.75rem",
+                                    borderRadius: "8px",
+                                    backgroundColor: urlSafety === "safe" ? "#065f46" : urlSafety === "unsafe" ? "#7f1d1d" : "#374151",
+                                    color: "white",
+                                    marginBottom: "1rem"
+                                }}>
+                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Rezultatas: {
+                                        urlSafety === "safe" ? "Failas saugus" :
+                                            urlSafety === "unsafe" ? "Failas nesaugus" :
+                                                ""
+                                    }</div>
+                                    <div>{urlResult}</div>
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </>
                 )}
                 <br/>
             </div>
         </>
     );
 }
-
 
 export default FileStatus;
