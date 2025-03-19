@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {FormEvent, useState} from "react";
 import URLScam from "./URLScam";
 
 function URLStatus({ inputURL }: { inputURL: string }) {
@@ -27,7 +27,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         }
     };
 
-    const UrlChecker = async () => {
+    const UrlChecker = async (e: FormEvent) => {
+        e.preventDefault();
         setShowURLScam(false);
         setLoading(true);
         setResult("🔍 Tikrinama...");
@@ -161,22 +162,25 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         <>
             <div style={{ marginTop: "1em" }}>
                 <h2 style={{ color: "white" }}>Patikrinkite svetainės saugumą</h2>
-                <input
-                    type="text"
-                    placeholder="Įveskite svetainės nuorodą..."
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    style={{ padding: "0.5rem", width: "90%" }}
-                />
-                <button 
-                    onClick={UrlChecker}
-                    disabled={!url || loading}
-                    style={{ width: "200px", height: "40px", backgroundColor: "#4b5563", color: "white", border: "none", 
-                        borderRadius: "8px", outline: "none", transition: "background-color 0.2s ease-in-out", 
-                        marginTop: "0.5rem", cursor: !url || loading ? "not-allowed" : "pointer" }}
-                >   
-                    Tikrinti
-                </button>
+                <form onSubmit={UrlChecker} >
+                    <input
+                        type="text"
+                        placeholder="Įveskite svetainės nuorodą..."
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        style={{ padding: "0.5rem", width: "90%" }}
+                    />
+                    <button
+                        disabled={!url || loading}
+                        type="submit"
+                        style={{ width: "200px", height: "40px", backgroundColor: "#4b5563", color: "white", border: "none",
+                            borderRadius: "8px", outline: "none", transition: "background-color 0.2s ease-in-out",
+                            marginTop: "0.5rem", cursor: !url || loading ? "not-allowed" : "pointer" }}
+                    >
+                        Tikrinti
+                    </button>
+                </form>
+
                 <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white", padding: "5px"}}>
                     {result}
                 </div>
