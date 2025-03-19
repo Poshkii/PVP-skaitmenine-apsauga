@@ -1,5 +1,5 @@
 
-function EmailStatus({ inputEmail } : {inputEmail: string }) {
+function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPage: () => void }) {
     const [email, setEmail] = useState(inputEmail);
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
@@ -77,7 +77,7 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                         >   
                         Tikrinti
                     </button>
-                    
+
                     {/* STATUS CARD */}
                         {result.length > 0 && (
                             <div style={{
@@ -91,6 +91,23 @@ function EmailStatus({ inputEmail } : {inputEmail: string }) {
                             }}>
                                 {result}
                             </div>
+                        )}
+
+                        {breachDetails.fields.length > 0 && (
+                            <button
+                            onClick={switchPage}
+                            style={{
+                                marginTop: "1rem",
+                                padding: "0.5rem 1rem",
+                                backgroundColor: "#4b5563",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "5px",
+                                cursor: "pointer",
+                            }}
+                            >
+                                Ką daryti?
+                            </button>
                         )}
 
                         {/* LEAKED INFORMATION CARD */}
