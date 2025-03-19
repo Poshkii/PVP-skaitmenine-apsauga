@@ -1,10 +1,13 @@
 import { useState } from "react";
+import URLScam from "./URLScam";
 
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
+    const [showURLScam, setShowURLScam] = useState(false);
+    const [scamComponentKey, setScamComponentKey] = useState(0); // Unique key for re-mounting
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
@@ -26,7 +29,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     };
 
     const UrlChecker = async () => {
-
+        setShowURLScam(false);
         setLoading(true);
         setResult("🔍 Tikrinama...");
         
@@ -87,6 +90,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             setResult("❌ Klaida tikrinant URL.");
         } finally {
             setLoading(false);
+            setShowURLScam(true);
         }
     };
 
@@ -182,6 +186,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 </div>
                 <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white", padding: "5px"}}>
                     {debug}
+                </div>
+                <div>
+                    {showURLScam && <URLScam key={scamComponentKey} scamURL={url ?? ''} />}
                 </div>
             </div>
             <br />
