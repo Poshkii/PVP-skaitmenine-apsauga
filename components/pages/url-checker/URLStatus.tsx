@@ -3,6 +3,7 @@ import URLScam from "./URLScam";
 
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
+    const [submittedUrl, setSubmittedUrl] = useState('');
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
@@ -90,6 +91,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             setResult("❌ Klaida tikrinant URL.");
         } finally {
             setLoading(false);
+            setSubmittedUrl(url);
             setShowURLScam(true);
         }
     };
@@ -191,7 +193,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     {debug}
                 </div>
                 <div>
-                    {showURLScam && <URLScam scamURL={url ?? ''} />}
+                    {showURLScam && <URLScam scamURL={submittedUrl} />}
                 </div>
             </div>
             <br />
