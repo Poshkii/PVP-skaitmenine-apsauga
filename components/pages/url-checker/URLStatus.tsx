@@ -7,7 +7,6 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
     const [showURLScam, setShowURLScam] = useState(false);
-    const [scamComponentKey, setScamComponentKey] = useState(0); // Unique key for re-mounting
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
@@ -188,7 +187,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     {debug}
                 </div>
                 <div>
-                    {showURLScam && <URLScam key={scamComponentKey} scamURL={url ?? ''} />}
+                    {showURLScam && <URLScam scamURL={url ?? ''} />}
                 </div>
             </div>
             <br />
