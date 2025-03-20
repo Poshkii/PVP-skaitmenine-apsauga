@@ -67,7 +67,6 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                     borderRadius: "8px",
                     outline: "none",
                     transition: "background-color 0.2s ease-in-out",
-                    marginBottom: "1rem",
                     cursor: email.match(emailPattern) ? "pointer" : "not-allowed"
                 }}
             >
@@ -81,6 +80,24 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             {/* Display result status */}
             <h3 style={{ color: breachData ? "red" : "green" }}>{result}</h3>
 
+            {
+            //Tips button
+            breachData && (
+                <button
+                        onClick={switchPage}
+                        style={{
+                            padding: "0.5rem 1rem",
+                            backgroundColor: "#4b5563",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                        }}
+                    >
+                        Ką daryti?
+                    </button>
+            )
+            }
             {/* Show EmailBreachDetails if breaches are found */}
             {breachData && <EmailBreachDetails data={breachData} />}
         </div>

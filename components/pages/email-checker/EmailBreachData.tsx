@@ -28,13 +28,11 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
     }
 
     // Get risk level
-    const riskScore = data.BreachMetrics.risk[0]?.risk_score ?? "Unknown";
     const riskLabel = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
     const riskColor = riskLabel === "High" ? "red" : riskLabel === "Medium" ? "orange" : "#E6BF00";
-    var risk = "";
+    var risk = "Nežinomas";
 
     riskLabel === "High" ? risk = "Aukštas" : risk = "Vidutinis";
-
 
     return (
         <div style={{ padding: "1rem", maxWidth: "800px", margin: "auto" }}>
@@ -47,7 +45,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
                 color: "white", 
                 fontWeight: "bold"
             }}>
-                📢 Rizikos lygis: {riskScore} ({risk})
+                📢 Rizikos lygis: {risk}
             </div>
 
             {/* Breach List */}
