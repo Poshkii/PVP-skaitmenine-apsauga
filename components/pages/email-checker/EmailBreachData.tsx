@@ -79,7 +79,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
                     <p><strong>Nutekinta informacija:</strong></p>
                     <ul style={{ listStyleType: "disc", textAlign: "left", paddingLeft: "20px" }}>
                         {breach.xposed_data.split(";").map((item, idx) => (
-                            <li key={idx}>{item.trim()}</li>  
+                            <li style={{ padding: "0.05rem" }} key={idx}>{item.trim()}</li>  
                         ))}
                     </ul>
 

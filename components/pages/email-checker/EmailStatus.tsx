@@ -1,6 +1,7 @@
 
 import EmailBreachDetails from "@/components/pages/email-checker/EmailBreachData.tsx";
 import EmailBreachData from "@/components/pages/email-checker/EmailBreachData.tsx";
+import { FormEvent } from "react";
 import { data } from "react-router";
 
 function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPage: () => void }) {
@@ -11,7 +12,9 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-    const EmailCheck = async () => {
+    const EmailCheck = async (e: FormEvent) => {
+        e.preventDefault();
+
         if (!email.match(emailPattern)) {
             setResult("Neteisingas el. pašto formatas");
             return;
@@ -47,31 +50,33 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
         <div style={{ marginTop: "1em", marginBottom: "4rem", textAlign: "center" }}>
             <h2 style={{ color: "white" }}>Patikrinkite, ar jūsų el. paštas buvo nutekintas</h2>
             
-            <input
-                type="text"
-                placeholder="Įveskite el. pašto adresą"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ padding: "0.5rem", width: "90%", marginBottom: "0.5rem" }}
-            />
-            
-            <button
-                onClick={EmailCheck}
-                disabled={!email.match(emailPattern)}
-                style={{
-                    width: "200px",
-                    height: "40px",
-                    backgroundColor: email.match(emailPattern) ? "#4b5563" : "#212121",
-                    color: email.match(emailPattern) ? "white" : "#5b5a5b",
-                    border: "none",
-                    borderRadius: "8px",
-                    outline: "none",
-                    transition: "background-color 0.2s ease-in-out",
-                    cursor: email.match(emailPattern) ? "pointer" : "not-allowed"
-                }}
-            >
-                🔍 Tikrinti
-            </button>
+            <form onSubmit={EmailCheck}>
+                <input
+                    type="text"
+                    placeholder="Įveskite el. pašto adresą"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{ padding: "0.5rem", width: "90%", marginBottom: "0.5rem" }}
+                />
+                
+                <button
+                    onClick={EmailCheck}
+                    disabled={!email.match(emailPattern)}
+                    style={{
+                        width: "200px",
+                        height: "40px",
+                        backgroundColor: email.match(emailPattern) ? "#4b5563" : "#212121",
+                        color: email.match(emailPattern) ? "white" : "#5b5a5b",
+                        border: "none",
+                        borderRadius: "8px",
+                        outline: "none",
+                        transition: "background-color 0.2s ease-in-out",
+                        cursor: email.match(emailPattern) ? "pointer" : "not-allowed"
+                    }}
+                >
+                    🔍 Tikrinti
+                </button>
+            </form>
 
             <div style={{ padding: "1rem"}}>
                 {loading && <div className="loader"></div>}
