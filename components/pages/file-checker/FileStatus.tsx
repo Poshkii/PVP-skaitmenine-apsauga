@@ -1,5 +1,5 @@
-import {Upload, Link} from "lucide-react";
-import {useEffect, useState} from "react";
+import {Upload} from "lucide-react";
+import React, {useEffect, useState} from "react";
 import SparkMD5 from 'spark-md5';
 
 const API_KEY = String(useAppConfig().fileCheckerApiKey);

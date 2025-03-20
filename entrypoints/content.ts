@@ -19,6 +19,7 @@ export default defineContentScript({
 
         const emailChecker = new EmailChecker();
         moduleManager.registerModule(emailChecker, config.isModuleEnabled(emailChecker.id));
+        
         const fileChecker = new FileChecker();
         moduleManager.registerModule(fileChecker, config.isModuleEnabled(fileChecker.id));
 
