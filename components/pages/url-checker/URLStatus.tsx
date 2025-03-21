@@ -8,19 +8,30 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
     const [showURLScam, setShowURLScam] = useState(false);
+    const [urlCache, setUrlCache] = useState<{[key: string]: {
+        result: string, 
+        timestamp: number
+      }}>({});
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
     const API_KEY_HYBRID = String(useAppConfig().hybridAnalysisApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
     
-    // Updated to use the Hybrid Analysis sandbox URL submission endpoint
-    const HYBRID_API_URL = "https://www.hybrid-analysis.com/api/v2/submit/url";
-    const HYBRID_API_REPORT_URL = "https://www.hybrid-analysis.com/api/v2/report";
+    // Updated to use quick-scan API endpoint
+    const HYBRID_API_QUICK_SCAN_URL = "https://www.hybrid-analysis.com/api/v2/quick-scan/url";
 
-    const normalizeURL = (str: string) => {
-        if (!/^https?:\/\//i.test(str)) {
+    const normalizeURL = (str: string): string => {
+        // Check if it already has a valid scheme (http or https)
+        if (/^(https?:\/\/)/i.test(str)) {
+            return str;
+        }
+    
+        // Check if it looks like a domain (has at least one dot)
+        if (/\./.test(str)) {
             return "https://" + str;
         }
+    
+        // If it's not a domain, return as is (possibly a relative path or local address)
         return str;
     };
 
@@ -52,7 +63,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             // Run both API checks in parallel
             const [virusTotalResult, hybridAnalysisResult] = await Promise.allSettled([
                 checkVirusTotal(url),
-                checkHybridAnalysis(url)
+                checkHybridAnalysisQuickScan(url) // Changed to use quick-scan
             ]);
 
             // Process combined results
@@ -85,14 +96,14 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
     const checkVirusTotal = async (urlToCheck: string) => {
         try {
-            // REQUEST for analysis
+            const normalizedUrl = normalizeURL(urlToCheck);
             const response = await fetch(API_URL, {
                 method: "POST",
                 headers: {
                     "x-apikey": API_KEY,
                     "Content-Type": "application/x-www-form-urlencoded"
                 },
-                body: `url=${encodeURIComponent(urlToCheck)}`
+                body: `url=${encodeURIComponent(normalizedUrl)}`
             });
             
             // Klaidu apdorojimas
@@ -131,18 +142,69 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         }
     };
 
-    const checkHybridAnalysis = async (urlToCheck: string) => {
+    const checkHybridAnalysisQuickScan = async (urlToCheck: string) => {
         try {
-            // Create form data for the sandbox submission
+            const normalizedUrl = normalizeURL(urlToCheck);
+            const urlObj = new URL(normalizedUrl);
+            const domain = urlObj.hostname;
+            
+            const cacheEntry = urlCache[domain];
+            const now = Date.now();
+            if (cacheEntry && (now - cacheEntry.timestamp < 3600000)) {
+                //setDebug(prev => prev + "\nUsing cached Hybrid Analysis result for " + domain);
+                return cacheEntry.result;
+            }
+            
+            // First, try to search for existing reports for this domain
+            const searchFormData = new FormData();
+            searchFormData.append("domain", domain);
+            
+            const searchResponse = await fetch("https://www.hybrid-analysis.com/api/v2/search/terms", {
+                method: "POST",
+                headers: {
+                    "api-key": API_KEY_HYBRID,
+                    "User-Agent": "Hybrid Analysis API Client"
+                },
+                body: searchFormData
+            });
+            
+            if (searchResponse.ok) {
+                const searchData = await searchResponse.json();
+                
+                // If we found recent results (less than 3 days old)
+                if (searchData && searchData.result && searchData.result.length > 0) {
+                    // Sort by timestamp to get the most recent result
+                    const sortedResults = searchData.result.sort((a: any, b: any) => 
+                        new Date(b.analysis_start_time).getTime() - new Date(a.analysis_start_time).getTime()
+                    );
+                    
+                    const latestResult = sortedResults[0];
+                    const resultTime = new Date(latestResult.analysis_start_time).getTime();
+                    
+                    // jeigu issaugotas scanas ne veliau kaip pries 3 dienas, tada neskanuojam
+                    if (now - resultTime < 259200000) { 
+                        //setDebug(prev => prev + "\nFound existing Hybrid Analysis report for " + domain);
+                        
+                        const result = processHybridAnalysisExistingReport(latestResult);
+                        
+                        setUrlCache(prev => ({
+                            ...prev,
+                            [domain]: { result, timestamp: now }
+                        }));
+                        
+                        return result;
+                    }
+                }
+            }
+            
+            //setDebug(prev => prev + "\nSubmitting to Hybrid Analysis quick-scan: " + domain);
+            
+            // jei nerado egziztuojanciu skanu, tai skanuojam patys
             const formData = new FormData();
             formData.append("url", urlToCheck);
-            formData.append("environment_id", "100"); // Windows 7 32-bit environment
-            formData.append("no_share_third_party", "false");
-            formData.append("allow_community_access", "false");
-            formData.append("comment", "URL safety check");
-
-            // Submit the URL for sandbox analysis
-            const response = await fetch(HYBRID_API_URL, {
+            formData.append("scan_type", "all");
+    
+            const response = await fetch(HYBRID_API_QUICK_SCAN_URL, {
                 method: "POST",
                 headers: {
                     "api-key": API_KEY_HYBRID,
@@ -150,7 +212,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 },
                 body: formData
             });
-
+    
             if (!response.ok) {
                 const errorCode = response.status;
                 let errorMessage = "❌ Hybrid Analysis: Klaida tikrinant URL.";
@@ -172,76 +234,162 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                         errorMessage = "❌ Hybrid Analysis: Serverio klaida. Bandykite vėliau.";
                         break;
                 }
-
-                // Add more detailed error message if available
+    
                 try {
                     const errorData = await response.json();
                     if (errorData && errorData.message) {
                         errorMessage += ` (${errorData.message})`;
+                        
+                        if (errorData.message.includes("already submitted")) {
+                            return await checkExistingReports(domain);
+                        }
                     }
                 } catch (e) {
-                    // Ignore error parsing failure
                 }
                 
                 return errorMessage;
             }
-
-            const submissionData = await response.json();
+    
+            const scanData = await response.json();
+            const result = processHybridAnalysisQuickScanResponse(scanData);
             
-            // Check if the submission was successful
-            if (submissionData && submissionData.submission_id) {
-                // Log submission ID for debugging
-                setDebug(prev => prev + `\nHybrid Analysis Submission ID: ${submissionData.submission_id}`);
-                
-                // Now poll for the analysis results
-                return await pollHybridAnalysisResults(submissionData.submission_id);
-            } else {
-                return "⚠️ Hybrid Analysis: Nepavyko pateikti URL analizei.";
-            }
+            setUrlCache(prev => ({
+                ...prev,
+                [domain]: { result, timestamp: now }
+            }));
+            
+            return result;
             
         } catch (error) {
             console.error("Hybrid Analysis klaida:", error);
             return "❌ Hybrid Analysis: Klaida tikrinant URL.";
         }
     };
-
-    const pollHybridAnalysisResults = async (submissionId: string) => {
-        let attempts = 0;
-        const maxAttempts = 10;
-        
-        while (attempts < maxAttempts) {
-            try {
-                // Get analysis report
-                const reportResponse = await fetch(`${HYBRID_API_REPORT_URL}/${submissionId}`, {
-                    method: "GET",
-                    headers: {
-                        "api-key": API_KEY_HYBRID,
-                        "User-Agent": "Hybrid Analysis API Client",
-                        "Accept": "application/json"
-                    }
-                });
-
-                if (reportResponse.ok) {
-                    const reportData = await reportResponse.json();
-                    
-                    // If analysis is complete
-                    if (reportData.state === "SUCCESS" || reportData.state === "REPORTED") {
-                        return processHybridAnalysisReportResponse(reportData);
-                    }
-                    
-                    // If still in progress, log the current state
-                    setDebug(prev => prev + `\nHybrid Analysis State: ${reportData.state}`);
-                }
-            } catch (error) {
-                console.error("Hybrid Analysis rezultatų gavimo klaida:", error);
+    
+    const checkExistingReports = async (domain: string) => {
+        try {
+            //setDebug(prev => prev + "\nChecking existing reports for " + domain);
+            
+            const searchFormData = new FormData();
+            searchFormData.append("domain", domain);
+            
+            const searchResponse = await fetch("https://www.hybrid-analysis.com/api/v2/search/terms", {
+                method: "POST",
+                headers: {
+                    "api-key": API_KEY_HYBRID,
+                    "User-Agent": "Hybrid Analysis API Client"
+                },
+                body: searchFormData
+            });
+            
+            if (!searchResponse.ok) {
+                return "⚠️ Hybrid Analysis: API kvotų limitas viršytas, negalima gauti esamų rezultatų.";
             }
             
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, 8000)); // Polls every 8 seconds
+            const searchData = await searchResponse.json();
+            
+            if (searchData && searchData.result && searchData.result.length > 0) {
+                const sortedResults = searchData.result.sort((a: any, b: any) => 
+                    new Date(b.analysis_start_time).getTime() - new Date(a.analysis_start_time).getTime()
+                );
+                
+                const latestResult = sortedResults[0];
+                
+                return processHybridAnalysisExistingReport(latestResult);
+            } else {
+                return "⚠️ Hybrid Analysis: API kvotų limitas viršytas, nėra ankstesnių rezultatų.";
+            }
+        } catch (error) {
+            console.error("Error checking existing reports:", error);
+            return "⚠️ Hybrid Analysis: API kvotų limitas viršytas, klaida tikrinant esamus rezultatus.";
+        }
+    };
+    
+    const processHybridAnalysisExistingReport = (report: any) => {
+        if (!report) {
+            return "⚠️ Hybrid Analysis: Nepateikta jokių rezultatų šiam URL.";
+        }
+    
+        let threatScore = report.threat_score || 0;
+        let verdict = report.verdict || "unknown";
+        
+        const analysisDate = new Date(report.analysis_start_time);
+        const dateStr = analysisDate.toLocaleDateString();
+        
+        if (verdict === "malicious" || threatScore >= 80) {
+            return `🚨 Hybrid Analysis: Svetainė yra kenksminga! Grėsmės įvertinimas: ${threatScore}/100. (${dateStr})`;
+        } else if (verdict === "suspicious" || threatScore >= 40) {
+            return `⚠️ Hybrid Analysis: Pavojinga svetainė! Grėsmės įvertinimas: ${threatScore}/100. (${dateStr})`;
+        } else {
+            return `✅ Hybrid Analysis: Svetainė saugi. Grėsmės įvertinimas: ${threatScore}/100. (${dateStr})`;
+        }
+    };
+
+    const processHybridAnalysisQuickScanResponse = (scanData: any) => {
+        if (!scanData || !scanData.scanners) {
+            return "⚠️ Hybrid Analysis: Nepateikta jokių rezultatų šiam URL.";
+        }
+    
+        let totalScanners = 0;
+        let detectedThreats = 0;
+        let highestThreatScore = 0;
+        
+        for (const scanner of scanData.scanners) {
+            totalScanners++;
+            
+            if (scanner.detected) {
+                detectedThreats++;
+            }
+            
+            if (scanner.threat_score && scanner.threat_score > highestThreatScore) {
+                highestThreatScore = scanner.threat_score;
+            }
         }
         
-        // If we've reached the maximum attempts
-        return "⚠️ Hybrid Analysis: URL analizė vis dar vykdoma. Rezultatas gali užtrukti iki kelių minučių.";
+        const knownSafeDomains = [
+            'google.com', 'gmail.com', 'youtube.com', 'microsoft.com', 'apple.com', 
+            'amazon.com', 'facebook.com', 'instagram.com', 'twitter.com', 'linkedin.com', 
+            'netflix.com', 'github.com', 'gitlab.com', 'bitbucket.org', 'stackoverflow.com', 
+            'wikipedia.org', 'mozilla.org', 'cloudflare.com', 'paypal.com', 'zoom.us', 
+            'dropbox.com', 'adobe.com', 'salesforce.com', 'oracle.com', 'ibm.com', 
+            'nvidia.com', 'tesla.com', 'spotify.com', 'tiktok.com', 'whatsapp.com', 
+            'twitch.tv', 'reddit.com', 'quora.com', 'yahoo.com', 'duckduckgo.com', 
+            'protonmail.com', 'outlook.com', 'live.com', 'bbc.com', 'cnn.com', 
+            'nytimes.com', 'theguardian.com', 'wsj.com', 'forbes.com', 'bloomberg.com', 
+            'cnbc.com', 'businessinsider.com', 'reuters.com', 'apnews.com', 'weather.com',
+            'booking.com', 'expedia.com', 'airbnb.com', 'uber.com', 'lyft.com', 
+            'medium.com', 'discord.com', 'slack.com', 'trello.com', 'notion.so', 
+            'zoho.com', 'weebly.com', 'wordpress.com', 'wix.com', 'squareup.com', 
+            'stripe.com', 'venmo.com', 'telegram.org', 'signal.org'
+        ];
+        
+        let domain = "";
+        try {
+            const urlObj = new URL(scanData.url);
+            domain = urlObj.hostname;
+            domain = domain.replace(/^www\./, '');
+            
+            for (const safeDomain of knownSafeDomains) {
+                if (domain === safeDomain || domain.endsWith('.' + safeDomain)) {
+                    return `✅ Hybrid Analysis: Svetainė žinoma kaip saugi, nepaisant techninio įvertinimo ${highestThreatScore}/100.`;
+                }
+            }
+        } catch (e) {
+            // Ignore URL parsing errors
+        }
+        
+        // Calculate overall verdict based on scanner results
+        if (detectedThreats > 0) {
+            if (detectedThreats >= 2 || highestThreatScore >= 80) {
+                return `🚨 Hybrid Analysis: Svetainė yra kenksminga! Aptikta ${detectedThreats} grėsmių iš ${totalScanners} skenerių. Grėsmės įvertinimas: ${highestThreatScore}/100.`;
+            } else {
+                return `⚠️ Hybrid Analysis: Pavojinga svetainė! Aptikta ${detectedThreats} grėsmių iš ${totalScanners} skenerių. Grėsmės įvertinimas: ${highestThreatScore}/100.`;
+            }
+        } else if (highestThreatScore >= 70) {
+            return `⚠️ Hybrid Analysis: Svetainė techniškai įtartina, tačiau gali būti klaidingai įvertinta. Grėsmės įvertinimas: ${highestThreatScore}/100.`;
+        } else {
+            return `✅ Hybrid Analysis: Svetainė saugi. Neaptikta jokių grėsmių iš ${totalScanners} skenerių. Grėsmės įvertinimas: ${highestThreatScore}/100.`;
+        }
     };
 
     const pollVirusTotalResults = async (dataId: string) => {
@@ -291,23 +439,6 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 return `⚠️ VirusTotal: Pavojinga svetainė! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`;
         } else {
             return `✅ VirusTotal: Svetainė saugi. Neaptikta jokių grėsmių iš ${totalVendors} tiekėjo/-ų.`;
-        }
-    };
-
-    const processHybridAnalysisReportResponse = (reportData: any) => {
-        if (!reportData) {
-            return "⚠️ Hybrid Analysis: Nepateikta jokių rezultatų šiam URL.";
-        }
-
-        let threatScore = reportData.threat_score || 0;
-        let verdict = reportData.verdict || "unknown";
-        
-        if (verdict === "malicious" || threatScore >= 80) {
-            return `🚨 Hybrid Analysis: Svetainė yra kenksminga! Grėsmės įvertinimas: ${threatScore}/100.`;
-        } else if (verdict === "suspicious" || threatScore >= 40) {
-            return `⚠️ Hybrid Analysis: Pavojinga svetainė! Grėsmės įvertinimas: ${threatScore}/100.`;
-        } else {
-            return `✅ Hybrid Analysis: Svetainė saugi. Grėsmės įvertinimas: ${threatScore}/100.`;
         }
     };
 
