@@ -1,7 +1,16 @@
+import { FileChecker } from "@/entrypoints/content/modules/file-checker/file-checker.ts";
 import {BgMessage, BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 
+
 export default defineBackground(() => {
+    console.log("Background script initialized.");
+
+    const fileChecker = new FileChecker();
+    fileChecker.load();
+
+    console.log("FileChecker loaded in background.");
+
     // Listen for messages from the content script
     browser.runtime.onMessage.addListener((message: BgMessage) => {
         switch (message.id) {

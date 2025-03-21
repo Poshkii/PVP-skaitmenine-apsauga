@@ -6,6 +6,6 @@ export default defineConfig({
     "@wxt-dev/module-react",
   ],
   manifest: {
-    permissions: ["storage", "downloads", "notifications"]
+    permissions: ["storage", "downloads", "downloads.open", "downloads.shelf", "notifications"]
   }
 });

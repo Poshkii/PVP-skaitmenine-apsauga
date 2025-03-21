@@ -9,20 +9,15 @@ export class FileChecker extends Module {
 
     load(): void {
         chrome.downloads.onCreated.addListener(this.onDownloadCreated);
+        
 
         chrome.downloads.onCreated.addListener((downloadItem) => {
             console.log("Download detected:", downloadItem);
         });
-
-        document.addEventListener("focusin", this.onFocusIn);
-        document.addEventListener("focusout", this.onFocusOut);
     }
 
     unload(): void {
         chrome.downloads.onCreated.removeListener(this.onDownloadCreated);
-
-        document.removeEventListener("focusin", this.onFocusIn);
-        document.removeEventListener("focusout", this.onFocusOut);
     }
 
     private onDownloadCreated = async (downloadItem: chrome.downloads.DownloadItem) => {
@@ -37,17 +32,20 @@ export class FileChecker extends Module {
         }
 
         try {
-            const isSafe = await this.checkFileSafety(downloadItem.url);
+            const results = await this.checkUrlWithSandbox(downloadItem.url);
+            
+            if (results) {
+                const data = results.final_verdict;
+                if (data.threatLevel > 0 && data.verdict === "MALICIOUS"){
+                    console.log("File is unsafe, canceling download");
+                    chrome.downloads.cancel(downloadItem.id);
+                }
+                else {
+                    console.log("File is safe, resuming download");
+                    chrome.downloads.resume(downloadItem.id);
+                }
 
-            if (isSafe) {
-                console.log("File is safe, resuming download");
-                //chrome.downloads.resume(downloadItem.id);
-            } 
-            else {
-                chrome.downloads.cancel(downloadItem.id);
             }
-
-            this.showWarning(downloadItem.filename);
         } 
         catch (error) {
             console.error("Error checking file safety:", error);
@@ -55,7 +53,8 @@ export class FileChecker extends Module {
         }
     }
 
-    private async checkFileSafety(url: string): Promise<boolean> {
+    private async checkUrlWithSandbox(url: string): Promise<any> {
+        console.log("Checking URL with sandbox:", url);
         try {
             const URL_ENDPOINT = "https://api.metadefender.com/v4/sandbox";
             const API_KEY = String(useAppConfig().fileCheckerApiKey);
@@ -68,36 +67,60 @@ export class FileChecker extends Module {
                 },
                 body: JSON.stringify({ url: url }) 
             });
-
+            
             if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error?.messages || 'Failed to submit URL for scanning');
             }
-
-            const data = await response.json();
-
-            return data.final_verdict?.verdict !== "MALICIOUS";
-        }
+            
+            const submitData = await response.json();
+            const dataId = submitData.sandbox_id;
+            
+            return await this.pollForUrlResults(dataId);
+        } 
         catch (error) {
             console.error("Error checking file URL safety:", error);
             throw error;
         }
     }
 
-    private showWarning(fileName: string) {
-        chrome.notifications.create({
-            type: 'basic',
-            iconUrl: 'assets/warning-icon.png',
-            title: 'Unsafe File Blocked',
-            message: `The file "${fileName}" was blocked because it was found to be malicious.`,
-            priority: 2
-        })
-    }
+    private async pollForUrlResults(dataId: string): Promise<any> {
+        console.log("Polling for URL results...");
+        let attempts = 0;
+        const maxAttempts = 12;
 
-    private onFocusIn = (event: FocusEvent) => {
+        const URL_ENDPOINT = "https://api.metadefender.com/v4/sandbox";
+        const API_KEY = String(useAppConfig().fileCheckerApiKey);
         
-    }
-
-    private onFocusOut = (event: FocusEvent) => {
+        const URL_RESULT_ENDPOINT = URL_ENDPOINT + '/' + dataId;
         
+        while (attempts < maxAttempts) {
+            console.log("Polling attempt nr.: ", attempts);
+            try {
+                const response = await fetch(URL_RESULT_ENDPOINT, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': API_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.final_verdict) {
+                        console.log("URL check completed.");
+                        return data;
+                    }
+                }
+            } 
+            catch (error) {
+                console.error("Error polling for URL results:", error);
+            }
+            
+            attempts++;
+            await new Promise(resolve => setTimeout(resolve, 5000)); 
+        }
+        
+        throw new Error("URL check timed out. Please try again later.");
     }
 }
