@@ -6,11 +6,13 @@ declare module 'wxt/sandbox' {
         safeBrowsingApiKey?: string;
         fileCheckerApiKey?: string;
         hybridAnalysisApiKey?: string;
+        urlscanioApiKey?: string;
     }
 }
 
 export default defineAppConfig({
     safeBrowsingApiKey: import.meta.env.WXT_VIRUSTOTAL_API_KEY,
     fileCheckerApiKey: import.meta.env.WXT_METADEFENDER_CLOUD_API_KEY,
-    hybridAnalysisApiKey: import.meta.env.WXT_HYBRIDANALYSIS_API_KEY
+    hybridAnalysisApiKey: import.meta.env.WXT_HYBRIDANALYSIS_API_KEY,
+    urlscanioApiKey: import.meta.env.WXT_URLSCANIO_API_KEY
 });

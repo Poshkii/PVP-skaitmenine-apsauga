@@ -8,17 +8,13 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
     const [showURLScam, setShowURLScam] = useState(false);
-    const [urlCache, setUrlCache] = useState<{[key: string]: {
-        result: string, 
-        timestamp: number
-      }}>({});
+
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
-    const API_KEY_HYBRID = String(useAppConfig().hybridAnalysisApiKey);
+    const API_KEY_URLScanIO = String(useAppConfig().urlscanioApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
     
-    // Updated to use quick-scan API endpoint
-    const HYBRID_API_QUICK_SCAN_URL = "https://www.hybrid-analysis.com/api/v2/quick-scan/url";
+
 
     const normalizeURL = (str: string): string => {
         // Check if it already has a valid scheme (http or https)
@@ -63,7 +59,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             // Run both API checks in parallel
             const [virusTotalResult, hybridAnalysisResult] = await Promise.allSettled([
                 checkVirusTotal(url),
-                checkHybridAnalysisQuickScan(url) // Changed to use quick-scan
+                checkURLScanIO(url) // Changed to use quick-scan
             ]);
 
             // Process combined results
@@ -142,262 +138,194 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         }
     };
 
-    const checkHybridAnalysisQuickScan = async (urlToCheck: string) => {
+    const checkURLScanIO = async (urlToCheck: string) => {
         try {
             const normalizedUrl = normalizeURL(urlToCheck);
-            const urlObj = new URL(normalizedUrl);
-            const domain = urlObj.hostname;
-            /*
-            let trusted:boolean = checkSafeDomainList(normalizedUrl)
-            if(trusted)
-                return `✅ Hybrid Analysis: Website is known as safe. Threat Score: 0/100.`
-            */
-            const cacheEntry = urlCache[domain];
-            const now = Date.now();
-            if (cacheEntry && (now - cacheEntry.timestamp < 3600000)) {
-                //setDebug(prev => prev + "\nUsing cached Hybrid Analysis result for " + domain);
-                return cacheEntry.result;
-            }
             
-            // ieskome egzistuojanciu scanu
-            /*
-            const searchFormData = new FormData();
-            searchFormData.append("domain", domain);
-            
-            const searchResponse = await fetch("https://www.hybrid-analysis.com/api/v2/search/terms", {
-                method: "POST",
+            // First, check if the URL has already been scanned recently
+            const searchResponse = await fetch(`https://urlscan.io/api/v1/search/?q=page.url:"${encodeURIComponent(normalizedUrl)}"&size=1`, {
+                method: "GET",
                 headers: {
-                    "api-key": API_KEY_HYBRID,
-                    "User-Agent": "Hybrid Analysis API Client"
-                },
-                body: searchFormData
+                    "API-Key": API_KEY_URLScanIO
+                }
             });
             
+            // If we found a recent scan, use those results instead of creating a new scan
             if (searchResponse.ok) {
                 const searchData = await searchResponse.json();
                 
-                if (searchData && searchData.result && searchData.result.length > 0) {
-                    const sortedResults = searchData.result.sort((a: any, b: any) => 
-                        new Date(b.analysis_start_time).getTime() - new Date(a.analysis_start_time).getTime()
-                    );
+                if (searchData.results && searchData.results.length > 0) {
+                    const recentScan = searchData.results[0];
+                    const scanTime = new Date(recentScan.task.time);
+                    const currentTime = new Date();
+                    const hoursDifference = (currentTime.getTime() - scanTime.getTime()) / (1000 * 60 * 60);
                     
-                    const latestResult = sortedResults[0];
-                    const resultTime = new Date(latestResult.analysis_start_time).getTime();
-                    
-                    // jeigu issaugotas scanas ne veliau kaip pries 3 dienas, tada neskanuojam
-                    if (now - resultTime < 259200000) { 
-                        //setDebug(prev => prev + "\nFound existing Hybrid Analysis report for " + domain);
-                        
-                        const result = processHybridAnalysisExistingReport(latestResult);
-                        
-                        setUrlCache(prev => ({
-                            ...prev,
-                            [domain]: { result, timestamp: now }
-                        }));
-                        
-                        return result;
+                    // If scan is less than 24 hours old, use it
+                    if (hoursDifference < 24) {
+                        //setDebug(`Found recent scan from ${scanTime.toLocaleString()}`);
+                        return processURLScanResponse(recentScan);
                     }
                 }
             }
             
-            //setDebug(prev => prev + "\nSubmitting to Hybrid Analysis quick-scan: " + domain);
-            */
-            // jei nerado egziztuojanciu skanu, tai skanuojam patys
-            const formData = new FormData();
-            formData.append("url", urlToCheck);
-            formData.append("scan_type", "all");
-    
-            const response = await fetch(HYBRID_API_QUICK_SCAN_URL, {
+            // If no recent scan found, submit the URL for scanning
+            const scanResponse = await fetch("https://urlscan.io/api/v1/scan/", {
                 method: "POST",
                 headers: {
-                    "api-key": API_KEY_HYBRID,
-                    "User-Agent": "Hybrid Analysis API Client"
+                    "API-Key": API_KEY_URLScanIO,
+                    "Content-Type": "application/json"
                 },
-                body: formData
+                body: JSON.stringify({
+                    url: normalizedUrl,
+                    visibility: "public"
+                })
             });
-    
-            if (!response.ok) {
-                const errorCode = response.status;
-                let errorMessage = "❌ Hybrid Analysis: Error while scanning URL.";
+            
+            if (!scanResponse.ok) {
+                const errorCode = scanResponse.status;
+                let errorMessage = "❌ URLScan.io: Error while submitting scan.";
                 
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "❌ Hybrid Analysis: Wrong query. Domain does not exist.";
+                        errorMessage = "❌ URLScan.io: Invalid request format.";
                         break;
                     case 401:
-                        errorMessage = "❌ Hybrid Analysis: Wrong API key.";
-                        break;
-                    case 403:
-                        errorMessage = "❌ Hybrid Analysis: Not enough permissions.";
+                        errorMessage = "❌ URLScan.io: Invalid API key.";
                         break;
                     case 429:
-                        errorMessage = "❌ Hybrid Analysis: API quota limit reached.";
+                        errorMessage = "❌ URLScan.io: API quota limit reached.";
                         break;
                     case 500:
-                        errorMessage = "❌ Hybrid Analysis: Server error. Try to scan later.";
+                        errorMessage = "❌ URLScan.io: Server error. Try to scan later.";
                         break;
                 }
-                
-                /*
-                try {
-                    const errorData = await response.json();
-                    if (errorData && errorData.message) {
-                        errorMessage += ` (${errorData.message})`;
-                        
-                        if (errorData.message.includes("already submitted")) {
-                            return await checkExistingReports(domain);
-                        }
-                    }
-                } catch (e) {
-                }
-                */
-                
                 return errorMessage;
             }
-    
-            const scanData = await response.json();
-            const result = processHybridAnalysisQuickScanResponse(scanData);
             
-            setUrlCache(prev => ({
-                ...prev,
-                [domain]: { result, timestamp: now }
-            }));
+            const scanData = await scanResponse.json();
+            const uuid = scanData.uuid;
+            const resultUrl = scanData.api;
+            
+            // Poll for results with improved parameters
+            return await pollURLScanResults(uuid, resultUrl);
+            
+        } catch (error) {
+            console.error("URLScan.io error:", error);
+            return "❌ URLScan.io: Error while scanning URL.";
+        }
+    };
+    
+    const pollURLScanResults = async (uuid: string, resultUrl: string) => {
+        let attempts = 0;
+        const maxAttempts = 15;  // Increased from 10 to 15
+        const initialDelay = 8000;  // Increased initial delay to 8 seconds
+        
+        // Return initial message that scan is in progress
+        setDebug(`URLScan.io scan submitted. UUID: ${uuid}. Waiting for results...`);
+        
+        while (attempts < maxAttempts) {
+            try {
+                // GET scan results
+                const resultResponse = await fetch(resultUrl, {
+                    method: "GET",
+                    headers: {
+                        "API-Key": API_KEY_URLScanIO
+                    }
+                });
+                
+                if (resultResponse.ok) {
+                    const resultData = await resultResponse.json();
+                    
+                    // Check scan status
+                    if (resultData.task && resultData.task.status === "complete") {
+                        setDebug(`Scan complete after ${attempts + 1} attempts`);
+                        return processURLScanResponse(resultData);
+                    }
+                    
+                    // Provide status updates in debug
+                    setDebug(`Attempt ${attempts + 1}/${maxAttempts}: Scan status: ${resultData.task?.status || "unknown"}`);
+                }
+            } catch (error) {
+                console.error("URLScan.io result retrieving error:", error);
+                setDebug(`Error checking scan status: ${error}`);
+            }
+            
+            attempts++;
+            // Use exponential backoff for waiting (start with longer delay, then increase)
+            const delay = initialDelay + (attempts * 2000);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        // If we timeout, check one more time with an alternative method
+        try {
+            const directResultUrl = `https://urlscan.io/api/v1/result/${uuid}/`;
+            const finalAttempt = await fetch(directResultUrl, {
+                headers: {
+                    "API-Key": API_KEY_URLScanIO
+                }
+            });
+            
+            if (finalAttempt.ok) {
+                const resultData = await finalAttempt.json();
+                if (resultData.task && resultData.task.status === "complete") {
+                    setDebug("Found results on final attempt");
+                    return processURLScanResponse(resultData);
+                }
+            }
+        } catch (error) {
+            console.error("Final attempt error:", error);
+        }
+        
+        return `⚠️ URLScan.io: Scanning in progress. View results at: https://urlscan.io/result/${uuid} in a few minutes.`;
+    };
+    
+    const processURLScanResponse = (resultData: any) => {
+        try {
+            // Extract security related information
+            const verdicts = resultData.verdicts || {};
+            const malicious = verdicts.overall && verdicts.overall.malicious;
+            const score = verdicts.overall && verdicts.overall.score || 0;
+            const categories = verdicts.overall && verdicts.overall.categories || [];
+            
+            // Extract page information
+            const pageTitle = resultData.page && resultData.page.title || "Unknown";
+            const server = resultData.page && resultData.page.server || "Unknown";
+            const ipAddress = resultData.page && resultData.page.ip || "Unknown";
+            const uuid = resultData.task && resultData.task.uuid;
+            const reportUrl = `https://urlscan.io/result/${uuid}`;
+            
+            // Build the result message
+            let result = "";
+            
+            if (malicious) {
+                result = `🚨 URLScan.io: Website is malicious! Risk score: ${score}/100\n`;
+                if (categories.length > 0) {
+                    result += `Categories: ${categories.join(", ")}\n`;
+                }
+            } else if (score > 0) {
+                result = `⚠️ URLScan.io: Website might be suspicious. Risk score: ${score}/100\n`;
+            } else {
+                result = `✅ URLScan.io: Website appears safe. Risk score: ${score}/100\n`;
+            }
+            
+            // Add additional details
+            //result += `Page title: ${pageTitle}\n`;
+            //result += `Server: ${server}\n`;
+            //result += `IP Address: ${ipAddress}\n`;
+            result += `Full report - <a href="${reportUrl}" target="_blank" style="color: #3b82f6; text-decoration: underline;">here</a>`;
             
             return result;
             
         } catch (error) {
-            console.error("Hybrid Analysis error:", error);
-            return "❌ Hybrid Analysis: Error while scanning URL.";
-        }
-    };
-    
-    const checkExistingReports = async (domain: string) => {
-        try {
-            //setDebug(prev => prev + "\nChecking existing reports for " + domain);
-            
-            const searchFormData = new FormData();
-            searchFormData.append("domain", domain);
-            
-            const searchResponse = await fetch("https://www.hybrid-analysis.com/api/v2/search/terms", {
-                method: "POST",
-                headers: {
-                    "api-key": API_KEY_HYBRID,
-                    "User-Agent": "Hybrid Analysis API Client"
-                },
-                body: searchFormData
-            });
-            
-            if (!searchResponse.ok) {
-                return "⚠️ Hybrid Analysis: API quota limit reached, cannot get current result.";
-            }
-            
-            const searchData = await searchResponse.json();
-            
-            if (searchData && searchData.result && searchData.result.length > 0) {
-                const sortedResults = searchData.result.sort((a: any, b: any) => 
-                    new Date(b.analysis_start_time).getTime() - new Date(a.analysis_start_time).getTime()
-                );
-                
-                const latestResult = sortedResults[0];
-                
-                return processHybridAnalysisExistingReport(latestResult);
+            console.error("Error processing URLScan.io response:", error);
+            if (resultData && resultData.task && resultData.task.uuid) {
+                return `⚠️ URLScan.io: Results available but failed to process. View full results at: https://urlscan.io/result/${resultData.task.uuid}`;
             } else {
-                return "⚠️ Hybrid Analysis: API quota limit reached, no existing previous scans.";
+                return "⚠️ URLScan.io: Results available but failed to process.";
             }
-        } catch (error) {
-            console.error("Error checking existing reports:", error);
-            return "⚠️ Hybrid Analysis: API quota limit reached, error while checking current results.";
         }
     };
     
-    const processHybridAnalysisExistingReport = (report: any) => {
-        if (!report) {
-            return "⚠️ Hybrid Analysis: No data for submitted URL.";
-        }
-    
-        let threatScore = report.threat_score || 0;
-        let verdict = report.verdict || "unknown";
-
-        
-        const analysisDate = new Date(report.analysis_start_time);
-        const dateStr = analysisDate.toLocaleDateString();
-        
-        if (verdict === "malicious" || threatScore >= 80) {
-            return `🚨 Hybrid Analysis: Website is malicious! Threat score: ${threatScore}/100. (${dateStr})`;
-        } else if (verdict === "suspicious" || threatScore >= 40) {
-            return `⚠️ Hybrid Analysis: Website could be dangerous! Threat score: ${threatScore}/100. (${dateStr})`;
-        } else {
-            return `✅ Hybrid Analysis: Website is safe. Threat score: ${threatScore}/100. (${dateStr})`;
-        }
-    };
-
-    const processHybridAnalysisQuickScanResponse = (scanData: any) => {
-        if (!scanData || !scanData.scanners) {
-            return "⚠️ Hybrid Analysis: No data for submitted URL.";
-        }
-    
-
-        let totalScanners = 0;
-        let detectedThreats = 0;
-        let highestThreatScore = 0;
-        
-        for (const scanner of scanData.scanners) {
-            totalScanners++;
-            
-            if (scanner.detected) {
-                detectedThreats++;
-            }
-            
-            if (scanner.threat_score && scanner.threat_score > highestThreatScore) {
-                highestThreatScore = scanner.threat_score;
-            }
-        }
-        
-
-        
-        // Calculate overall verdict based on scanner results
-        if (detectedThreats > 0) {
-            if (detectedThreats >= 2 || highestThreatScore >= 80) {
-                return `🚨 Hybrid Analysis: Website is malicious! Found ${detectedThreats} threats out of ${totalScanners} scanners/-er. Threat score: ${highestThreatScore}/100.`;
-            } else {
-                return `⚠️ Hybrid Analysis: Website could be dangerous! Found ${detectedThreats} threats out of ${totalScanners} scanners/-er. Threat score: ${highestThreatScore}/100.`;
-            }
-        } else if (highestThreatScore >= 70) {
-            return `⚠️ Hybrid Analysis: Website is suspicious, but may be misjudged. Threat score: ${highestThreatScore}/100.`;
-        } else {
-            return `✅ Hybrid Analysis: Website is safe. No threats found out of ${totalScanners} scanners/-er. Threat score: ${highestThreatScore}/100.`;
-        }
-    };
-
-    const checkSafeDomainList = (scanned : string): boolean => {
-        const knownSafeDomains = [
-            'google.com', 'gmail.com', 'youtube.com', 'microsoft.com', 'apple.com', 
-            'amazon.com', 'facebook.com', 'instagram.com', 'twitter.com', 'linkedin.com', 
-            'netflix.com', 'github.com', 'gitlab.com', 'bitbucket.org', 'stackoverflow.com', 
-            'wikipedia.org', 'mozilla.org', 'cloudflare.com', 'paypal.com', 'zoom.us', 
-            'dropbox.com', 'adobe.com', 'salesforce.com', 'oracle.com', 'ibm.com', 
-            'nvidia.com', 'tesla.com', 'spotify.com', 'tiktok.com', 'whatsapp.com', 
-            'twitch.tv', 'reddit.com', 'quora.com', 'yahoo.com', 'duckduckgo.com', 
-            'protonmail.com', 'outlook.com', 'live.com', 'bbc.com', 'cnn.com', 
-            'nytimes.com', 'theguardian.com', 'wsj.com', 'forbes.com', 'bloomberg.com', 
-            'cnbc.com', 'businessinsider.com', 'reuters.com', 'apnews.com', 'weather.com',
-            'booking.com', 'expedia.com', 'airbnb.com', 'uber.com', 'lyft.com', 
-            'medium.com', 'discord.com', 'slack.com', 'trello.com', 'notion.so', 
-            'zoho.com', 'weebly.com', 'wordpress.com', 'wix.com', 'squareup.com', 
-            'stripe.com', 'venmo.com', 'telegram.org', 'signal.org'
-        ];
-
-            
-        for (const safeDomain of knownSafeDomains) {
-            let formattedSafeDomain = normalizeURL(safeDomain)
-            if (scanned === formattedSafeDomain || scanned.endsWith('.' + formattedSafeDomain)) {
-                return true;
-            }
-        }
-            
-
-        return false;
-    };
 
     const pollVirusTotalResults = async (dataId: string) => {
         let attempts = 0;
@@ -496,9 +424,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 borderRadius: "5px",
                 maxHeight: "250px",
             }}>              
-                <div style={{ fontWeight: "bold", color: "white", whiteSpace: "pre-line" }}>
-                    {result}
-                </div>
+                <div 
+                    style={{ fontWeight: "bold", color: "white" }}
+                    dangerouslySetInnerHTML={{ __html: result.replace(/\n/g, '<br/>') }}
+                />
 
                 <div style={{ paddingTop: "0.8rem"}}>
                     {loading && <div className="loader"></div>}
