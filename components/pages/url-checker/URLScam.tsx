@@ -86,7 +86,7 @@ function URLScam({ scamURL }: { scamURL: string }) {
             if (match) {
                 setResult(`🚨 Alert! ${formattedUrl} appears to be a ${match[1]}.`);
             } else {
-                setResult(`✅ No scam reports found for ${formattedUrl}.`);
+                setResult(`✅ No crypto scam reports found for ${formattedUrl}.`);
             }
         } catch (error) {
             console.error("Error checking scam status:", error);

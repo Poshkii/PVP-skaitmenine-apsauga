@@ -73,20 +73,20 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             if (virusTotalResult.status === 'fulfilled' && virusTotalResult.value) {
                 finalResult += virusTotalResult.value;
             } else {
-                finalResult += "⚠️ VirusTotal patikrinimas nepavyko. ";
+                finalResult += "⚠️ VirusTotal scanning failed. ";
             }
             
             // Process Hybrid Analysis result
             if (hybridAnalysisResult.status === 'fulfilled' && hybridAnalysisResult.value) {
                 finalResult += "\n\n" + hybridAnalysisResult.value;
             } else {
-                finalResult += "\n\n⚠️ Hybrid Analysis patikrinimas nepavyko.";
+                finalResult += "\n\n⚠️ Hybrid Analysis scanning failed.";
             }
             
             setResult(finalResult);
         } catch (error) {
-            console.error("Klaida tikrinant URL:", error);
-            setResult("❌ Klaida tikrinant URL.");
+            console.error("Error while scanning URLL:", error);
+            setResult("❌ Error while scanning URL.");
         } finally {
             setLoading(false);
             setSubmittedUrl(url);
@@ -111,22 +111,22 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 // Handle HTTP errors
                 const errorCode = response.status; // Get the HTTP error code
     
-                let errorMessage = "❌ VirusTotal: Klaida tikrinant URL.";
+                let errorMessage = "❌ VirusTotal: Error while scanning URL.";
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "❌ VirusTotal: Neteisinga užklausa.";
+                        errorMessage = "❌ VirusTotal: Wrong query. Domain does not exist";
                         break;
                     case 401:
-                        errorMessage = "❌ VirusTotal: Netinkamas API raktas.";
+                        errorMessage = "❌ VirusTotal: Wrong API key.";
                         break;
                     case 403:
-                        errorMessage = "❌ VirusTotal: Nepakanka leidimų.";
+                        errorMessage = "❌ VirusTotal: Not enough permissions.";
                         break;
                     case 429:
-                        errorMessage = "❌ VirusTotal: API kvotų limitas viršytas.";
+                        errorMessage = "❌ VirusTotal: API quota limit reached.";
                         break;
                     case 500:
-                        errorMessage = "❌ VirusTotal: Serverio klaida. Bandykite vėliau.";
+                        errorMessage = "❌ VirusTotal: Server error. Try to scan later.";
                         break;
                 }
                 return errorMessage;
@@ -137,8 +137,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             return await pollVirusTotalResults(data.data.id);
             
         } catch (error) {
-            console.error("VirusTotal klaida:", error);
-            return "❌ VirusTotal: Klaida tikrinant URL.";
+            console.error("VirusTotal error:", error);
+            return "❌ VirusTotal: Error while scanning URL.";
         }
     };
 
@@ -147,7 +147,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             const normalizedUrl = normalizeURL(urlToCheck);
             const urlObj = new URL(normalizedUrl);
             const domain = urlObj.hostname;
-            
+            /*
+            let trusted:boolean = checkSafeDomainList(normalizedUrl)
+            if(trusted)
+                return `✅ Hybrid Analysis: Website is known as safe. Threat Score: 0/100.`
+            */
             const cacheEntry = urlCache[domain];
             const now = Date.now();
             if (cacheEntry && (now - cacheEntry.timestamp < 3600000)) {
@@ -155,7 +159,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 return cacheEntry.result;
             }
             
-            // First, try to search for existing reports for this domain
+            // ieskome egzistuojanciu scanu
+            /*
             const searchFormData = new FormData();
             searchFormData.append("domain", domain);
             
@@ -171,9 +176,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             if (searchResponse.ok) {
                 const searchData = await searchResponse.json();
                 
-                // If we found recent results (less than 3 days old)
                 if (searchData && searchData.result && searchData.result.length > 0) {
-                    // Sort by timestamp to get the most recent result
                     const sortedResults = searchData.result.sort((a: any, b: any) => 
                         new Date(b.analysis_start_time).getTime() - new Date(a.analysis_start_time).getTime()
                     );
@@ -198,7 +201,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             }
             
             //setDebug(prev => prev + "\nSubmitting to Hybrid Analysis quick-scan: " + domain);
-            
+            */
             // jei nerado egziztuojanciu skanu, tai skanuojam patys
             const formData = new FormData();
             formData.append("url", urlToCheck);
@@ -215,26 +218,27 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     
             if (!response.ok) {
                 const errorCode = response.status;
-                let errorMessage = "❌ Hybrid Analysis: Klaida tikrinant URL.";
+                let errorMessage = "❌ Hybrid Analysis: Error while scanning URL.";
                 
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "❌ Hybrid Analysis: Neteisinga užklausa.";
+                        errorMessage = "❌ Hybrid Analysis: Wrong query. Domain does not exist.";
                         break;
                     case 401:
-                        errorMessage = "❌ Hybrid Analysis: Netinkamas API raktas.";
+                        errorMessage = "❌ Hybrid Analysis: Wrong API key.";
                         break;
                     case 403:
-                        errorMessage = "❌ Hybrid Analysis: Nepakanka leidimų.";
+                        errorMessage = "❌ Hybrid Analysis: Not enough permissions.";
                         break;
                     case 429:
-                        errorMessage = "❌ Hybrid Analysis: API kvotų limitas viršytas.";
+                        errorMessage = "❌ Hybrid Analysis: API quota limit reached.";
                         break;
                     case 500:
-                        errorMessage = "❌ Hybrid Analysis: Serverio klaida. Bandykite vėliau.";
+                        errorMessage = "❌ Hybrid Analysis: Server error. Try to scan later.";
                         break;
                 }
-    
+                
+                /*
                 try {
                     const errorData = await response.json();
                     if (errorData && errorData.message) {
@@ -246,6 +250,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     }
                 } catch (e) {
                 }
+                */
                 
                 return errorMessage;
             }
@@ -261,8 +266,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             return result;
             
         } catch (error) {
-            console.error("Hybrid Analysis klaida:", error);
-            return "❌ Hybrid Analysis: Klaida tikrinant URL.";
+            console.error("Hybrid Analysis error:", error);
+            return "❌ Hybrid Analysis: Error while scanning URL.";
         }
     };
     
@@ -283,7 +288,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             });
             
             if (!searchResponse.ok) {
-                return "⚠️ Hybrid Analysis: API kvotų limitas viršytas, negalima gauti esamų rezultatų.";
+                return "⚠️ Hybrid Analysis: API quota limit reached, cannot get current result.";
             }
             
             const searchData = await searchResponse.json();
@@ -297,39 +302,41 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 
                 return processHybridAnalysisExistingReport(latestResult);
             } else {
-                return "⚠️ Hybrid Analysis: API kvotų limitas viršytas, nėra ankstesnių rezultatų.";
+                return "⚠️ Hybrid Analysis: API quota limit reached, no existing previous scans.";
             }
         } catch (error) {
             console.error("Error checking existing reports:", error);
-            return "⚠️ Hybrid Analysis: API kvotų limitas viršytas, klaida tikrinant esamus rezultatus.";
+            return "⚠️ Hybrid Analysis: API quota limit reached, error while checking current results.";
         }
     };
     
     const processHybridAnalysisExistingReport = (report: any) => {
         if (!report) {
-            return "⚠️ Hybrid Analysis: Nepateikta jokių rezultatų šiam URL.";
+            return "⚠️ Hybrid Analysis: No data for submitted URL.";
         }
     
         let threatScore = report.threat_score || 0;
         let verdict = report.verdict || "unknown";
+
         
         const analysisDate = new Date(report.analysis_start_time);
         const dateStr = analysisDate.toLocaleDateString();
         
         if (verdict === "malicious" || threatScore >= 80) {
-            return `🚨 Hybrid Analysis: Svetainė yra kenksminga! Grėsmės įvertinimas: ${threatScore}/100. (${dateStr})`;
+            return `🚨 Hybrid Analysis: Website is malicious! Threat score: ${threatScore}/100. (${dateStr})`;
         } else if (verdict === "suspicious" || threatScore >= 40) {
-            return `⚠️ Hybrid Analysis: Pavojinga svetainė! Grėsmės įvertinimas: ${threatScore}/100. (${dateStr})`;
+            return `⚠️ Hybrid Analysis: Website could be dangerous! Threat score: ${threatScore}/100. (${dateStr})`;
         } else {
-            return `✅ Hybrid Analysis: Svetainė saugi. Grėsmės įvertinimas: ${threatScore}/100. (${dateStr})`;
+            return `✅ Hybrid Analysis: Website is safe. Threat score: ${threatScore}/100. (${dateStr})`;
         }
     };
 
     const processHybridAnalysisQuickScanResponse = (scanData: any) => {
         if (!scanData || !scanData.scanners) {
-            return "⚠️ Hybrid Analysis: Nepateikta jokių rezultatų šiam URL.";
+            return "⚠️ Hybrid Analysis: No data for submitted URL.";
         }
     
+
         let totalScanners = 0;
         let detectedThreats = 0;
         let highestThreatScore = 0;
@@ -346,6 +353,23 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             }
         }
         
+
+        
+        // Calculate overall verdict based on scanner results
+        if (detectedThreats > 0) {
+            if (detectedThreats >= 2 || highestThreatScore >= 80) {
+                return `🚨 Hybrid Analysis: Website is malicious! Found ${detectedThreats} threats out of ${totalScanners} scanners/-er. Threat score: ${highestThreatScore}/100.`;
+            } else {
+                return `⚠️ Hybrid Analysis: Website could be dangerous! Found ${detectedThreats} threats out of ${totalScanners} scanners/-er. Threat score: ${highestThreatScore}/100.`;
+            }
+        } else if (highestThreatScore >= 70) {
+            return `⚠️ Hybrid Analysis: Website is suspicious, but may be misjudged. Threat score: ${highestThreatScore}/100.`;
+        } else {
+            return `✅ Hybrid Analysis: Website is safe. No threats found out of ${totalScanners} scanners/-er. Threat score: ${highestThreatScore}/100.`;
+        }
+    };
+
+    const checkSafeDomainList = (scanned : string): boolean => {
         const knownSafeDomains = [
             'google.com', 'gmail.com', 'youtube.com', 'microsoft.com', 'apple.com', 
             'amazon.com', 'facebook.com', 'instagram.com', 'twitter.com', 'linkedin.com', 
@@ -362,34 +386,17 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             'zoho.com', 'weebly.com', 'wordpress.com', 'wix.com', 'squareup.com', 
             'stripe.com', 'venmo.com', 'telegram.org', 'signal.org'
         ];
-        
-        let domain = "";
-        try {
-            const urlObj = new URL(scanData.url);
-            domain = urlObj.hostname;
-            domain = domain.replace(/^www\./, '');
+
             
-            for (const safeDomain of knownSafeDomains) {
-                if (domain === safeDomain || domain.endsWith('.' + safeDomain)) {
-                    return `✅ Hybrid Analysis: Svetainė žinoma kaip saugi, nepaisant techninio įvertinimo ${highestThreatScore}/100.`;
-                }
+        for (const safeDomain of knownSafeDomains) {
+            let formattedSafeDomain = normalizeURL(safeDomain)
+            if (scanned === formattedSafeDomain || scanned.endsWith('.' + formattedSafeDomain)) {
+                return true;
             }
-        } catch (e) {
-            // Ignore URL parsing errors
         }
-        
-        // Calculate overall verdict based on scanner results
-        if (detectedThreats > 0) {
-            if (detectedThreats >= 2 || highestThreatScore >= 80) {
-                return `🚨 Hybrid Analysis: Svetainė yra kenksminga! Aptikta ${detectedThreats} grėsmių iš ${totalScanners} skenerių. Grėsmės įvertinimas: ${highestThreatScore}/100.`;
-            } else {
-                return `⚠️ Hybrid Analysis: Pavojinga svetainė! Aptikta ${detectedThreats} grėsmių iš ${totalScanners} skenerių. Grėsmės įvertinimas: ${highestThreatScore}/100.`;
-            }
-        } else if (highestThreatScore >= 70) {
-            return `⚠️ Hybrid Analysis: Svetainė techniškai įtartina, tačiau gali būti klaidingai įvertinta. Grėsmės įvertinimas: ${highestThreatScore}/100.`;
-        } else {
-            return `✅ Hybrid Analysis: Svetainė saugi. Neaptikta jokių grėsmių iš ${totalScanners} skenerių. Grėsmės įvertinimas: ${highestThreatScore}/100.`;
-        }
+            
+
+        return false;
     };
 
     const pollVirusTotalResults = async (dataId: string) => {
@@ -413,14 +420,14 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     return processVirusTotalResponse(resultData);
                 }
             } catch (error) {
-                console.error("VirusTotal rezultatų gavimo klaida:", error);
+                console.error("VirusTotal result retrieving error:", error);
             }
             
             attempts++;
             await new Promise(resolve => setTimeout(resolve, 6000));
         }
         
-        return "⚠️ VirusTotal: Patikrinimas užtruko per ilgai. Bandykite vėliau.";
+        return "⚠️ VirusTotal: Scanning took too long. Try again later.";
     };
 
     const processVirusTotalResponse = (resultData: any) => {
@@ -434,11 +441,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
         if (totalDetections > 0) {
             if (stats.malicious >= 5)
-                return `🚨 VirusTotal: Svetainė yra kenksminga! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`;
+                return `🚨 VirusTotal: Website is malicious! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
             else
-                return `⚠️ VirusTotal: Pavojinga svetainė! Aptikta ${totalDetections} grėsmingų įrašų iš ${totalVendors} tiekėjų.`;
+                return `⚠️ VirusTotal: Website could be dangerous! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
         } else {
-            return `✅ VirusTotal: Svetainė saugi. Neaptikta jokių grėsmių iš ${totalVendors} tiekėjo/-ų.`;
+            return `✅ VirusTotal: Website is safe. No threats found out of ${totalVendors} vendors.`;
         }
     };
 
