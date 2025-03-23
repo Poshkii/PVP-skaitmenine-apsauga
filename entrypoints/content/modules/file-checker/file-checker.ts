@@ -1,7 +1,5 @@
 console.log("FileChecker script loaded in service worker");
 
-
-import { Download } from "lucide-react";
 import {Module, ModuleId} from "../../types/module.ts";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 
@@ -10,16 +8,16 @@ export class FileChecker extends Module {
     private activePolling: Map<number, boolean> = new Map();
 
     load(): void {
+        chrome.downloads.onCreated.addListener(this.onDownloadCreated);
         chrome.downloads.onCreated.addListener((downloadItem) => {
+            console.log("Download pause command sent for ID:", downloadItem);
             chrome.downloads.pause(downloadItem.id);
         });
-        chrome.downloads.onCreated.addListener(this.onDownloadCreated);
-        
+
+        chrome.downloads.onChanged.addListener(this.onDownloadChanged);
         chrome.downloads.onChanged.addListener((downloadItem) => {
             console.log("Download info changed:", downloadItem);
         });
-        chrome.downloads.onChanged.addListener(this.onDownloadChanged);
-
     }
 
     unload(): void {
@@ -43,18 +41,20 @@ export class FileChecker extends Module {
     }
 
     private onDownloadCreated = async (downloadItem: chrome.downloads.DownloadItem) => {
-        
+        chrome.downloads.pause(downloadItem.id);
+        console.log("Download pause command sent for ID:", downloadItem.id);
         if (downloadItem.id !== undefined) {
             try {
-                chrome.downloads.pause(downloadItem.id);
-                console.log("Download pause command sent for ID:", downloadItem.id);
                 this.activePolling.set(downloadItem.id, true);
             } 
             catch (e) {
-                console.error("Error pausing download:", e);
+                console.error("Error managing download:", e);
             }
         }
 
+        // cia uzkomentuota, kad nesvaistytu API limitu
+
+        /*
         try {
             const results = await this.checkUrlWithSandbox(downloadItem.url, downloadItem.id);
 
@@ -87,6 +87,7 @@ export class FileChecker extends Module {
         finally {
             this.activePolling.delete(downloadItem.id);
         }
+            */
     }
 
     private async checkUrlWithSandbox(url: string, downloadId: number): Promise<any> {
