@@ -1,5 +1,6 @@
 import {FormEvent, useState} from "react";
 import URLScam from "./URLScam";
+import { useReport } from "../report-page/ReportContext";
 
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
@@ -8,6 +9,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
     const [showURLScam, setShowURLScam] = useState(false);
+    const { report, updateReport } = useReport();
 
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
@@ -41,6 +43,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     };
 
     const UrlChecker = async (e: FormEvent) => {
+        updateReport("UrlScans", report.UrlScans + 1);
         e.preventDefault();
         setShowURLScam(false);
         setLoading(true);
@@ -221,7 +224,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         const initialDelay = 8000;  // Increased initial delay to 8 seconds
         
         // Return initial message that scan is in progress
-        setDebug(`URLScan.io scan submitted. UUID: ${uuid}. Waiting for results...`);
+        //setDebug(`URLScan.io scan submitted. UUID: ${uuid}. Waiting for results...`);
         
         while (attempts < maxAttempts) {
             try {
@@ -238,16 +241,16 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     
                     // Check scan status
                     if (resultData.task && resultData.task.status === "complete") {
-                        setDebug(`Scan complete after ${attempts + 1} attempts`);
+                        //setDebug(`Scan complete after ${attempts + 1} attempts`);
                         return processURLScanResponse(resultData);
                     }
                     
                     // Provide status updates in debug
-                    setDebug(`Attempt ${attempts + 1}/${maxAttempts}: Scan status: ${resultData.task?.status || "unknown"}`);
+                    //setDebug(`Attempt ${attempts + 1}/${maxAttempts}: Scan status: ${resultData.task?.status || "unknown"}`);
                 }
             } catch (error) {
                 console.error("URLScan.io result retrieving error:", error);
-                setDebug(`Error checking scan status: ${error}`);
+                //setDebug(`Error checking scan status: ${error}`);
             }
             
             attempts++;
@@ -268,7 +271,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             if (finalAttempt.ok) {
                 const resultData = await finalAttempt.json();
                 if (resultData.task && resultData.task.status === "complete") {
-                    setDebug("Found results on final attempt");
+                    //setDebug("Found results on final attempt");
                     return processURLScanResponse(resultData);
                 }
             }

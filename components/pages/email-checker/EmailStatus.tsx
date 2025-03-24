@@ -3,12 +3,14 @@ import EmailBreachDetails from "@/components/pages/email-checker/EmailBreachData
 import EmailBreachData from "@/components/pages/email-checker/EmailBreachData.tsx";
 import { FormEvent } from "react";
 import { data } from "react-router";
+import { useReport } from "../report-page/ReportContext";
 
 function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPage: () => void }) {
     const [email, setEmail] = useState(inputEmail);
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
     const [breachData, setBreachData] = useState<any | null>(null); // Stores full API response
+    const { addScannedEmail } = useReport();
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -34,9 +36,11 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             if (response.status === 200 && data.BreachesSummary.site) {
                 setResult(`⚠️ Rasti ${data.ExposedBreaches.breaches_details.length} nutekėjimai!`);
                 setBreachData(data);
+                addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
             } else {
                 setResult("✅ El. paštas saugus!");
                 setBreachData(null);
+                addScannedEmail(email, 0);
             }
         } catch (error) {
             console.error("API klaida:", error);

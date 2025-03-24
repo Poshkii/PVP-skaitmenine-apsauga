@@ -9,6 +9,7 @@ import InfoPage from "../info-page/InfoPage";
 import Profile from "@/components/pages/profile/Profile.tsx";
 import Login from "@/components/pages/profile/Login.tsx";
 import Register from "@/components/pages/profile/Register.tsx";
+import ReportPage from "../report-page/ReportPage";
 
 
 function HomeRoutes(){
@@ -20,6 +21,7 @@ function HomeRoutes(){
             <Route path="/url-checker/:url?" element={<URLChecker />}/>
             <Route path="/file-checker/:file?" element={<FileChecker />}/>
             <Route path="/settings" element={<Settings />}/>
+            <Route path="/report-page" element={<ReportPage />}/>
             <Route path="/email-checker/:email?" element={<EmailChecker />}/>
             <Route path="/profile" element={<Profile />}/>
             <Route path="/login" element={<Login />}/>
