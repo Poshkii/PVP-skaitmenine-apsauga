@@ -1,5 +1,5 @@
 import {useNavigate} from "react-router";
-import {Clock, Cookie, Home, Settings} from "lucide-react";
+import {Clock, Home, Settings, User} from "lucide-react";
 
 function NavBar() {
     const navigate = useNavigate();
@@ -8,7 +8,7 @@ function NavBar() {
         <div className="bottom-buttons fixed-bottom">
             <button className="page-button" onClick={() => navigate("/")}><Home/></button>
             <button className="page-button"><Clock/></button>
-            <button className="page-button"><Cookie/></button>
+            <button className="page-button" onClick={() => navigate("/profile")}><User/></button>
             <button className="page-button" onClick={() => navigate("/settings")}><Settings/></button>
         </div>
     );

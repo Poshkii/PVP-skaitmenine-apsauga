@@ -6,6 +6,9 @@ import URLChecker from "../url-checker/URLChecker";
 import EmailChecker from "../email-checker/EmailChecker";
 import FileChecker from "@/components/pages/file-checker/FileChecker";
 import InfoPage from "../info-page/InfoPage";
+import Profile from "@/components/pages/profile/Profile.tsx";
+import Login from "@/components/pages/profile/Login.tsx";
+import Register from "@/components/pages/profile/Register.tsx";
 
 
 function HomeRoutes(){
@@ -18,6 +21,9 @@ function HomeRoutes(){
             <Route path="/file-checker/:file?" element={<FileChecker />}/>
             <Route path="/settings" element={<Settings />}/>
             <Route path="/email-checker/:email?" element={<EmailChecker />}/>
+            <Route path="/profile" element={<Profile />}/>
+            <Route path="/login" element={<Login />}/>
+            <Route path="/register" element={<Register />}/>
         </Routes>
     );
 }

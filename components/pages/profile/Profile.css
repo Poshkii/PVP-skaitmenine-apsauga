@@ -1,0 +1,15 @@
+.button {
+    width: 200px;
+    height: 40px;
+    background-color: #4b5563;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    transition: background-color 0.2s ease-in-out;
+    margin-top: 0.5rem;
+}
+
+input {
+    margin-bottom: 0.8rem;
+}
