@@ -6,6 +6,8 @@ import URLChecker from "../url-checker/URLChecker";
 import EmailChecker from "../email-checker/EmailChecker";
 import FileChecker from "@/components/pages/file-checker/FileChecker";
 import InfoPage from "../info-page/InfoPage";
+import Cookies from "@/components/pages/cookies/Cookies";
+import { Cookie } from "lucide-react";
 
 
 function HomeRoutes(){
@@ -18,6 +20,7 @@ function HomeRoutes(){
             <Route path="/file-checker/:file?" element={<FileChecker />}/>
             <Route path="/settings" element={<Settings />}/>
             <Route path="/email-checker/:email?" element={<EmailChecker />}/>
+            <Route path="/cookies" element={<Cookies />}/>
         </Routes>
     );
 }

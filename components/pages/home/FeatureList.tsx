@@ -9,7 +9,7 @@ const meniu = [
     { name: "Failų patikra", hint: "Failų naudojimo saugumo tikrinimas", route: "/file-checker" },
     { name: "El. pašto apsauga", hint: "Laiško tikrinimas, pavojingų failų analizė..", route: "/email-checker" },
     { name: "Tracker tikrintojas", hint: "Kažką tikrina...", route: "/" },
-    { name: "Slapukų analizė", hint: "Sausainiai, mmmm...", route: "/" },
+    { name: "Slapukai", hint: "Sausainiai, mmmm...", route: "/cookies" },
     { name: "Slaptažodžio patikra", hint: "Jautiesi saugus?", route: "/password-checker" },
 ];
 

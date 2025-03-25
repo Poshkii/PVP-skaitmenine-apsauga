@@ -8,7 +8,7 @@ function NavBar() {
         <div className="bottom-buttons fixed-bottom">
             <button className="page-button" onClick={() => navigate("/")}><Home/></button>
             <button className="page-button"><Clock/></button>
-            <button className="page-button"><Cookie/></button>
+            <button className="page-button" onClick={() => navigate("/cookies")}><Cookie/></button>
             <button className="page-button" onClick={() => navigate("/settings")}><Settings/></button>
         </div>
     );
