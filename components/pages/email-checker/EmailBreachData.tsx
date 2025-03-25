@@ -24,15 +24,12 @@ interface BreachData {
 
 const EmailBreachDetails = ({ data }: { data: BreachData }) => {
     if (!data || !data.ExposedBreaches.breaches_details.length) {
-        return <h3 style={{ color: "green", textAlign: "center" }}>✅ Jūsų el. paštas nebuvo nutekintas!</h3>;
+        return <h3 style={{ color: "green", textAlign: "center" }}>✅ Your email is safe!</h3>;
     }
 
     // Get risk level
-    const riskLabel = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
-    const riskColor = riskLabel === "High" ? "red" : riskLabel === "Medium" ? "orange" : "#E6BF00";
-    var risk = "Nežinomas";
-
-    riskLabel === "High" ? risk = "Aukštas" : risk = "Vidutinis";
+    const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
+    const riskColor = risk === "High" ? "red" : risk === "Medium" ? "orange" : "#E6BF00";
 
     return (
         <div style={{ padding: "1rem", maxWidth: "800px", margin: "auto" }}>
@@ -45,11 +42,11 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
                 color: "white", 
                 fontWeight: "bold"
             }}>
-                📢 Rizikos lygis: {risk}
+                📢 Risk level: {risk}
             </div>
 
             {/* Breach List */}
-            <h2 style={{ color: "white", textAlign: "center", marginTop: "1rem" }}>Nutekinti duomenys</h2>
+            <h2 style={{ color: "white", textAlign: "center", marginTop: "1rem" }}>Breaches</h2>
             {data.ExposedBreaches.breaches_details.map((breach, index) => (
                 <div key={index} style={{
                     border: "1px solid #ddd",
@@ -76,7 +73,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
                     <p style={{ fontSize: "14px", color: "#ADADAD" }}>{breach.details}</p>
                 
                     {/* Nutekinta informacija - Xposed Data */}
-                    <p><strong>Nutekinta informacija:</strong></p>
+                    <p><strong>Leaked information:</strong></p>
                     <ul style={{ listStyleType: "disc", textAlign: "left", paddingLeft: "20px" }}>
                         {breach.xposed_data.split(";").map((item, idx) => (
                             <li style={{ padding: "0.05rem" }} key={idx}>{item.trim()}</li>  
@@ -84,7 +81,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
                     </ul>
 
                     {/* Password Risk */}
-                    <p><strong>Slaptažodžių rizika: </strong> 
+                    <p><strong>Password risk: </strong> 
                         <span style={{ color: breach.password_risk === "plaintext" ? "red" : "orange" }}>
                             {breach.password_risk}
                         </span>

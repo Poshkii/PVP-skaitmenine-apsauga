@@ -16,11 +16,11 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
         e.preventDefault();
 
         if (!email.match(emailPattern)) {
-            setResult("Neteisingas el. pašto formatas");
+            setResult("Wrong email format");
             return;
         }
 
-        setResult("🔍 Ieškoma...");
+        setResult("🔍 Searching...");
         setLoading(true);
         setBreachData(null); // Clear previous data before a new search
 
@@ -32,15 +32,15 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             console.log("API data: ", data)
 
             if (response.status === 200 && data.BreachesSummary.site) {
-                setResult(`⚠️ Rasti ${data.ExposedBreaches.breaches_details.length} nutekėjimai!`);
+                setResult(`⚠️ Found ${data.ExposedBreaches.breaches_details.length} breaches!`);
                 setBreachData(data);
             } else {
-                setResult("✅ El. paštas saugus!");
+                setResult("✅ Email is safe!");
                 setBreachData(null);
             }
         } catch (error) {
             console.error("API klaida:", error);
-            setResult("❌ Klaida tikrinant el. paštą");
+            setResult("❌ Error");
         }
 
         setLoading(false);
@@ -48,12 +48,12 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
     return (
         <div style={{ marginTop: "1em", marginBottom: "4rem", textAlign: "center" }}>
-            <h2 style={{ color: "white" }}>Patikrinkite, ar jūsų el. paštas buvo nutekintas</h2>
+            <h2 style={{ color: "white" }}>Check if your email was leaked</h2>
             
             <form onSubmit={EmailCheck}>
                 <input
                     type="text"
-                    placeholder="Įveskite el. pašto adresą"
+                    placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={{ padding: "0.5rem", width: "90%", marginBottom: "0.5rem" }}
@@ -74,7 +74,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                         cursor: email.match(emailPattern) ? "pointer" : "not-allowed"
                     }}
                 >
-                    🔍 Tikrinti
+                    🔍 Check
                 </button>
             </form>
 
@@ -99,7 +99,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                             cursor: "pointer",
                         }}
                     >
-                        Ką daryti?
+                        What do I do?
                     </button>
             )
             }
