@@ -9,6 +9,8 @@ import InfoPage from "../info-page/InfoPage";
 import Profile from "@/components/pages/profile/Profile.tsx";
 import Login from "@/components/pages/profile/Login.tsx";
 import Register from "@/components/pages/profile/Register.tsx";
+import Cookies from "@/components/pages/cookies/Cookies";
+import { Cookie } from "lucide-react";
 
 
 function HomeRoutes(){
@@ -24,6 +26,7 @@ function HomeRoutes(){
             <Route path="/profile" element={<Profile />}/>
             <Route path="/login" element={<Login />}/>
             <Route path="/register" element={<Register />}/>
+            <Route path="/cookies" element={<Cookies />}/>
         </Routes>
     );
 }
