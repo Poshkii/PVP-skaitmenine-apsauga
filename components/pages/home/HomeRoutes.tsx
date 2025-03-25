@@ -11,6 +11,7 @@ import Login from "@/components/pages/profile/Login.tsx";
 import Register from "@/components/pages/profile/Register.tsx";
 import Cookies from "@/components/pages/cookies/Cookies";
 import { Cookie } from "lucide-react";
+import ReportPage from "@/components/pages/report-page/ReportPage.tsx";
 
 
 function HomeRoutes(){
@@ -22,6 +23,7 @@ function HomeRoutes(){
             <Route path="/url-checker/:url?" element={<URLChecker />}/>
             <Route path="/file-checker/:file?" element={<FileChecker />}/>
             <Route path="/settings" element={<Settings />}/>
+            <Route path="/report-page" element={<ReportPage />}/>
             <Route path="/email-checker/:email?" element={<EmailChecker />}/>
             <Route path="/profile" element={<Profile />}/>
             <Route path="/login" element={<Login />}/>
