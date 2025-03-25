@@ -9,7 +9,7 @@
     transition: background-color 0.2s ease-in-out;
     margin-top: 0.5rem;
 }
-
-input {
-    margin-bottom: 0.8rem;
+ 
+.input {
+   margin-bottom: 0.8rem;
 }

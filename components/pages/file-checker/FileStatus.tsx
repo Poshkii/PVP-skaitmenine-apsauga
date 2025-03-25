@@ -1,6 +1,7 @@
 import {Upload, Link} from "lucide-react";
 import {useEffect, useState} from "react";
 import SparkMD5 from 'spark-md5';
+import { useReport } from "../report-page/ReportContext";
 
 const API_KEY = String(useAppConfig().fileCheckerApiKey);
 const API_URL = "https://api.metadefender.com/v4";
@@ -250,6 +251,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
     const [urlResult, setUrlResult] = useState("");
     const [urlSafety, setUrlSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
     const [activeTab, setActiveTab] = useState<"file" | "url">("file");
+    const { report, updateReport } = useReport();
 
     const setFileState = async (file: File) => {
         setSelectedFile(file);
@@ -293,6 +295,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
     const FileChecker = async () => {
         if (!selectedFile) return;
         setIsChecking(true);
+        updateReport("FileScans", report.FileScans + 1);
 
         try {
             const results = await checkFileByHash(selectedFile);
@@ -337,6 +340,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
         setIsCheckingUrl(true);
         setUrlSafety("unknown");
         setUrlResult("");
+        updateReport("FileScans", report.FileScans + 1);
         
         try {
             const results = await checkUrlWithSandbox(urlToCheck);

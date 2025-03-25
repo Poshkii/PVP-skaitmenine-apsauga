@@ -51,6 +51,7 @@ function Login() {
                     <div>
                         <label htmlFor="username"><User/></label>
                         <input
+                            className='input'
                             type="text"
                             id="username"
                             placeholder="Username"
@@ -61,7 +62,8 @@ function Login() {
                     </div>
                     <div>
                         <label htmlFor="password"><Lock/></label>
-                        <input
+                        <input  
+                            className='input'
                             type="password"
                             id="password"
                             placeholder="Password"
