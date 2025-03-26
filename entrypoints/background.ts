@@ -14,13 +14,9 @@ export default defineBackground(async () => {
     const moduleManager = new ModuleManager();
     moduleManager.registerModule(fileChecker, config.isModuleEnabled(fileChecker.id));
 
-    // Listen for messages from the content script
     browser.runtime.onMessage.addListener((message: BgMessage) => {
         switch (message.id) {
             case BgMessageId.OpenPopup: {
-                console.log("Opening extension popup...");
-
-                // Open the extension's UI
                 browser.action.openPopup()
                 break;
             }
@@ -49,7 +45,7 @@ export default defineBackground(async () => {
     });
 });
 
-function waitForPopup(callback: () => void) {
+export function waitForPopup(callback: () => void) {
     const onMessage = (message: BgMessage) => {
         switch (message.id) {
             case BgMessageId.PopupOpened: {

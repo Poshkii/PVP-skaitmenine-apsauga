@@ -47,7 +47,7 @@ export class EmailChecker extends Module {
         button.addEventListener("click", () => {
             console.log("Email button clicked, sending message to background script...");
 
-            this.sendToBackground({
+            this.sendToRuntime({
                 id: BgMessageId.NavigateTo,
                 data: {
                     route: `/email-checker/${emailField.value}`

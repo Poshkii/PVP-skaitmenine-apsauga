@@ -47,7 +47,7 @@ export class PasswordChecker extends Module {
         button.addEventListener("click", () => {
             console.log("Button clicked, sending message to background script...");
 
-            this.sendToBackground({
+            this.sendToRuntime({
                 id: BgMessageId.NavigateTo,
                 data: {
                     route: `/password-checker/${passwordField.value}`
