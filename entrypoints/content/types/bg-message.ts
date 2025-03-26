@@ -1,7 +1,8 @@
 export enum BgMessageId {
     OpenPopup = "OPEN_EXTENSION_POPUP",
     NavigateTo = "NAVIGATE_TO",
-    PopupOpened = "POPUP_OPENED"
+    PopupOpened = "POPUP_OPENED",
+    ModuleChange = "MODULE_CHANGE"
 }
 
 export interface BgMessage {
