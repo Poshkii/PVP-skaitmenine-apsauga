@@ -1,4 +1,5 @@
 import {Module, ModuleId} from "@/entrypoints/content/types/module.ts";
+import {ModuleMessage} from "@/entrypoints/content/types/module-message.ts";
 
 export class ModuleManager {
     private modules: Map<ModuleId, Module> = new Map();
@@ -43,4 +44,27 @@ export class ModuleManager {
     getModuleStatus(id: ModuleId): boolean {
         return this.activeModules.has(id);
     }
+
+    sendMessage(id: ModuleId, message: ModuleMessage): any {
+        const module = this.modules.get(id);
+
+        if (!module || !this.activeModules.has(id)) {
+            console.warn(`Cannot send message to module ${id}: module not found or not active`);
+            return null;
+        }
+
+        try {
+            return module.handleMessage(message);
+        } catch (error) {
+            console.error(`Error in module ${id} while handling message:`, error);
+            return null;
+        }
+    }
+
+    broadcastMessage(message: ModuleMessage): void {
+        for (const id of this.activeModules) {
+            this.sendMessage(id, message);
+        }
+    }
+
 }

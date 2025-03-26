@@ -31,13 +31,18 @@ export default defineBackground(async () => {
                 break;
             }
             case BgMessageId.ModuleChange: {
-                const {moduleId, enabled} = message.data;
+                const { moduleId, enabled } = message.data;
 
                 if (enabled) {
                     moduleManager.loadModule(moduleId);
                 } else {
                     moduleManager.unloadModule(moduleId);
                 }
+                break;
+            }
+            case BgMessageId.SendModuleMessage: {
+                const { moduleId, moduleMessage } = message.data;
+                moduleManager.sendMessage(moduleId, moduleMessage);
                 break;
             }
         }

@@ -1,5 +1,6 @@
 import {BgMessage} from "@/entrypoints/content/types/bg-message.ts";
 import EventEmitter from "eventemitter3";
+import {ModuleMessage} from "@/entrypoints/content/types/module-message.ts";
 
 export enum ModuleId {
     PasswordChecker,
@@ -22,5 +23,9 @@ export abstract class Module extends EventEmitter {
                 return response;
             }
         });
+    }
+
+    handleMessage(message: ModuleMessage): any {
+        // override if module needs to handle messages
     }
 }
