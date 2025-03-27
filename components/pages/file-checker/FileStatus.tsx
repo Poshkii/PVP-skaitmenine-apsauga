@@ -322,12 +322,12 @@ function FileStatus({inputFile}: { inputFile: string }) {
                     await pollForResults(uploadData.data_id);
                 } else {
                     const errorData = await uploadResponse.json();
-                    setResult(`Klaida: ${errorData.error?.messages || 'Nepavyko patikrinti failo'}`);
+                    setResult(`Error: ${errorData.error?.messages || 'File check failed'}`);
                     setSafety("unknown");
                 }
             }
         } catch (error) {
-            setResult(`Klaida: ${error instanceof Error ? error.message : 'Nepavyko patikrinti failo'}`);
+            setResult(`Error: ${error instanceof Error ? error.message : 'File check failed'}`);
             setSafety("unknown");
         } finally {
             setIsChecking(false);
@@ -346,7 +346,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
             const results = await checkUrlWithSandbox(urlToCheck);
             processUrlApiResponse(results);
         } catch (error) {
-            setUrlResult(`Klaida: ${error instanceof Error ? error.message : 'Nepavyko patikrinti failo'}`);
+            setUrlResult(`Error: ${error instanceof Error ? error.message : 'File check failed'}`);
             setUrlSafety("unknown");
         } finally {
             setIsCheckingUrl(false);
@@ -398,7 +398,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
 
         // Jei daugiau nei 1 min uztrunka (per didele eile API turbut)
         if (attempts >= maxAttempts) {
-            setResult("Patikrinimas užtruko per ilgai. Bandykite vėliau.");
+            setResult("Check took too long. Try again later.");
             setSafety("unknown");
         }
     }
@@ -425,14 +425,14 @@ function FileStatus({inputFile}: { inputFile: string }) {
 
             if (detectedCount > 0) {
                 setSafety("unsafe");
-                setResult(`Aptikta grėsmių: ${detectedCount} iš ${totalEngines} saugos variklių.`);
+                setResult(`Threats found: ${detectedCount} out of ${totalEngines} antivirus engines.`);
             } else {
                 setSafety("safe");
-                setResult(`Patikrinta su ${totalEngines} saugos varikliais. Grėsmių nerasta.`);
+                setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
             }
         } else {
             setSafety("unknown");
-            setResult("Nepavyko nustatyti failo saugumo.");
+            setResult("Failed to determine file safety.");
         }
     };
 
@@ -442,19 +442,19 @@ function FileStatus({inputFile}: { inputFile: string }) {
         if (scanResults) {
             if (scanResults.threatLevel > 0 && scanResults.verdict === "MALICIOUS") {
                 setUrlSafety("unsafe");
-                setUrlResult(`Verdiktas: ${scanResults.verdict} \n 
-                             Grėsmės lygis: ${scanResults.threatLevel} \n 
-                             Pasitikėjimas: ${scanResults.confidence} \n`);
+                setUrlResult(`Verdict: ${scanResults.verdict} \n 
+                             Threat level: ${scanResults.threatLevel} \n 
+                             Confidence: ${scanResults.confidence} \n`);
             } else {
                 setUrlSafety("safe");
                 //setUrlResult(`URL patikrintas. Grėsmių nerasta.`);
-                setUrlResult(`Verdiktas: ${scanResults.verdict} \n 
-                    Grėsmės lygis: ${scanResults.threatLevel} \n 
-                    Pasitikėjimas: ${scanResults.confidence} \n`);
+                setUrlResult(`Verdict: ${scanResults.verdict} \n 
+                    Threat level: ${scanResults.threatLevel} \n 
+                    Confidence: ${scanResults.confidence} \n`);
             }
         } else {
             setUrlSafety("unknown");
-            setUrlResult("Nepavyko nustatyti failo saugumo.");
+            setUrlResult("Failed to determine file safety.");
         }
     };
 
@@ -487,7 +487,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 maxHeight: "calc(100vh - 70px)",
                 overflowY: "auto"
             }}>
-                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>Patikrinkite saugumą</h2>
+                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>File safety check</h2>
                 
                 {/* Tab'ai testinei aplinkai */}
                 <div style={{
@@ -508,7 +508,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             width: "50%"
                         }}
                     >
-                        Failas
+                        File
                     </button>
                     <button 
                         onClick={() => setActiveTab("url")} 
@@ -522,7 +522,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             width: "50%"
                         }}
                     >
-                        Failas <br></br> (be download)
+                        File <br></br> (no download)
                     </button>
                 </div>
                 
@@ -548,7 +548,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                                 onDrop={dropZoneUpload}
                             >
                                 <Upload/>
-                                <div>Pasirinkite arba nutempkite failą čia</div>
+                                <div>Select or drag & drop file here</div>
                                 {fileName && (
                                     <div style={{
                                         maxWidth: "90%",
@@ -562,7 +562,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                                     }}
                                         title={fileName}>
 
-                                        Pasirinktas: <br></br> {fileName}
+                                        Selected: <br></br> {fileName}
                                     </div>
                                 )}
                             </label>
@@ -590,7 +590,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             }}
                         >
                             <div>
-                                {isChecking ? "Tikrinama..." : "Tikrinti failo saugumą"}
+                                {isChecking ? "Checking..." : "Check file safety"}
                             </div>
                         </button>
                         <div>
@@ -606,14 +606,14 @@ function FileStatus({inputFile}: { inputFile: string }) {
                                     color: "white",
                                     marginBottom: "1rem"
                                 }}>
-                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Rezultatas: {
-                                        safety === "safe" ? "Failas saugus" :
-                                            safety === "unsafe" ? "Failas nesaugus" :
+                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Result: {
+                                        safety === "safe" ? "File is safe" :
+                                            safety === "unsafe" ? "File is unsafe" :
                                                 ""
                                     }</div>
                                     <div>{result}</div>
                                     { params.time > 0 && (
-                                        <div>Skenavimas užtruko { params.time / 1000 + ' s'}</div>
+                                        <div>Scanning took { params.time / 1000 + ' s'}</div>
                                     )}
                                 </div>
 
@@ -624,11 +624,11 @@ function FileStatus({inputFile}: { inputFile: string }) {
                                         borderRadius: "8px",
                                         color: "white"
                                     }}>
-                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Papildoma informacija:</h3>
+                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Extra info:</h3>
                                         <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
                                             {params.scan_results_all && (
                                                 <div style={{padding: '1rem 0'}}>
-                                                    <span style={{fontWeight: 'bold'}}>Bendras antivirusinių verdiktas: </span>
+                                                    <span style={{fontWeight: 'bold'}}>Antivirus verdict: </span>
                                                     <span>{params.scan_results_all}</span>
                                                 </div>
                                             )}
@@ -652,7 +652,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 {activeTab === "url" && (
                     <>
                         <div style={{margin: "1rem auto", width: "90%"}}>
-                        <div style={{marginBottom: "1rem", color: "white"}}>Įveskite failo URL adresą patikrinimui</div>
+                        <div style={{marginBottom: "1rem", color: "white"}}>Enter file address</div>
                                 <input
                                     type="text"
                                     value={urlToCheck}
@@ -686,7 +686,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             }}
                         >
                             <div>
-                                {isCheckingUrl ? "Tikrinama..." : "Tikrinti failo saugumą"}
+                                {isCheckingUrl ? "Checking..." : "Check file safety"}
                             </div>
                         </button>
                         <div>
@@ -702,9 +702,9 @@ function FileStatus({inputFile}: { inputFile: string }) {
                                     color: "white",
                                     marginBottom: "1rem"
                                 }}>
-                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Rezultatas: {
-                                        urlSafety === "safe" ? "Failas saugus" :
-                                            urlSafety === "unsafe" ? "Failas nesaugus" :
+                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Result: {
+                                        urlSafety === "safe" ? "File is safe" :
+                                            urlSafety === "unsafe" ? "File is unsafe" :
                                                 ""
                                     }</div>
                                     <div>{urlResult}</div>

@@ -5,12 +5,12 @@ import { Info } from 'lucide-react';
 
 // TODO: define routes in a more global file
 const meniu = [
-    { name: "URL patikra", hint: "Ar tikrai nori čia apsilankyti?", route: "/url-checker"},
-    { name: "Failų patikra", hint: "Failų naudojimo saugumo tikrinimas", route: "/file-checker" },
-    { name: "El. pašto apsauga", hint: "Laiško tikrinimas, pavojingų failų analizė..", route: "/email-checker" },
-    { name: "Tracker tikrintojas", hint: "Kažką tikrina...", route: "/" },
-    { name: "Slapukai", hint: "Sausainiai, mmmm...", route: "/cookies" },
-    { name: "Slaptažodžio patikra", hint: "Jautiesi saugus?", route: "/password-checker" },
+    { name: "Website Check", hint: "Are you sure you want to visit this site?", route: "/url-checker"},
+    { name: "File Check", hint: "Scan your files", route: "/file-checker" },
+    { name: "Password Check", hint: "Feeling safe?", route: "/password-checker" },
+    { name: "Cookies", hint: "Cookies, mmmm...", route: "/cookies" },
+    { name: "Email Protection", hint: "Message, attachment analysis", route: "/email-checker" },
+    { name: "Tracker Check", hint: "Tracker analysis", route: "/" },
 ];
 
 function FeatureList(){

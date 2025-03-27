@@ -47,7 +47,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         e.preventDefault();
         setShowURLScam(false);
         setLoading(true);
-        setResult("🔍 Tikrinama...");
+        setResult("🔍 Checking...");
         
         /* URL formatavimas
         let formattedUrl = normalizeURL(url);
@@ -367,7 +367,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         const totalVendors = stats.malicious + stats.suspicious + stats.harmless + stats.undetected;
 
         if (totalVendors === 0) {
-            return "⚠️ VirusTotal: URL dar nebuvo analizuotas. Bandykite vėliau.";
+            return "⚠️ VirusTotal: URL still hasn't been analysed. Try again later.";
         }
             
         if (totalDetections > 0) {
@@ -388,12 +388,12 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 display: "flex", 
                 flexDirection: "column" 
 }           }>
-            <h2 style={{ color: "white" }}>Patikrinkite svetainės saugumą</h2>
+            <h2 style={{ color: "white" }}>Check website safety</h2>
 
             <form onSubmit={UrlChecker}>
                 <input
                     type="text"
-                    placeholder="Įveskite svetainės nuorodą..."
+                    placeholder="Enter website address..."
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     style={{ padding: "0.5rem", width: "90%" }}
@@ -414,7 +414,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                         cursor: !url || loading ? "not-allowed" : "pointer" 
                     }}
                 >
-                    Tikrinti
+                    Check
                 </button>
             </form>
 
