@@ -9,7 +9,6 @@ const API_KEY = String(useAppConfig().fileCheckerApiKey);
 const API_URL = "https://api.metadefender.com/v4";
 const HASH_ENDPOINT = "/hash";
 const FILE_ENDPOINT = "/file";
-const URL_ENDPOINT = "/sandbox";
 
 async function calculateSHA256(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -73,34 +72,6 @@ async function checkFileByHash(file: File): Promise<any | null> {
     return null;
 }
 
-async function sendFileUrlToSandbox(url: string): Promise<string> {
-    try {
-        const submitResponse = await fetch("https://api.metadefender.com/v4/sandbox", {
-            method: "POST",
-            headers: {
-                "apikey": API_KEY,
-                "Content-Type": "application/json"  
-            },
-            body: JSON.stringify({ url: url }) 
-        });
-        
-        if (!submitResponse.ok) {
-            const errorData = await submitResponse.json();
-            throw new Error(errorData.error?.messages || 'Failed to submit URL for scanning');
-            
-        }
-        
-        const submitData = await submitResponse.json();
-        const dataId = submitData.sandbox_id;
-        
-        // return url for polling
-        return API_URL + URL_ENDPOINT + '/' + dataId;
-    } catch (error) {
-        console.error("Error checking URL:", error);
-        throw error;
-    }
-}
-
 async function getScanResult(url: string) {
     try {
         const response = await fetch(url, {
@@ -128,23 +99,49 @@ function FileStatus({inputFile }: { inputFile: string }) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState(inputFile || "");
     const [result, setResult] = useState("");
+    const [prevResult, setPrevResult] = useState("");
     const [isChecking, setIsChecking] = useState(false);
     const [params, setParams] = useState({
+        name: "",
+        time: 0,
+        scan_results_all: "",
+    });
+    const [prevParams, setPrevParams] = useState({
+        name: "",
         time: 0,
         scan_results_all: "",
     });
     const [safety, setSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
+    const [prevSafety, setPrevSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
     const [avThreats, setAvThreats] = useState ({});
+    const [prevAvThreats, setPrevAvThreats] = useState ({});
     
-    const [urlToCheck, setUrlToCheck] = useState("");
-    const [isCheckingUrl, setIsCheckingUrl] = useState(false);
-    const [urlResult, setUrlResult] = useState("");
-    const [urlSafety, setUrlSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
-    const [activeTab, setActiveTab] = useState<"file" | "url">("file");
+    const [activeTab, setActiveTab] = useState<"file" | "history">("file");
 
     const { sendToModule } = useModuleMessaging();
 
     const viewPreviousScan = async () => {
+        const result = await browser.storage.local.get(["previousFileScanUrl"]);
+        const url = result["previousFileScanUrl"];
+
+        if (!url) {
+            setPrevResult("Error: No file was scanned previously");
+            setPrevSafety("unknown");
+            return;
+        }
+
+        const data = await getScanResult(url);
+
+        if (!data) {
+            setPrevResult(`Error: Scan has not completed yet`);
+            setPrevSafety("unknown");
+            return;
+        }
+
+        processPreviousApiResponse(data);
+    }
+
+    const viewCurrentScan = async () => {
         const result = await browser.storage.local.get(["previousFileScanUrl"]);
         const url = result["previousFileScanUrl"];
 
@@ -162,22 +159,15 @@ function FileStatus({inputFile }: { inputFile: string }) {
             return;
         }
 
-        if (url.includes(URL_ENDPOINT)){
-            setActiveTab("url");
-            processUrlApiResponse(data);
-        }
-        else if (url.includes(FILE_ENDPOINT)) {
-            processApiResponse(data);
-        }
+        processApiResponse(data);
     }
 
     useEffect(() => {
         const onMessage = (message: UiMessage) => {
             switch (message.id) {
                 case UiMessageId.ScanFinished: {
-                    setIsCheckingUrl(false);
                     setIsChecking(false);
-                    viewPreviousScan();
+                    viewCurrentScan();
                     break;
                 }
             }
@@ -196,6 +186,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
         setSafety("unknown");
         setResult("");
         setParams({
+            name: "",
             time: 0,
             scan_results_all: "",
         });
@@ -260,30 +251,13 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     //processApiResponse(results);
                 } else {
                     const errorData = await uploadResponse.json();
-                    setResult(`Klaida: ${errorData.error?.messages || 'Nepavyko patikrinti failo'}`);
+                    setResult(`Error: ${errorData.error?.messages || 'Couldn\'t check file'}`);
                     setSafety("unknown");
                 }
             }
         } catch (error) {
-            setResult(`Klaida: ${error instanceof Error ? error.message : 'Nepavyko patikrinti failo'}`);
+            setResult(`Error: ${error instanceof Error ? error.message : 'Couldn\'t check file'}`);
             setSafety("unknown");
-        }
-    };
-
-    const UrlChecker = async () => {
-        if (!urlToCheck) return;
-        
-        setIsCheckingUrl(true);
-        setUrlSafety("unknown");
-        setUrlResult("");
-        
-        try {
-            const pollUrl = await sendFileUrlToSandbox(urlToCheck);
-            pollForResults(pollUrl);
-            //processUrlApiResponse(results);
-        } catch (error) {
-            setUrlResult(`Klaida: ${error instanceof Error ? error.message : 'Nepavyko patikrinti failo'}`);
-            setUrlSafety("unknown");
         }
     };
 
@@ -303,6 +277,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
 
             if (data.file_info) {
                 setParams ({
+                    name: data.file_info.display_name || "",
                     time: scanResults.total_time || 0,
                     scan_results_all: scanResults.scan_all_result_a || "",
                 });
@@ -314,36 +289,48 @@ function FileStatus({inputFile }: { inputFile: string }) {
 
             if (detectedCount > 0) {
                 setSafety("unsafe");
-                setResult(`Aptikta grėsmių: ${detectedCount} iš ${totalEngines} saugos variklių.`);
+                setResult(`Detected threats: ${detectedCount} from ${totalEngines} anti-virus engines.`);
             } else {
                 setSafety("safe");
-                setResult(`Patikrinta su ${totalEngines} saugos varikliais. Grėsmių nerasta.`);
+                setResult(`Checked with ${totalEngines} anti-virus engines. No threats found.`);
             }
         } else {
             setSafety("unknown");
-            setResult("Nepavyko nustatyti failo saugumo.");
+            setResult("Couldn't determine file safety.");
         }
     };
 
-    const processUrlApiResponse = (data: any) => {
-        const scanResults = data.final_verdict;
-        
+    const processPreviousApiResponse = (data: any) => {
+        const scanResults = data.scan_results;
+        const scanDetails = data.scan_results.scan_details;
+
         if (scanResults) {
-            if (scanResults.threatLevel > 0 && scanResults.verdict === "MALICIOUS") {
-                setUrlSafety("unsafe");
-                setUrlResult(`Verdiktas: ${scanResults.verdict} \n 
-                             Grėsmės lygis: ${scanResults.threatLevel} \n 
-                             Pasitikėjimas: ${scanResults.confidence} \n`);
+            // skenavimo "varikliu" kiekis gaunamas
+            const detectedCount = scanResults.total_detected_avs || 0;
+            const totalEngines = scanResults.total_avs || 1;
+
+            if (data.file_info) {
+                setPrevParams ({
+                    name: data.file_info.display_name || "",
+                    time: scanResults.total_time || 0,
+                    scan_results_all: scanResults.scan_all_result_a || "",
+                });
+            }
+            if (scanDetails) {
+                const threats = extractAVThreats(data);
+                setPrevAvThreats(threats);
+            }
+
+            if (detectedCount > 0) {
+                setPrevSafety("unsafe");
+                setResult(`Detected threats: ${detectedCount} from ${totalEngines} anti-virus engines.`);
             } else {
-                setUrlSafety("safe");
-                //setUrlResult(`URL patikrintas. Grėsmių nerasta.`);
-                setUrlResult(`Verdiktas: ${scanResults.verdict} \n 
-                    Grėsmės lygis: ${scanResults.threatLevel} \n 
-                    Pasitikėjimas: ${scanResults.confidence} \n`);
+                setPrevSafety("safe");
+                setPrevResult(`Checked with ${totalEngines} anti-virus engines. No threats found.`);
             }
         } else {
-            setUrlSafety("unknown");
-            setUrlResult("Nepavyko nustatyti failo saugumo.");
+            setPrevSafety("unknown");
+            setPrevResult("Couldn't determine file safety.");
         }
     };
 
@@ -376,7 +363,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                 maxHeight: "calc(100vh - 70px)",
                 overflowY: "auto"
             }}>
-                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>Patikrinkite saugumą</h2>
+                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>Check File Safety</h2>
                 
                 {/* Tab'ai testinei aplinkai */}
                 <div style={{
@@ -397,25 +384,15 @@ function FileStatus({inputFile }: { inputFile: string }) {
                             width: "50%"
                         }}
                     >
-                        Failas
-                    </button>
-                    <button 
-                        onClick={() => setActiveTab("url")} 
-                        style={{
-                            backgroundColor: activeTab === "url" ? "#4b5563" : "#374151",
-                            color: "white",
-                            border: "none",
-                            padding: "0.5rem 1rem",
-                            cursor: "pointer",
-                            width: "50%"
-                        }}
-                    >
-                        Failas <br></br> (be download)
+                        New Scan
                     </button>
                     <button
-                        onClick={viewPreviousScan}
+                        onClick={() => {
+                            viewPreviousScan();
+                            setActiveTab("history");
+                        }}
                         style={{
-                            backgroundColor: "#374151",
+                            backgroundColor: activeTab === "history" ? "#4b5563" : "#374151",
                             color: "white",
                             border: "none",
                             borderRadius: "0 8px 8px 0",
@@ -424,7 +401,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                             width: "50%"
                         }}
                     >
-                        Previous Scan
+                        Last Scan
                     </button>
                 </div>
                 
@@ -450,7 +427,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 onDrop={dropZoneUpload}
                             >
                                 <Upload/>
-                                <div>Pasirinkite arba nutempkite failą čia</div>
+                                <div>Choose or drag and drop a file</div>
                                 {fileName && (
                                     <div style={{
                                         maxWidth: "90%",
@@ -464,7 +441,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                     }}
                                         title={fileName}>
 
-                                        Pasirinktas: <br></br> {fileName}
+                                        Chosen file: <br></br> {fileName}
                                     </div>
                                 )}
                             </label>
@@ -492,7 +469,9 @@ function FileStatus({inputFile }: { inputFile: string }) {
                             }}
                         >
                             <div>
-                                {isChecking ? "Tikrinama..." : "Tikrinti failo saugumą"}
+                                {isChecking ? "Checking..." : "Scan file"}
+                                <br></br>
+                                {status}
                             </div>
                         </button>
                         <div>
@@ -508,14 +487,14 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                     color: "white",
                                     marginBottom: "1rem"
                                 }}>
-                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Rezultatas: {
-                                        safety === "safe" ? "Failas saugus" :
-                                            safety === "unsafe" ? "Failas nesaugus" :
+                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Results: {
+                                        safety === "safe" ? "File is safe" :
+                                            safety === "unsafe" ? "File is unsafe" :
                                                 ""
                                     }</div>
                                     <div>{result}</div>
                                     { params.time > 0 && (
-                                        <div>Skenavimas užtruko { params.time / 1000 + ' s'}</div>
+                                        <div>Scan duration: { params.time / 1000 + ' s'}</div>
                                     )}
                                 </div>
 
@@ -526,11 +505,11 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                         borderRadius: "8px",
                                         color: "white"
                                     }}>
-                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Papildoma informacija:</h3>
+                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Additional info:</h3>
                                         <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
                                             {params.scan_results_all && (
                                                 <div style={{padding: '1rem 0'}}>
-                                                    <span style={{fontWeight: 'bold'}}>Bendras antivirusinių verdiktas: </span>
+                                                    <span style={{fontWeight: 'bold'}}>Overall AV verdict: </span>
                                                     <span>{params.scan_results_all}</span>
                                                 </div>
                                             )}
@@ -549,68 +528,68 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         )}
                     </>
                 )}
-                
-
-                {activeTab === "url" && (
+                {activeTab === "history" && (
                     <>
-                        <div style={{margin: "1rem auto", width: "90%"}}>
-                        <div style={{marginBottom: "1rem", color: "white"}}>Įveskite failo URL adresą patikrinimui</div>
-                                <input
-                                    type="text"
-                                    value={urlToCheck}
-                                    onChange={(e) => setUrlToCheck(e.target.value)}
-                                    placeholder="https://example.com"
-                                    style={{
-                                        width: "100%",
-                                        padding: "0.75rem",
-                                        borderRadius: "4px",
-                                        border: "1px solid #6b7280",
-                                        backgroundColor: "#1f2937",
-                                        color: "white",
-                                        outline: "none"
+                        <div style={{
+                                        maxWidth: "90%",
+                                        fontSize: "1rem",
+                                        fontWeight: 'bold',
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                        display: "inline-block",
+                                        color:'white'
                                     }}
-                                />
-                        </div>
-                        
-                        <button
-                            onClick={UrlChecker}
-                            disabled={!urlToCheck || isCheckingUrl}
-                            style={{
-                                width: "60%",
-                                height: "40px",
-                                margin: "auto",
-                                backgroundColor: !urlToCheck || isCheckingUrl ? "#6b7280" : "#4b5563",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "8px",
-                                outline: "none",
-                                cursor: !urlToCheck || isCheckingUrl ? "not-allowed" : "pointer"
-                            }}
                         >
-                            <div>
-                                {isCheckingUrl ? "Tikrinama..." : "Tikrinti failo saugumą"}
-                            </div>
-                        </button>
-                        <div>
-                            {isCheckingUrl && <div className="loader" style={{marginTop:'2rem'}}></div>}
+                            <h4 >Last checked file:</h4>
+                            {prevParams.name.split(/[/\\]/).pop()}
                         </div>
-                        
-                        {!isCheckingUrl && urlResult && (
+                        {prevResult && (
                             <div style={{margin: "1rem auto", width: "90%"}}>
                                 <div style={{
                                     padding: "0.75rem",
                                     borderRadius: "8px",
-                                    backgroundColor: urlSafety === "safe" ? "#065f46" : urlSafety === "unsafe" ? "#7f1d1d" : "#374151",
+                                    backgroundColor: prevSafety === "safe" ? "#065f46" : prevSafety === "unsafe" ? "#7f1d1d" : "#374151",
                                     color: "white",
                                     marginBottom: "1rem"
                                 }}>
-                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Rezultatas: {
-                                        urlSafety === "safe" ? "Failas saugus" :
-                                            urlSafety === "unsafe" ? "Failas nesaugus" :
+                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Results: {
+                                        prevSafety === "safe" ? "File is safe" :
+                                        prevSafety === "unsafe" ? "File is unsafe" :
                                                 ""
                                     }</div>
-                                    <div>{urlResult}</div>
+                                    <div>{prevResult}</div>
+                                    { prevParams.time > 0 && (
+                                        <div>Scan duration: { prevParams.time / 1000 + ' s'}</div>
+                                    )}
                                 </div>
+
+                                {(prevParams.scan_results_all && Object.entries(prevAvThreats).length > 0) && (
+                                    <div style={{
+                                        backgroundColor: "#374151",
+                                        padding: "0.75rem",
+                                        borderRadius: "8px",
+                                        color: "white"
+                                    }}>
+                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Additional info:</h3>
+                                        <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
+                                            {prevParams.scan_results_all && (
+                                                <div style={{padding: '1rem 0'}}>
+                                                    <span style={{fontWeight: 'bold'}}>Overall AV verdict: </span>
+                                                    <span>{prevParams.scan_results_all}</span>
+                                                </div>
+                                            )}
+                                            {Object.entries(prevAvThreats).map(([key, value], index, array) => (
+                                                <div key={key}>
+                                                    <strong>{key}:</strong>
+                                                    <br />
+                                                    {typeof value === "string" ? value : JSON.stringify(value)}
+                                                    {index < array.length - 1 && <hr style={{ border: "1px solidrgb(123, 127, 135)", margin: "0.5rem 0" }} />}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>

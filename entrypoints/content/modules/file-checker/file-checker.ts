@@ -7,166 +7,160 @@ export class FileChecker extends Module {
     readonly id = ModuleId.FileChecker;
     private activePolling: Map<number, boolean> = new Map();
     private API_KEY = String(useAppConfig().fileCheckerApiKey);
+    private API_URL = "https://api.metadefender.com/v4";
+    private HASH_ENDPOINT = "/hash";
+    private FILE_ENDPOINT = "/file";
 
     load(): void {
-        chrome.downloads.onCreated.addListener(this.onDownloadCreated);
-        chrome.downloads.onCreated.addListener((downloadItem) => {
-            console.log("Download pause command sent for ID:", downloadItem);
-            chrome.downloads.pause(downloadItem.id);
-        });
-
-        chrome.downloads.onChanged.addListener(this.onDownloadChanged);
-        chrome.downloads.onChanged.addListener((downloadItem) => {
-            console.log("Download info changed:", downloadItem);
+        chrome.downloads.onChanged.addListener(async (downloadDelta) => {
+            if (downloadDelta.state && downloadDelta.state.current === 'complete') {
+                chrome.downloads.search({
+                    id: downloadDelta.id
+                }, async (downloads) => {
+                    if (downloads.length > 0) {
+                        const download = downloads[0];
+                        await this.onDownloadFinished(download);
+                    }
+                });
+            }
         });
     }
 
     unload(): void {
-        chrome.downloads.onCreated.removeListener(this.onDownloadCreated);
-        chrome.downloads.onChanged.removeListener(this.onDownloadChanged);
     }
 
-    private onDownloadChanged = (downloadDelta: chrome.downloads.DownloadDelta) => {
-        console.log("Download info changed:", downloadDelta);
-        
-        if (downloadDelta.error?.current === 'FILE_VIRUS_INFECTED') {
-            console.log(`Chrome detected virus in download ID: ${downloadDelta.id}`);
-            
-            if (this.activePolling.has(downloadDelta.id)) {
-                this.activePolling.set(downloadDelta.id, false);
-                console.log(`Stopped polling for download ID: ${downloadDelta.id}`);
-            }
-            
-            chrome.downloads.cancel(downloadDelta.id);
-        }
-    }
-
-    private onDownloadCreated = async (downloadItem: chrome.downloads.DownloadItem) => {
-        chrome.downloads.pause(downloadItem.id);
-        console.log("Download pause command sent for ID:", downloadItem.id);
-        if (downloadItem.id !== undefined) {
-            try {
-                this.activePolling.set(downloadItem.id, true);
-            } 
-            catch (e) {
-                console.error("Error managing download:", e);
-            }
-        }
-
-        // cia uzkomentuota, kad nesvaistytu API limitu
-
-        /*
-        try {
-            const results = await this.checkUrlWithSandbox(downloadItem.url, downloadItem.id);
-
-            if (!this.activePolling.get(downloadItem.id)) {
-                console.log(`Polling was already stopped for download ID: ${downloadItem.id}`);
-                return;
-            }
-            
-            if (results) {
-                const data = results.final_verdict;
-                console.log(data.verdict);
-                console.log(data.threatLevel);
-                if (data.threatLevel > 0 && data.verdict === "MALICIOUS"){
-                    console.log("File is unsafe, canceling download");
-                    chrome.downloads.cancel(downloadItem.id);
-                }
-                else {
-                    console.log("File is safe, resuming download");
-                    chrome.downloads.resume(downloadItem.id);
-                }
-
-            }
-        } 
-        catch (error) {
-            console.error("Error checking file safety:", error);
-            if (this.activePolling.get(downloadItem.id)) {
-                chrome.downloads.resume(downloadItem.id);
-            }
-        }
-        finally {
-            this.activePolling.delete(downloadItem.id);
-        }
-            */
-    }
-
-    private async checkUrlWithSandbox(url: string, downloadId: number): Promise<any> {
-        console.log("Checking URL with sandbox:", url);
-        try {
-            const URL_ENDPOINT = "https://api.metadefender.com/v4/sandbox";
-
-            const response = await fetch(URL_ENDPOINT, {
-                method: "POST",
-                headers: {
-                    "apikey": this.API_KEY,
-                    "Content-Type": "application/json"  
-                },
-                body: JSON.stringify({ url: url }) 
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error?.messages || 'Failed to submit URL for scanning');
-            }
-            
-            const submitData = await response.json();
-            const dataId = submitData.sandbox_id;
-            
-            return await this.pollForUrlResults(dataId, downloadId);
-        } 
-        catch (error) {
-            console.error("Error checking file URL safety:", error);
-            throw error;
-        }
-    }
-
-    private async pollForUrlResults(dataId: string, downloadId: number): Promise<any> {
-        console.log("Polling for URL results...");
-        let attempts = 0;
-        const maxAttempts = 12;
-
-        const URL_ENDPOINT = "https://api.metadefender.com/v4/sandbox";
-        
-        const URL_RESULT_ENDPOINT = URL_ENDPOINT + '/' + dataId;
-        
-        while (attempts < maxAttempts && this.activePolling.get(downloadId)) {
-            console.log("Polling attempt nr.: ", attempts);
-            try {
-                const response = await fetch(URL_RESULT_ENDPOINT, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': this.API_KEY
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.final_verdict) {
-                        console.log("URL check completed.");
-                        return data;
-                    }
-                }
-            } 
-            catch (error) {
-                console.error("Error polling for URL results:", error);
-            }
-
-            if (!this.activePolling.get(downloadId)) {
-                console.log(`Polling stopped for download ID: ${downloadId}`);
-                break;
-            }
-            
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, 5000)); 
-        }
-
-        if (!this.activePolling.get(downloadId)) {
+    private onDownloadFinished = async (downloadItem: chrome.downloads.DownloadItem) => {
+        if (!downloadItem.finalUrl || !downloadItem.filename) {
+            console.error("Invalid download item");
             return;
         }
+
+        try {
+            // Convert file URL to a File object
+            const response = await fetch(downloadItem.finalUrl);
+            const blob = await response.blob();
+            const file = new File([blob], downloadItem.filename, { type: blob.type });
+
+            const hashCheckResult = await this.checkFileByHash(file);
+
+            if (hashCheckResult) {
+                await this.processScanResults(hashCheckResult);
+            } else {
+                await this.uploadAndScanFile(file);
+            }
+        } catch (error) {
+            console.error("Error processing downloaded file:", error);
+        }
+    }
+
+    private async checkFileByHash(file: File): Promise<any | null> {
+        let sha256Hash: string;
+
+        try {
+            sha256Hash = await this.calculateSHA256(file);
+        } catch (error) {
+            console.error("Failed to calculate sha256:", error);
+            return null;
+        }
+
+        if (sha256Hash) {
+            try {
+                const res = await fetch(`${this.API_URL}${this.HASH_ENDPOINT}/${sha256Hash}`, {
+                    method: "GET",
+                    headers: {
+                        'apikey': this.API_KEY,
+                    }
+                });
+                if (res.ok) {
+                    return await res.json();
+                }
+            } catch (error) {
+                console.error("Error while checking SHA-256 hash:", error);
+            }
+        }
+
+        return null;
+    }
+    
+    private async calculateSHA256(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = async (event) => {
+                try {
+                    if (!event.target?.result) {
+                        throw new Error("Failed to read file");
+                    }
+
+                    const arrayBuffer = event.target.result as ArrayBuffer;
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashHex = hashArray
+                        .map(byte => byte.toString(16).padStart(2, '0'))
+                        .join('');
+
+                    resolve(hashHex);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+
+            reader.onerror = () => {
+                reject(new Error("Error reading file"));
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    private async uploadAndScanFile(file: File) {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const uploadResponse = await fetch(this.API_URL + this.FILE_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'apikey': this.API_KEY
+                },
+                body: formData
+            });
+
+            if (uploadResponse.ok) {
+                const uploadData = await uploadResponse.json();
+                const pollUrl = this.API_URL + this.FILE_ENDPOINT + '/' + uploadData.data_id;
+                await this.pollFileScan(pollUrl);
+            } else {
+                const errorData = await uploadResponse.json();
+                console.error(`File upload error: ${errorData.error?.messages || 'Failed to check file'}`);
+            }
+        } catch (error) {
+            console.error("Error uploading and scanning file:", error);
+        }
+    }
+
+    private async processScanResults(data: any) {
+        const scanResults = data.scan_results;
         
-        throw new Error("URL check timed out. Please try again later.");
+        if (scanResults) {
+            const detectedCount = scanResults.total_detected_avs || 0;
+            const totalEngines = scanResults.total_avs || 1;
+
+            const resultMessage = detectedCount > 0
+                ? `Threats detected: ${detectedCount} out of ${totalEngines} security engines.`
+                : `Checked with ${totalEngines} security engines. No threats found.`;
+
+            const notificationTitle = detectedCount > 0 ? "Potential Security Threat" : "File Safe";
+            
+            await chrome.storage.local.set({
+                "previousFileScanUrl": `${this.API_URL}${this.FILE_ENDPOINT}/${data.data_id || ''}`,
+                "lastScanResults": data
+            });
+
+            this.sendToRuntime({id: UiMessageId.ScanFinished});
+            showNotification(notificationTitle, resultMessage);
+        }
     }
 
     private async pollForResults(url: string): Promise<any> {
@@ -221,9 +215,11 @@ export class FileChecker extends Module {
             return;
         }
 
-        this.sendToRuntime({id: UiMessageId.ScanFinished});
+        await this.processScanResults(results);
 
-        showNotification("File Checker", 'Scan finished. Check "Previous Scan" in the extension.')
+        //this.sendToRuntime({id: UiMessageId.ScanFinished});
+
+        //showNotification("File Checker", 'Scan finished. Check "Previous Scan" in the extension.')
 
         // FIXME: opening popup doesn't work because "the browser is unfocused". Not sure if fixable.
         // const notifListener = (notificationId: string) => {
