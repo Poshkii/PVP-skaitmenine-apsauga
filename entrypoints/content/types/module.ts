@@ -7,6 +7,7 @@ export enum ModuleId {
     PasswordChecker,
     EmailChecker,
     FileChecker,
+    UrlChecker
 }
 
 export abstract class Module extends EventEmitter {

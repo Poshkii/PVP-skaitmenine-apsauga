@@ -1,22 +1,76 @@
-import {FormEvent, useState} from "react";
+import {FormEvent, useEffect, useState} from "react";
 import URLScam from "./URLScam";
-import { useReport } from "../report-page/ReportContext";
+import {useReport} from "../report-page/ReportContext";
+import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
+import {ModuleId} from "@/entrypoints/content/types/module.ts";
+import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
+import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
     const [submittedUrl, setSubmittedUrl] = useState('');
     const [result, setResult] = useState("");
+    const [VTResult, setVTResult] = useState("");
+    const [urlScanResult, setUrlScanResult] = useState("");
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
     const [showURLScam, setShowURLScam] = useState(false);
     const { report, updateReport } = useReport();
-
+    const { sendToModule } = useModuleMessaging();
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
     const API_KEY_URLScanIO = String(useAppConfig().urlscanioApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
-    
 
+
+    useEffect(() => {
+        const onMessage = (message: UiMessage) => {
+            switch (message.id) {
+                case UiMessageId.VirusTotalScanFinished: {
+                    const result = processVirusTotalResponse(message.data);
+                    setVTResult(result);
+                    break;
+                }
+                case UiMessageId.UrlScanFinished: {
+                    const result = processURLScanResponse(message.data);
+                    setUrlScanResult(result);
+                    break;
+                }
+            }
+        };
+
+        browser.runtime.onMessage.addListener(onMessage);
+
+        return () => {
+            browser.runtime.onMessage.removeListener(onMessage);
+        };
+    }, []);
+
+    const checkPreviousScan = async () => {
+        const prevVTUrl = await browser.storage.local.get(["prevVTUrl"]);
+        const vtUrl = prevVTUrl["prevVTUrl"];
+
+        if (vtUrl){
+            getVirustotalResult(vtUrl).then((data) => {
+                    if (data) {
+                        const result = processVirusTotalResponse(data);
+                        setVTResult(result);
+                    }
+                }
+            );
+        }
+
+        const prevUrlScanUrl = await browser.storage.local.get(["prevUrlScanUrl"]);
+        const url = prevUrlScanUrl["prevUrlScanUrl"];
+        if (url){
+            getUrlScanResult(url).then((data) => {
+                if (data) {
+                    const result = processURLScanResponse(data);
+                    setUrlScanResult(result);
+                }
+            });
+        }
+    }
 
     const normalizeURL = (str: string): string => {
         // Check if it already has a valid scheme (http or https)
@@ -59,32 +113,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         */
 
         try {
-            // Run both API checks in parallel
-            const [virusTotalResult, hybridAnalysisResult] = await Promise.allSettled([
-                checkVirusTotal(url),
-                checkURLScanIO(url) // Changed to use quick-scan
-            ]);
-
-            // Process combined results
-            let finalResult = "";
-            
-            // Process VirusTotal result
-            if (virusTotalResult.status === 'fulfilled' && virusTotalResult.value) {
-                finalResult += virusTotalResult.value;
-            } else {
-                finalResult += "⚠️ VirusTotal scanning failed. ";
-            }
-            
-            // Process Hybrid Analysis result
-            if (hybridAnalysisResult.status === 'fulfilled' && hybridAnalysisResult.value) {
-                finalResult += "\n\n" + hybridAnalysisResult.value;
-            } else {
-                finalResult += "\n\n⚠️ Hybrid Analysis scanning failed.";
-            }
-            
-            setResult(finalResult);
+            checkVirusTotal(url).then((result) => setVTResult(result));
+            checkURLScanIO(url).then((result) => setUrlScanResult(result));
         } catch (error) {
-            console.error("Error while scanning URLL:", error);
+            console.error("Error while scanning URL:", error);
             setResult("❌ Error while scanning URL.");
         } finally {
             setLoading(false);
@@ -133,12 +165,33 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
             // Jei viskas gerai, bandom gauti analize
             const data = await response.json();
-            return await pollVirusTotalResults(data.data.id);
-            
+            const pollUrl = `https://www.virustotal.com/api/v3/analyses/${data.data.id}`
+            await browser.storage.local.set({ ["prevVTUrl"] : pollUrl });
+            sendToModule(ModuleId.UrlChecker, {id: ModuleMessageId.PollVirusTotalScan, data: {url: pollUrl}});
+            return "⚠️ Virustotal: Scanning in progress.";
         } catch (error) {
             console.error("VirusTotal error:", error);
             return "❌ VirusTotal: Error while scanning URL.";
         }
+    };
+
+    const getVirustotalResult = async(url: string) => {
+        try {
+            // GET analysis
+            const resultResponse = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "x-apikey": API_KEY
+                }
+            });
+
+            if (resultResponse.ok) {
+                return await resultResponse.json();
+            }
+        } catch (error) {
+            console.error("VirusTotal result retrieving error:", error);
+        }
+        return null;
     };
 
     const checkURLScanIO = async (urlToCheck: string) => {
@@ -208,80 +261,34 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             const scanData = await scanResponse.json();
             const uuid = scanData.uuid;
             const resultUrl = scanData.api;
-            
+            await browser.storage.local.set({["prevUrlScanUrl"] : resultUrl});
             // Poll for results with improved parameters
-            return await pollURLScanResults(uuid, resultUrl);
-            
+            sendToModule(ModuleId.UrlChecker, {id: ModuleMessageId.PollUrlScan, data: {uuid: uuid, url: resultUrl}});
+            return "⚠️ URLScan.io: Scanning in progress.";
         } catch (error) {
             console.error("URLScan.io error:", error);
             return "❌ URLScan.io: Error while scanning URL.";
         }
     };
-    
-    const pollURLScanResults = async (uuid: string, resultUrl: string) => {
-        let attempts = 0;
-        const maxAttempts = 15;  // Increased from 10 to 15
-        const initialDelay = 8000;  // Increased initial delay to 8 seconds
-        
-        // Return initial message that scan is in progress
-        //setDebug(`URLScan.io scan submitted. UUID: ${uuid}. Waiting for results...`);
-        
-        while (attempts < maxAttempts) {
-            try {
-                // GET scan results
-                const resultResponse = await fetch(resultUrl, {
-                    method: "GET",
-                    headers: {
-                        "API-Key": API_KEY_URLScanIO
-                    }
-                });
-                
-                if (resultResponse.ok) {
-                    const resultData = await resultResponse.json();
-                    
-                    // Check scan status
-                    if (resultData.task && resultData.task.status === "complete") {
-                        //setDebug(`Scan complete after ${attempts + 1} attempts`);
-                        return processURLScanResponse(resultData);
-                    }
-                    
-                    // Provide status updates in debug
-                    //setDebug(`Attempt ${attempts + 1}/${maxAttempts}: Scan status: ${resultData.task?.status || "unknown"}`);
-                }
-            } catch (error) {
-                console.error("URLScan.io result retrieving error:", error);
-                //setDebug(`Error checking scan status: ${error}`);
-            }
-            
-            attempts++;
-            // Use exponential backoff for waiting (start with longer delay, then increase)
-            const delay = initialDelay + (attempts * 2000);
-            await new Promise(resolve => setTimeout(resolve, delay));
-        }
-        
-        // If we timeout, check one more time with an alternative method
+
+    const getUrlScanResult = async (url: string) => {
         try {
-            const directResultUrl = `https://urlscan.io/api/v1/result/${uuid}/`;
-            const finalAttempt = await fetch(directResultUrl, {
+            const resultResponse = await fetch(url, {
+                method: "GET",
                 headers: {
-                    "API-Key": API_KEY_URLScanIO
+                    "API-Key": API_KEY_URLScanIO,
                 }
             });
-            
-            if (finalAttempt.ok) {
-                const resultData = await finalAttempt.json();
-                if (resultData.task && resultData.task.status === "complete") {
-                    //setDebug("Found results on final attempt");
-                    return processURLScanResponse(resultData);
-                }
+
+            if (resultResponse.ok) {
+                return await resultResponse.json();
             }
         } catch (error) {
-            console.error("Final attempt error:", error);
+            console.error("URLScan.io result retrieving error:", error);
         }
-        
-        return `⚠️ URLScan.io: Scanning in progress. View results at: https://urlscan.io/result/${uuid} in a few minutes.`;
+        return null;
     };
-    
+
     const processURLScanResponse = (resultData: any) => {
         try {
             // Extract security related information
@@ -328,38 +335,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             }
         }
     };
-    
 
-    const pollVirusTotalResults = async (dataId: string) => {
-        let attempts = 0;
-        const maxAttempts = 10;
-
-        const resultUrl = `https://www.virustotal.com/api/v3/analyses/${dataId}`;
-
-        while (attempts < maxAttempts) {
-            try {
-                // GET analysis
-                const resultResponse = await fetch(resultUrl, {
-                    method: "GET",
-                    headers: {
-                        "x-apikey": API_KEY
-                    }
-                });
-
-                if (resultResponse.ok) {
-                    const resultData = await resultResponse.json();
-                    return processVirusTotalResponse(resultData);
-                }
-            } catch (error) {
-                console.error("VirusTotal result retrieving error:", error);
-            }
-            
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, 6000));
-        }
-        
-        return "⚠️ VirusTotal: Scanning took too long. Try again later.";
-    };
 
     const processVirusTotalResponse = (resultData: any) => {
         const stats = resultData.data.attributes.stats;
@@ -390,33 +366,51 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 }           }>
             <h2 style={{ color: "white" }}>Patikrinkite svetainės saugumą</h2>
 
-            <form onSubmit={UrlChecker}>
-                <input
-                    type="text"
-                    placeholder="Įveskite svetainės nuorodą..."
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    style={{ padding: "0.5rem", width: "90%" }}
-                />
-                <button
-                    disabled={!url || loading}
-                    type="submit"
-                    style={{ 
-                        width: "200px", 
-                        height: "40px", 
-                        backgroundColor: "#4b5563", 
-                        color: "white", 
-                        border: "none",
-                        borderRadius: "8px", 
-                        outline: "none", 
-                        transition: "background-color 0.2s ease-in-out",
-                        marginTop: "0.5rem", 
-                        cursor: !url || loading ? "not-allowed" : "pointer" 
-                    }}
-                >
-                    Tikrinti
-                </button>
-            </form>
+                <form onSubmit={UrlChecker}>
+                    <input
+                        type="text"
+                        placeholder="Įveskite svetainės nuorodą..."
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        style={{ padding: "0.5rem", width: "90%" }}
+                    />
+                    <div style={{ display: "flex", gap: "5px", marginTop: "0.5rem" }}>
+                        <button
+                            disabled={!url || loading}
+                            type="submit"
+                            style={{
+                                width: "200px",
+                                height: "40px",
+                                backgroundColor: "#4b5563",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "8px",
+                                outline: "none",
+                                transition: "background-color 0.2s ease-in-out",
+                                cursor: !url || loading ? "not-allowed" : "pointer"
+                            }}
+                        >
+                            Tikrinti
+                        </button>
+                        <button
+                            type="button"
+                            style={{
+                                width: "200px",
+                                height: "40px",
+                                backgroundColor: "#6366f1",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "8px",
+                                outline: "none",
+                                transition: "background-color 0.2s ease-in-out",
+                                cursor: "pointer"
+                            }}
+                            onClick={checkPreviousScan}
+                        >
+                            Previous Scan
+                        </button>
+                    </div>
+                </form>
 
             <div style={{ 
                 flexGrow: 1,
@@ -427,10 +421,15 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 borderRadius: "5px",
                 maxHeight: "250px",
             }}>              
-                <div 
+                <div style={{ fontWeight: "bold", color: "white" }}>
+                    <p>{VTResult}</p>
+                </div>
+
+                <div
                     style={{ fontWeight: "bold", color: "white" }}
-                    dangerouslySetInnerHTML={{ __html: result.replace(/\n/g, '<br/>') }}
+                    dangerouslySetInnerHTML={{ __html: urlScanResult }}
                 />
+
 
                 <div style={{ paddingTop: "0.8rem"}}>
                     {loading && <div className="loader"></div>}

@@ -3,6 +3,7 @@ import {BgMessage, BgMessageId} from "@/entrypoints/content/types/bg-message.ts"
 import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {Configuration} from "@/utils/config.ts";
+import {UrlChecker} from "@/entrypoints/content/modules/url-checker/url-checker.ts";
 
 
 export default defineBackground(async () => {
@@ -11,8 +12,10 @@ export default defineBackground(async () => {
     await config.load();
 
     const fileChecker = new FileChecker();
+    const urlChecker = new UrlChecker();
     const moduleManager = new ModuleManager();
     moduleManager.registerModule(fileChecker, config.isModuleEnabled(fileChecker.id));
+    moduleManager.registerModule(urlChecker, config.isModuleEnabled(urlChecker.id));
 
     browser.runtime.onMessage.addListener((message: BgMessage) => {
         switch (message.id) {

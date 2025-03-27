@@ -1,5 +1,7 @@
 export enum ModuleMessageId {
     PollFileScan,
+    PollVirusTotalScan,
+    PollUrlScan,
 }
 
 export interface ModuleMessage {
