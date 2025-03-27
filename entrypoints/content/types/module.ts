@@ -1,5 +1,7 @@
 import {BgMessage} from "@/entrypoints/content/types/bg-message.ts";
 import EventEmitter from "eventemitter3";
+import {ModuleMessage} from "@/entrypoints/content/types/module-message.ts";
+import {UiMessage} from "@/entrypoints/content/types/ui-message.ts";
 
 export enum ModuleId {
     PasswordChecker,
@@ -14,7 +16,7 @@ export abstract class Module extends EventEmitter {
 
     abstract unload(): void;
 
-    protected sendToBackground(message: BgMessage): any {
+    protected sendToRuntime(message: BgMessage | UiMessage): any {
         browser.runtime.sendMessage(message, (response) => {
             if (browser.runtime.lastError) {
                 console.error("Error sending message:", browser.runtime.lastError);
@@ -22,5 +24,9 @@ export abstract class Module extends EventEmitter {
                 return response;
             }
         });
+    }
+
+    handleMessage(message: ModuleMessage): any {
+        // override if module needs to handle messages
     }
 }

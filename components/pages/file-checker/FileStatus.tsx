@@ -1,7 +1,9 @@
-import {Upload, Link} from "lucide-react";
-import {useEffect, useState} from "react";
-import SparkMD5 from 'spark-md5';
-import { useReport } from "../report-page/ReportContext";
+import {Upload} from "lucide-react";
+import React, {useEffect, useState} from "react";
+import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
+import {ModuleId} from "@/entrypoints/content/types/module.ts";
+import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
+import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 
 const API_KEY = String(useAppConfig().fileCheckerApiKey);
 const API_URL = "https://api.metadefender.com/v4";
@@ -42,64 +44,8 @@ async function calculateSHA256(file: File): Promise<string> {
     });
 };
 
-async function calculateSHA1(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                if (!event.target?.result) {
-                    throw new Error("Failed to read file");
-                }
-                const arrayBuffer = event.target.result as ArrayBuffer;
-                const hashBuffer = await crypto.subtle.digest('SHA-1', arrayBuffer);
-
-                // convert the hash to a hex string
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray
-                    .map(byte => byte.toString(16).padStart(2, '0'))
-                    .join('');
-                resolve(hashHex);
-            } catch (error) {
-                reject(error);
-            }
-        };
-        reader.onerror = () => {
-            reject(new Error("Error reading file"));
-        };
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-async function calculateMD5(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                if (!event.target?.result) {
-                    throw new Error("Failed to read file");
-                }
-
-                const arrayBuffer = event.target.result as ArrayBuffer;
-                const spark = new SparkMD5.ArrayBuffer();
-                spark.append(arrayBuffer);
-                const hashHex = spark.end();
-                resolve(hashHex);
-                
-            } catch (error) {
-                reject(error);
-            }
-        };
-        reader.onerror = () => {
-            reject(new Error("Error reading file"));
-        };
-        reader.readAsArrayBuffer(file);
-    });
-}
-
 async function checkFileByHash(file: File): Promise<any | null> {
     let sha256Hash: string;
-    let sha1Hash: string;
-    let md5Hash: string;
 
     try {
         sha256Hash = await calculateSHA256(file);
@@ -124,56 +70,10 @@ async function checkFileByHash(file: File): Promise<any | null> {
         }
     }
 
-    try {
-        sha1Hash = await calculateSHA1(file);
-    } catch (error) {
-        console.error("Failed to calculate sha1:", error);
-        sha1Hash = "";
-    }
-
-    if (sha1Hash) {
-        try {
-            const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha1Hash}`, {
-                method: "GET",
-                headers: {
-                    'apikey': API_KEY,
-                }
-            });
-            if (res.ok) {
-                return await res.json();
-            }
-        } catch (error) {
-            console.error("Error while checking SHA-1 hash:", error);
-        }
-    }
-
-    try {
-        md5Hash = await calculateMD5(file);
-    } catch (error) {
-        console.error("Failed to calculate sha1:", error);
-        md5Hash = "";
-    }
-
-    if (md5Hash) {
-        try {
-            const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${md5Hash}`, {
-                method: "GET",
-                headers: {
-                    'apikey': API_KEY,
-                }
-            });
-            if (res.ok) {
-                return await res.json();
-            }
-        } catch (error) {
-            console.error("Error while checking MD5 hash:", error);
-        }
-    }
-
     return null;
 }
 
-async function checkUrlWithSandbox(url: string): Promise<any> {
+async function sendFileUrlToSandbox(url: string): Promise<string> {
     try {
         const submitResponse = await fetch("https://api.metadefender.com/v4/sandbox", {
             method: "POST",
@@ -193,48 +93,38 @@ async function checkUrlWithSandbox(url: string): Promise<any> {
         const submitData = await submitResponse.json();
         const dataId = submitData.sandbox_id;
         
-        // Poll for results
-        return await pollForUrlResults(dataId);
+        // return url for polling
+        return API_URL + URL_ENDPOINT + '/' + dataId;
     } catch (error) {
         console.error("Error checking URL:", error);
         throw error;
     }
 }
 
-async function pollForUrlResults(dataId: string): Promise<any> {
-    let attempts = 0;
-    const maxAttempts = 12;
-    
-    const URL_RESULT_ENDPOINT = API_URL + URL_ENDPOINT + '/' + dataId;
-    
-    while (attempts < maxAttempts) {
-        try {
-            const response = await fetch(URL_RESULT_ENDPOINT, {
-                method: 'GET',
-                headers: {
-                    'apikey': API_KEY
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                
-                if (data.final_verdict) {
-                    return data;
-                }
+async function getScanResult(url: string) {
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'apikey': API_KEY,
+                'Content-Type': 'application/json'
             }
-        } catch (error) {
-            console.error("Error polling for URL results:", error);
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            if (data.scan_results?.progress_percentage === 100 || data.final_verdict) {
+                return data;
+            }
         }
-        
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 5000)); 
+        return null;
+    } catch (error) {
+        return null;
     }
-    
-    throw new Error("URL check timed out. Please try again later.");
 }
 
-function FileStatus({inputFile}: { inputFile: string }) {
+function FileStatus({inputFile }: { inputFile: string }) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState(inputFile || "");
     const [result, setResult] = useState("");
@@ -251,7 +141,54 @@ function FileStatus({inputFile}: { inputFile: string }) {
     const [urlResult, setUrlResult] = useState("");
     const [urlSafety, setUrlSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
     const [activeTab, setActiveTab] = useState<"file" | "url">("file");
-    const { report, updateReport } = useReport();
+
+    const { sendToModule } = useModuleMessaging();
+
+    const viewPreviousScan = async () => {
+        const result = await browser.storage.local.get(["previousFileScanUrl"]);
+        const url = result["previousFileScanUrl"];
+
+        if (!url) {
+            setResult("Error: No file was scanned previously");
+            setSafety("unknown");
+            return;
+        }
+
+        const data = await getScanResult(url);
+
+        if (!data) {
+            setResult(`Error: Scan has not completed yet`);
+            setSafety("unknown");
+            return;
+        }
+
+        if (url.includes(URL_ENDPOINT)){
+            setActiveTab("url");
+            processUrlApiResponse(data);
+        }
+        else if (url.includes(FILE_ENDPOINT)) {
+            processApiResponse(data);
+        }
+    }
+
+    useEffect(() => {
+        const onMessage = (message: UiMessage) => {
+            switch (message.id) {
+                case UiMessageId.ScanFinished: {
+                    setIsCheckingUrl(false);
+                    setIsChecking(false);
+                    viewPreviousScan();
+                    break;
+                }
+            }
+        };
+
+        browser.runtime.onMessage.addListener(onMessage);
+
+        return () => {
+            browser.runtime.onMessage.removeListener(onMessage);
+        };
+    }, []);
 
     const setFileState = async (file: File) => {
         setSelectedFile(file);
@@ -295,7 +232,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
     const FileChecker = async () => {
         if (!selectedFile) return;
         setIsChecking(true);
-        updateReport("FileScans", report.FileScans + 1);
 
         try {
             const results = await checkFileByHash(selectedFile);
@@ -319,7 +255,9 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 // bando gaut rezultatus jei sekmingai ikelia
                 if (uploadResponse.ok) {
                     const uploadData = await uploadResponse.json();
-                    await pollForResults(uploadData.data_id);
+                    const pollUrl = API_URL + FILE_ENDPOINT + '/' + uploadData.data_id;
+                    pollForResults(pollUrl);
+                    //processApiResponse(results);
                 } else {
                     const errorData = await uploadResponse.json();
                     setResult(`Klaida: ${errorData.error?.messages || 'Nepavyko patikrinti failo'}`);
@@ -329,8 +267,6 @@ function FileStatus({inputFile}: { inputFile: string }) {
         } catch (error) {
             setResult(`Klaida: ${error instanceof Error ? error.message : 'Nepavyko patikrinti failo'}`);
             setSafety("unknown");
-        } finally {
-            setIsChecking(false);
         }
     };
 
@@ -340,67 +276,20 @@ function FileStatus({inputFile}: { inputFile: string }) {
         setIsCheckingUrl(true);
         setUrlSafety("unknown");
         setUrlResult("");
-        updateReport("FileScans", report.FileScans + 1);
         
         try {
-            const results = await checkUrlWithSandbox(urlToCheck);
-            processUrlApiResponse(results);
+            const pollUrl = await sendFileUrlToSandbox(urlToCheck);
+            pollForResults(pollUrl);
+            //processUrlApiResponse(results);
         } catch (error) {
             setUrlResult(`Klaida: ${error instanceof Error ? error.message : 'Nepavyko patikrinti failo'}`);
             setUrlSafety("unknown");
-        } finally {
-            setIsCheckingUrl(false);
         }
     };
 
-    const pollForResults = async (dataId: string) => {
-        // 12 bandymu po 5 sekundes => 1 minute gauti skenavimo rezultatui
-        let attempts = 0;
-        const maxAttempts = 12;
-
-        const DATA_URL = API_URL + FILE_ENDPOINT + '/' + dataId;
-
-        const checkResult = async () => {
-            try {
-                // tikrina failo skenavimo rezultatus pagal anksciau gauta failo id
-                const response = await fetch(DATA_URL, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': API_KEY,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    // progress_percantage yra API dokumentacijoj, bet nezinau kaip patikrinti/istestuoti ar grazina kazka kito nei 0 arba 100
-                    if (data.scan_results?.progress_percentage === 100) {
-                        processApiResponse(data);
-                        return true;
-                    }
-                }
-
-                return false;
-            } catch (error) {
-                return false;
-            }
-        };
-
-        // Periodiskai siuncia uzklausa patikrinti ar gautas skenavimo rezultatas
-        while (attempts < maxAttempts) {
-            const isComplete = await checkResult();
-            if (isComplete) break;
-
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, 5000)); // kas 5 sekundes poll'ina
-        }
-
-        // Jei daugiau nei 1 min uztrunka (per didele eile API turbut)
-        if (attempts >= maxAttempts) {
-            setResult("Patikrinimas užtruko per ilgai. Bandykite vėliau.");
-            setSafety("unknown");
-        }
+    const pollForResults = (url: string) => {
+        browser.storage.local.set({["previousFileScanUrl"] : url});
+        sendToModule(ModuleId.FileChecker, {id: ModuleMessageId.PollFileScan, data: {url: url}});
     }
 
     const processApiResponse = (data: any) => {
@@ -516,13 +405,26 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             backgroundColor: activeTab === "url" ? "#4b5563" : "#374151",
                             color: "white",
                             border: "none",
-                            borderRadius: "0 8px 8px 0",
                             padding: "0.5rem 1rem",
                             cursor: "pointer",
                             width: "50%"
                         }}
                     >
                         Failas <br></br> (be download)
+                    </button>
+                    <button
+                        onClick={viewPreviousScan}
+                        style={{
+                            backgroundColor: "#374151",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "0 8px 8px 0",
+                            padding: "0.5rem 1rem",
+                            cursor: "pointer",
+                            width: "50%"
+                        }}
+                    >
+                        Previous Scan
                     </button>
                 </div>
                 
