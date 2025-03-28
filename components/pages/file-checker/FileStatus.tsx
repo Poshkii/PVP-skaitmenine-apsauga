@@ -120,6 +120,8 @@ function FileStatus({inputFile }: { inputFile: string }) {
     const [activeTab, setActiveTab] = useState<"file" | "history">("file");
     const { report, updateReport } = useReport();
 
+    const [scanType, setScanType] = useState("");
+
     const { sendToModule } = useModuleMessaging();
 
     const viewPreviousScan = async () => {
@@ -231,8 +233,11 @@ function FileStatus({inputFile }: { inputFile: string }) {
             const results = await checkFileByHash(selectedFile);
 
             if (results) {
+                setScanType("hash");
                 processApiResponse(results);
+                setIsChecking(false);
             } else {
+                setScanType("upload");
                 // upload if checking by hash failed
                 const formData = new FormData();
                 formData.append('file', selectedFile);
@@ -272,8 +277,11 @@ function FileStatus({inputFile }: { inputFile: string }) {
     const processApiResponse = (data: any) => {
         const scanResults = data.scan_results;
         const scanDetails = data.scan_results.scan_details;
-
+        
         if (scanResults) {
+            // nzn ar cia reikia, bet atnaujina paskutinio skenavimo reiksme jei ir pagal hash'a tikrina
+            const pollUrl = API_URL + FILE_ENDPOINT + '/' + data.data_id;
+            browser.storage.local.set({["previousFileScanUrl"] : pollUrl});
             // skenavimo "varikliu" kiekis gaunamas
             const detectedCount = scanResults.total_detected_avs || 0;
             const totalEngines = scanResults.total_avs || 1;
@@ -404,7 +412,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                             width: "50%"
                         }}
                     >
-                        Last Scan
+                        Last Auto Scan
                     </button>
                 </div>
                 
@@ -476,6 +484,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 <br></br>
                             </div>
                         </button>
+                        <br></br>
                         <div>
                             {isChecking && <div className="loader" style={{marginTop:'2rem'}}></div>}
                         </div>
