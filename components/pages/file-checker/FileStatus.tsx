@@ -1,13 +1,15 @@
 import {Upload, Link} from "lucide-react";
-import {useEffect, useState} from "react";
-import SparkMD5 from 'spark-md5';
 import { useReport } from "../report-page/ReportContext";
+import React, {useEffect, useState} from "react";
+import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
+import {ModuleId} from "@/entrypoints/content/types/module.ts";
+import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
+import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 
 const API_KEY = String(useAppConfig().fileCheckerApiKey);
 const API_URL = "https://api.metadefender.com/v4";
 const HASH_ENDPOINT = "/hash";
 const FILE_ENDPOINT = "/file";
-const URL_ENDPOINT = "/sandbox";
 
 async function calculateSHA256(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -42,64 +44,8 @@ async function calculateSHA256(file: File): Promise<string> {
     });
 };
 
-async function calculateSHA1(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                if (!event.target?.result) {
-                    throw new Error("Failed to read file");
-                }
-                const arrayBuffer = event.target.result as ArrayBuffer;
-                const hashBuffer = await crypto.subtle.digest('SHA-1', arrayBuffer);
-
-                // convert the hash to a hex string
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray
-                    .map(byte => byte.toString(16).padStart(2, '0'))
-                    .join('');
-                resolve(hashHex);
-            } catch (error) {
-                reject(error);
-            }
-        };
-        reader.onerror = () => {
-            reject(new Error("Error reading file"));
-        };
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-async function calculateMD5(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                if (!event.target?.result) {
-                    throw new Error("Failed to read file");
-                }
-
-                const arrayBuffer = event.target.result as ArrayBuffer;
-                const spark = new SparkMD5.ArrayBuffer();
-                spark.append(arrayBuffer);
-                const hashHex = spark.end();
-                resolve(hashHex);
-                
-            } catch (error) {
-                reject(error);
-            }
-        };
-        reader.onerror = () => {
-            reject(new Error("Error reading file"));
-        };
-        reader.readAsArrayBuffer(file);
-    });
-}
-
 async function checkFileByHash(file: File): Promise<any | null> {
     let sha256Hash: string;
-    let sha1Hash: string;
-    let md5Hash: string;
 
     try {
         sha256Hash = await calculateSHA256(file);
@@ -124,134 +70,117 @@ async function checkFileByHash(file: File): Promise<any | null> {
         }
     }
 
-    try {
-        sha1Hash = await calculateSHA1(file);
-    } catch (error) {
-        console.error("Failed to calculate sha1:", error);
-        sha1Hash = "";
-    }
-
-    if (sha1Hash) {
-        try {
-            const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha1Hash}`, {
-                method: "GET",
-                headers: {
-                    'apikey': API_KEY,
-                }
-            });
-            if (res.ok) {
-                return await res.json();
-            }
-        } catch (error) {
-            console.error("Error while checking SHA-1 hash:", error);
-        }
-    }
-
-    try {
-        md5Hash = await calculateMD5(file);
-    } catch (error) {
-        console.error("Failed to calculate sha1:", error);
-        md5Hash = "";
-    }
-
-    if (md5Hash) {
-        try {
-            const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${md5Hash}`, {
-                method: "GET",
-                headers: {
-                    'apikey': API_KEY,
-                }
-            });
-            if (res.ok) {
-                return await res.json();
-            }
-        } catch (error) {
-            console.error("Error while checking MD5 hash:", error);
-        }
-    }
-
     return null;
 }
 
-async function checkUrlWithSandbox(url: string): Promise<any> {
+async function getScanResult(url: string) {
     try {
-        const submitResponse = await fetch("https://api.metadefender.com/v4/sandbox", {
-            method: "POST",
+        const response = await fetch(url, {
+            method: 'GET',
             headers: {
-                "apikey": API_KEY,
-                "Content-Type": "application/json"  
-            },
-            body: JSON.stringify({ url: url }) 
-        });
-        
-        if (!submitResponse.ok) {
-            const errorData = await submitResponse.json();
-            throw new Error(errorData.error?.messages || 'Failed to submit URL for scanning');
-            
-        }
-        
-        const submitData = await submitResponse.json();
-        const dataId = submitData.sandbox_id;
-        
-        // Poll for results
-        return await pollForUrlResults(dataId);
-    } catch (error) {
-        console.error("Error checking URL:", error);
-        throw error;
-    }
-}
-
-async function pollForUrlResults(dataId: string): Promise<any> {
-    let attempts = 0;
-    const maxAttempts = 12;
-    
-    const URL_RESULT_ENDPOINT = API_URL + URL_ENDPOINT + '/' + dataId;
-    
-    while (attempts < maxAttempts) {
-        try {
-            const response = await fetch(URL_RESULT_ENDPOINT, {
-                method: 'GET',
-                headers: {
-                    'apikey': API_KEY
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                
-                if (data.final_verdict) {
-                    return data;
-                }
+                'apikey': API_KEY,
+                'Content-Type': 'application/json'
             }
-        } catch (error) {
-            console.error("Error polling for URL results:", error);
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            if (data.scan_results?.progress_percentage === 100 || data.final_verdict) {
+                return data;
+            }
         }
-        
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 5000)); 
+        return null;
+    } catch (error) {
+        return null;
     }
-    
-    throw new Error("URL check timed out. Please try again later.");
 }
 
-function FileStatus({inputFile}: { inputFile: string }) {
+function FileStatus({inputFile }: { inputFile: string }) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState(inputFile || "");
     const [result, setResult] = useState("");
+    const [prevResult, setPrevResult] = useState("");
     const [isChecking, setIsChecking] = useState(false);
     const [params, setParams] = useState({
+        name: "",
+        time: 0,
+        scan_results_all: "",
+    });
+    const [prevParams, setPrevParams] = useState({
+        name: "",
         time: 0,
         scan_results_all: "",
     });
     const [safety, setSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
+    const [prevSafety, setPrevSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
     const [avThreats, setAvThreats] = useState ({});
+    const [prevAvThreats, setPrevAvThreats] = useState ({});
     
-    const [urlToCheck, setUrlToCheck] = useState("");
-    const [isCheckingUrl, setIsCheckingUrl] = useState(false);
-    const [urlResult, setUrlResult] = useState("");
-    const [urlSafety, setUrlSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
-    const [activeTab, setActiveTab] = useState<"file" | "url">("file");
+    const [activeTab, setActiveTab] = useState<"file" | "history">("file");
     const { report, updateReport } = useReport();
+
+    const { sendToModule } = useModuleMessaging();
+
+    const viewPreviousScan = async () => {
+        const result = await browser.storage.local.get(["previousFileScanUrl"]);
+        const url = result["previousFileScanUrl"];
+
+        if (!url) {
+            setPrevResult("Error: No file was scanned previously");
+            setPrevSafety("unknown");
+            return;
+        }
+
+        const data = await getScanResult(url);
+
+        if (!data) {
+            setPrevResult(`Error: Scan has not completed yet`);
+            setPrevSafety("unknown");
+            return;
+        }
+
+        processPreviousApiResponse(data);
+    }
+
+    const viewCurrentScan = async () => {
+        const result = await browser.storage.local.get(["previousFileScanUrl"]);
+        const url = result["previousFileScanUrl"];
+
+        if (!url) {
+            setResult("Error: No file was scanned previously");
+            setSafety("unknown");
+            return;
+        }
+
+        const data = await getScanResult(url);
+
+        if (!data) {
+            setResult(`Error: Scan has not completed yet`);
+            setSafety("unknown");
+            return;
+        }
+
+        processApiResponse(data);
+    }
+
+    useEffect(() => {
+        const onMessage = (message: UiMessage) => {
+            switch (message.id) {
+                case UiMessageId.ScanFinished: {
+                    setIsChecking(false);
+                    viewCurrentScan();
+                    break;
+                }
+            }
+        };
+
+        browser.runtime.onMessage.addListener(onMessage);
+
+        return () => {
+            browser.runtime.onMessage.removeListener(onMessage);
+        };
+    }, []);
 
     const setFileState = async (file: File) => {
         setSelectedFile(file);
@@ -259,6 +188,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
         setSafety("unknown");
         setResult("");
         setParams({
+            name: "",
             time: 0,
             scan_results_all: "",
         });
@@ -319,7 +249,9 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 // bando gaut rezultatus jei sekmingai ikelia
                 if (uploadResponse.ok) {
                     const uploadData = await uploadResponse.json();
-                    await pollForResults(uploadData.data_id);
+                    const pollUrl = API_URL + FILE_ENDPOINT + '/' + uploadData.data_id;
+                    pollForResults(pollUrl);
+                    //processApiResponse(results);
                 } else {
                     const errorData = await uploadResponse.json();
                     setResult(`Error: ${errorData.error?.messages || 'File check failed'}`);
@@ -329,78 +261,12 @@ function FileStatus({inputFile}: { inputFile: string }) {
         } catch (error) {
             setResult(`Error: ${error instanceof Error ? error.message : 'File check failed'}`);
             setSafety("unknown");
-        } finally {
-            setIsChecking(false);
         }
     };
 
-    const UrlChecker = async () => {
-        if (!urlToCheck) return;
-        
-        setIsCheckingUrl(true);
-        setUrlSafety("unknown");
-        setUrlResult("");
-        updateReport("FileScans", report.FileScans + 1);
-        
-        try {
-            const results = await checkUrlWithSandbox(urlToCheck);
-            processUrlApiResponse(results);
-        } catch (error) {
-            setUrlResult(`Error: ${error instanceof Error ? error.message : 'File check failed'}`);
-            setUrlSafety("unknown");
-        } finally {
-            setIsCheckingUrl(false);
-        }
-    };
-
-    const pollForResults = async (dataId: string) => {
-        // 12 bandymu po 5 sekundes => 1 minute gauti skenavimo rezultatui
-        let attempts = 0;
-        const maxAttempts = 12;
-
-        const DATA_URL = API_URL + FILE_ENDPOINT + '/' + dataId;
-
-        const checkResult = async () => {
-            try {
-                // tikrina failo skenavimo rezultatus pagal anksciau gauta failo id
-                const response = await fetch(DATA_URL, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': API_KEY,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    // progress_percantage yra API dokumentacijoj, bet nezinau kaip patikrinti/istestuoti ar grazina kazka kito nei 0 arba 100
-                    if (data.scan_results?.progress_percentage === 100) {
-                        processApiResponse(data);
-                        return true;
-                    }
-                }
-
-                return false;
-            } catch (error) {
-                return false;
-            }
-        };
-
-        // Periodiskai siuncia uzklausa patikrinti ar gautas skenavimo rezultatas
-        while (attempts < maxAttempts) {
-            const isComplete = await checkResult();
-            if (isComplete) break;
-
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, 5000)); // kas 5 sekundes poll'ina
-        }
-
-        // Jei daugiau nei 1 min uztrunka (per didele eile API turbut)
-        if (attempts >= maxAttempts) {
-            setResult("Check took too long. Try again later.");
-            setSafety("unknown");
-        }
+    const pollForResults = (url: string) => {
+        browser.storage.local.set({["previousFileScanUrl"] : url});
+        sendToModule(ModuleId.FileChecker, {id: ModuleMessageId.PollFileScan, data: {url: url}});
     }
 
     const processApiResponse = (data: any) => {
@@ -414,6 +280,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
 
             if (data.file_info) {
                 setParams ({
+                    name: data.file_info.display_name || "",
                     time: scanResults.total_time || 0,
                     scan_results_all: scanResults.scan_all_result_a || "",
                 });
@@ -436,25 +303,37 @@ function FileStatus({inputFile}: { inputFile: string }) {
         }
     };
 
-    const processUrlApiResponse = (data: any) => {
-        const scanResults = data.final_verdict;
-        
+    const processPreviousApiResponse = (data: any) => {
+        const scanResults = data.scan_results;
+        const scanDetails = data.scan_results.scan_details;
+
         if (scanResults) {
-            if (scanResults.threatLevel > 0 && scanResults.verdict === "MALICIOUS") {
-                setUrlSafety("unsafe");
-                setUrlResult(`Verdict: ${scanResults.verdict} \n 
-                             Threat level: ${scanResults.threatLevel} \n 
-                             Confidence: ${scanResults.confidence} \n`);
+            // skenavimo "varikliu" kiekis gaunamas
+            const detectedCount = scanResults.total_detected_avs || 0;
+            const totalEngines = scanResults.total_avs || 1;
+
+            if (data.file_info) {
+                setPrevParams ({
+                    name: data.file_info.display_name || "",
+                    time: scanResults.total_time || 0,
+                    scan_results_all: scanResults.scan_all_result_a || "",
+                });
+            }
+            if (scanDetails) {
+                const threats = extractAVThreats(data);
+                setPrevAvThreats(threats);
+            }
+
+            if (detectedCount > 0) {
+                setPrevSafety("unsafe");
+                setResult(`Detected threats: ${detectedCount} from ${totalEngines} anti-virus engines.`);
             } else {
-                setUrlSafety("safe");
-                //setUrlResult(`URL patikrintas. Grėsmių nerasta.`);
-                setUrlResult(`Verdict: ${scanResults.verdict} \n 
-                    Threat level: ${scanResults.threatLevel} \n 
-                    Confidence: ${scanResults.confidence} \n`);
+                setPrevSafety("safe");
+                setPrevResult(`Checked with ${totalEngines} anti-virus engines. No threats found.`);
             }
         } else {
-            setUrlSafety("unknown");
-            setUrlResult("Failed to determine file safety.");
+            setPrevSafety("unknown");
+            setPrevResult("Couldn't determine file safety.");
         }
     };
 
@@ -487,7 +366,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                 maxHeight: "calc(100vh - 70px)",
                 overflowY: "auto"
             }}>
-                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>File safety check</h2>
+                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>Check File Safety</h2>
                 
                 {/* Tab'ai testinei aplinkai */}
                 <div style={{
@@ -508,12 +387,15 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             width: "50%"
                         }}
                     >
-                        File
+                        New Scan
                     </button>
-                    <button 
-                        onClick={() => setActiveTab("url")} 
+                    <button
+                        onClick={() => {
+                            viewPreviousScan();
+                            setActiveTab("history");
+                        }}
                         style={{
-                            backgroundColor: activeTab === "url" ? "#4b5563" : "#374151",
+                            backgroundColor: activeTab === "history" ? "#4b5563" : "#374151",
                             color: "white",
                             border: "none",
                             borderRadius: "0 8px 8px 0",
@@ -522,7 +404,7 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             width: "50%"
                         }}
                     >
-                        File <br></br> (no download)
+                        Last Scan
                     </button>
                 </div>
                 
@@ -590,7 +472,8 @@ function FileStatus({inputFile}: { inputFile: string }) {
                             }}
                         >
                             <div>
-                                {isChecking ? "Checking..." : "Check file safety"}
+                                {isChecking ? "Checking..." : "Scan file"}
+                                <br></br>
                             </div>
                         </button>
                         <div>
@@ -606,14 +489,14 @@ function FileStatus({inputFile}: { inputFile: string }) {
                                     color: "white",
                                     marginBottom: "1rem"
                                 }}>
-                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Result: {
+                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Results: {
                                         safety === "safe" ? "File is safe" :
                                             safety === "unsafe" ? "File is unsafe" :
                                                 ""
                                     }</div>
                                     <div>{result}</div>
                                     { params.time > 0 && (
-                                        <div>Scanning took { params.time / 1000 + ' s'}</div>
+                                        <div>Scan duration: { params.time / 1000 + ' s'}</div>
                                     )}
                                 </div>
 
@@ -624,11 +507,11 @@ function FileStatus({inputFile}: { inputFile: string }) {
                                         borderRadius: "8px",
                                         color: "white"
                                     }}>
-                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Extra info:</h3>
+                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Additional info:</h3>
                                         <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
                                             {params.scan_results_all && (
                                                 <div style={{padding: '1rem 0'}}>
-                                                    <span style={{fontWeight: 'bold'}}>Antivirus verdict: </span>
+                                                    <span style={{fontWeight: 'bold'}}>Overall AV verdict: </span>
                                                     <span>{params.scan_results_all}</span>
                                                 </div>
                                             )}
@@ -647,68 +530,68 @@ function FileStatus({inputFile}: { inputFile: string }) {
                         )}
                     </>
                 )}
-                
-
-                {activeTab === "url" && (
+                {activeTab === "history" && (
                     <>
-                        <div style={{margin: "1rem auto", width: "90%"}}>
-                        <div style={{marginBottom: "1rem", color: "white"}}>Enter file address</div>
-                                <input
-                                    type="text"
-                                    value={urlToCheck}
-                                    onChange={(e) => setUrlToCheck(e.target.value)}
-                                    placeholder="https://example.com"
-                                    style={{
-                                        width: "100%",
-                                        padding: "0.75rem",
-                                        borderRadius: "4px",
-                                        border: "1px solid #6b7280",
-                                        backgroundColor: "#1f2937",
-                                        color: "white",
-                                        outline: "none"
+                        <div style={{
+                                        maxWidth: "90%",
+                                        fontSize: "1rem",
+                                        fontWeight: 'bold',
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        textOverflow: "ellipsis",
+                                        display: "inline-block",
+                                        color:'white'
                                     }}
-                                />
-                        </div>
-                        
-                        <button
-                            onClick={UrlChecker}
-                            disabled={!urlToCheck || isCheckingUrl}
-                            style={{
-                                width: "60%",
-                                height: "40px",
-                                margin: "auto",
-                                backgroundColor: !urlToCheck || isCheckingUrl ? "#6b7280" : "#4b5563",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "8px",
-                                outline: "none",
-                                cursor: !urlToCheck || isCheckingUrl ? "not-allowed" : "pointer"
-                            }}
                         >
-                            <div>
-                                {isCheckingUrl ? "Checking..." : "Check file safety"}
-                            </div>
-                        </button>
-                        <div>
-                            {isCheckingUrl && <div className="loader" style={{marginTop:'2rem'}}></div>}
+                            <h4 >Last checked file:</h4>
+                            {prevParams.name.split(/[/\\]/).pop()}
                         </div>
-                        
-                        {!isCheckingUrl && urlResult && (
+                        {prevResult && (
                             <div style={{margin: "1rem auto", width: "90%"}}>
                                 <div style={{
                                     padding: "0.75rem",
                                     borderRadius: "8px",
-                                    backgroundColor: urlSafety === "safe" ? "#065f46" : urlSafety === "unsafe" ? "#7f1d1d" : "#374151",
+                                    backgroundColor: prevSafety === "safe" ? "#065f46" : prevSafety === "unsafe" ? "#7f1d1d" : "#374151",
                                     color: "white",
                                     marginBottom: "1rem"
                                 }}>
-                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Result: {
-                                        urlSafety === "safe" ? "File is safe" :
-                                            urlSafety === "unsafe" ? "File is unsafe" :
+                                    <div style={{fontWeight: "bold", marginBottom: "0.5rem"}}>Results: {
+                                        prevSafety === "safe" ? "File is safe" :
+                                        prevSafety === "unsafe" ? "File is unsafe" :
                                                 ""
                                     }</div>
-                                    <div>{urlResult}</div>
+                                    <div>{prevResult}</div>
+                                    { prevParams.time > 0 && (
+                                        <div>Scan duration: { prevParams.time / 1000 + ' s'}</div>
+                                    )}
                                 </div>
+
+                                {(prevParams.scan_results_all && Object.entries(prevAvThreats).length > 0) && (
+                                    <div style={{
+                                        backgroundColor: "#374151",
+                                        padding: "0.75rem",
+                                        borderRadius: "8px",
+                                        color: "white"
+                                    }}>
+                                        <h3 style={{marginBottom: "0.5rem", fontSize: "1rem", fontWeight: "bold"}}>Additional info:</h3>
+                                        <div style={{display: "grid", gap: "0.5rem", textAlign: 'left'}}>
+                                            {prevParams.scan_results_all && (
+                                                <div style={{padding: '1rem 0'}}>
+                                                    <span style={{fontWeight: 'bold'}}>Overall AV verdict: </span>
+                                                    <span>{prevParams.scan_results_all}</span>
+                                                </div>
+                                            )}
+                                            {Object.entries(prevAvThreats).map(([key, value], index, array) => (
+                                                <div key={key}>
+                                                    <strong>{key}:</strong>
+                                                    <br />
+                                                    {typeof value === "string" ? value : JSON.stringify(value)}
+                                                    {index < array.length - 1 && <hr style={{ border: "1px solidrgb(123, 127, 135)", margin: "0.5rem 0" }} />}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>
