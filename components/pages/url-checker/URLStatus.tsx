@@ -16,7 +16,17 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const API_KEY_URLScanIO = String(useAppConfig().urlscanioApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
     
-
+    const handleUseCurrentURL = () => {
+        if (chrome?.tabs) {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                if (tabs.length > 0 && tabs[0].url) {
+                    setUrl(tabs[0].url); // Set the real website URL
+                }
+            });
+        } else {
+            console.error("Chrome API not available. Are you running this inside a Chrome extension?");
+        }
+    };
 
     const normalizeURL = (str: string): string => {
         // Check if it already has a valid scheme (http or https)
@@ -415,6 +425,21 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     }}
                 >
                     Check
+                </button>
+                <button
+                    type="button"
+                    onClick={handleUseCurrentURL}
+                    style={{
+                        marginLeft: "10px",
+                        padding: "0.5rem",
+                        backgroundColor: "#3b82f6",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                    }}
+                >
+                    Use Current URL
                 </button>
             </form>
 
