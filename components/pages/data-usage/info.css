@@ -1,0 +1,41 @@
+.info-page {
+    margin-top: 1em;
+    text-align: center;
+  }
+  
+  .info-title {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .custom-button {
+    width: 90%;
+    max-width: 300px;
+    height: 50px;
+    background-color: #374151; /* Tailwind bg-gray-800 */
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .custom-button:hover {
+    background-color: #4b5563; /* Darker bg */
+    border-color: #4b5563; /* Subtle border effect */
+  }

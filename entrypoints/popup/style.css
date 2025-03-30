@@ -70,7 +70,13 @@ ul li {
   align-items: center;
 }
 
-.info-button:hover {
+.data-info {
+  cursor: pointer;
+  position:absolute;
+  right: 0.5rem;
+}
+
+.info-button:hover{
   background-color: #6b7280; /* Tailwind bg-gray-900 */
 }
 

@@ -1,6 +1,8 @@
 import {FormEvent, useState} from "react";
 import URLScam from "./URLScam";
 import { useReport } from "../report-page/ReportContext";
+import {useNavigate} from "react-router";
+import { Info } from 'lucide-react';
 
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
@@ -380,6 +382,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         }
     };
 
+    const navigate = useNavigate();
+
     return (
         <>
             <div style={{ 
@@ -387,8 +391,18 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 height: "calc(100vh - 100px)",
                 display: "flex", 
                 flexDirection: "column" 
-}           }>
-            <h2 style={{ color: "white" }}>Check website safety</h2>
+            }}>
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "relative",
+                marginBottom: "1rem",
+            }}>
+                <h2 style={{ color: "white", margin: '0' }}>Check website safety</h2>
+                
+                <div onClick={() => navigate("/url-data")} className="data-info"><Info/></div>
+            </div>
 
             <form onSubmit={UrlChecker}>
                 <input
