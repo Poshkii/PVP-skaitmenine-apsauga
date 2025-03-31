@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import scamList from "./crypto_scam_data.csv?url";
+import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 
 // Define types for PapaParse results
 interface ParseResult {
@@ -88,7 +89,7 @@ function URLScam({ scamURL }: { scamURL: string }) {
             );
             
             if (match) {
-                setResult(`🚨 Alert! ${formattedUrl} appears to be a ${match[1]}.`);
+                setResult(`Alert! ${formattedUrl} appears to be a ${match[1]}.`);
                 setUnsafe(true);
             } else {
                 setResult(`No crypto scam reports found for ${url}.`);
@@ -112,9 +113,9 @@ function URLScam({ scamURL }: { scamURL: string }) {
     return (
         <>
             <div className="security-status" style={{ marginTop: "24px" }}>
-                {unsafe && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>🚨</div> }
-                {safe && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>✅</div> }
-                {unknown && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>⚠️</div> }
+                {unsafe && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                {safe && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={24} /></div> }
+                {unknown && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
                     <div className="status-text">
                     {unsafe && <h3 className="status-title">Warning: Potential Crypto Scam</h3> }
                     {safe && <h3 className="status-title">Good to go!</h3> }

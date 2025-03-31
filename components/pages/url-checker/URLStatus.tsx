@@ -1,6 +1,7 @@
 import {FormEvent, useState} from "react";
 import URLScam from "./URLScam";
 import { useReport } from "../report-page/ReportContext";
+import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
@@ -479,9 +480,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 <>
 
                     <div className="security-status" style={{ marginTop: "24px" }}>
-                        {unsafeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>🚨</div> }
-                        {safeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>✅</div> }
-                        {(suspiciousVT || unknownVT || inprogressVT) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>⚠️</div> }
+                        {unsafeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                        {safeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                        {(suspiciousVT || unknownVT || inprogressVT) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
                             <div className="status-text">
                             {unsafeVT && <h3 className="status-title">Watchout: harmful website!</h3> }
                             {safeVT && <h3 className="status-title">Good to go!</h3> }
@@ -496,9 +497,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     </div> 
 
                     <div className="security-status" style={{ marginTop: "24px" }}>
-                        {unsafeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>🚨</div> }
-                        {safeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>✅</div> }
-                        {(suspiciousUIO || unknownUIO || inprogressUIO) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>⚠️</div> }
+                        {unsafeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                        {safeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                        {(suspiciousUIO || unknownUIO || inprogressUIO) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
                             <div className="status-text">
                             {unsafeUIO && <h3 className="status-title">Watchout: harmful website!</h3> }
                             {safeUIO && <h3 className="status-title">Good to go!</h3> }
