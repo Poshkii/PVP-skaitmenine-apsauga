@@ -25,7 +25,7 @@ function Profile() {
                 throw new Error("Token not set");
             }
 
-            await fetch(API_URL + '/api/logout', {
+            await fetch(API_URL + '/logout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ function Profile() {
                     throw new Error("Token not set");
                 }
 
-                const response = await fetch(API_URL + '/api/users/me', {
+                const response = await fetch(API_URL + '/users/me', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

@@ -2,6 +2,9 @@ import {FormEvent, useState} from "react";
 import URLScam from "./URLScam";
 import { useReport } from "../report-page/ReportContext";
 
+const VT_API_URL = String(useAppConfig().virusTotalApiUrl);
+const US_API_URL = String(useAppConfig().urlScanApiUrl);
+
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
     const [submittedUrl, setSubmittedUrl] = useState('');
@@ -10,13 +13,6 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [debug, setDebug] = useState("");
     const [showURLScam, setShowURLScam] = useState(false);
     const { report, updateReport } = useReport();
-
-
-    const API_KEY = String(useAppConfig().safeBrowsingApiKey);
-    const API_KEY_URLScanIO = String(useAppConfig().urlscanioApiKey);
-    const API_URL = "https://www.virustotal.com/api/v3/urls";
-    
-
 
     const normalizeURL = (str: string): string => {
         // Check if it already has a valid scheme (http or https)
@@ -96,10 +92,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const checkVirusTotal = async (urlToCheck: string) => {
         try {
             const normalizedUrl = normalizeURL(urlToCheck);
-            const response = await fetch(API_URL, {
+            const response = await fetch(VT_API_URL + "/urls", {
                 method: "POST",
                 headers: {
-                    "x-apikey": API_KEY,
                     "Content-Type": "application/x-www-form-urlencoded"
                 },
                 body: `url=${encodeURIComponent(normalizedUrl)}`
@@ -146,11 +141,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             const normalizedUrl = normalizeURL(urlToCheck);
             
             // First, check if the URL has already been scanned recently
-            const searchResponse = await fetch(`https://urlscan.io/api/v1/search/?q=page.url:"${encodeURIComponent(normalizedUrl)}"&size=1`, {
-                method: "GET",
-                headers: {
-                    "API-Key": API_KEY_URLScanIO
-                }
+            const searchResponse = await fetch(`${US_API_URL}/search/?q=page.url:"${encodeURIComponent(normalizedUrl)}"&size=1`, {
+                method: "GET"
             });
             
             // If we found a recent scan, use those results instead of creating a new scan
@@ -172,10 +164,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             }
             
             // If no recent scan found, submit the URL for scanning
-            const scanResponse = await fetch("https://urlscan.io/api/v1/scan/", {
+            const scanResponse = await fetch(US_API_URL + "/scan", {
                 method: "POST",
                 headers: {
-                    "API-Key": API_KEY_URLScanIO,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -230,10 +221,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             try {
                 // GET scan results
                 const resultResponse = await fetch(resultUrl, {
-                    method: "GET",
-                    headers: {
-                        "API-Key": API_KEY_URLScanIO
-                    }
+                    method: "GET"
                 });
                 
                 if (resultResponse.ok) {
@@ -261,12 +249,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         
         // If we timeout, check one more time with an alternative method
         try {
-            const directResultUrl = `https://urlscan.io/api/v1/result/${uuid}/`;
-            const finalAttempt = await fetch(directResultUrl, {
-                headers: {
-                    "API-Key": API_KEY_URLScanIO
-                }
-            });
+            const directResultUrl = `${US_API_URL}/result/${uuid}/`;
+            const finalAttempt = await fetch(directResultUrl);
             
             if (finalAttempt.ok) {
                 const resultData = await finalAttempt.json();
@@ -334,16 +318,13 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         let attempts = 0;
         const maxAttempts = 10;
 
-        const resultUrl = `https://www.virustotal.com/api/v3/analyses/${dataId}`;
+        const resultUrl = `${VT_API_URL}/analyses/${dataId}`;
 
         while (attempts < maxAttempts) {
             try {
                 // GET analysis
                 const resultResponse = await fetch(resultUrl, {
-                    method: "GET",
-                    headers: {
-                        "x-apikey": API_KEY
-                    }
+                    method: "GET"
                 });
 
                 if (resultResponse.ok) {

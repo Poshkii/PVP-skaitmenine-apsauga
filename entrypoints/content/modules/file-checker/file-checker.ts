@@ -6,8 +6,7 @@ import {showNotification} from "@/utils/notifications.ts";
 export class FileChecker extends Module {
     readonly id = ModuleId.FileChecker;
     private activePolling: Map<number, boolean> = new Map();
-    private API_KEY = String(useAppConfig().fileCheckerApiKey);
-    private API_URL = "https://api.metadefender.com/v4";
+    private API_URL = String(useAppConfig().metaDefenderApiUrl);
     private HASH_ENDPOINT = "/hash";
     private FILE_ENDPOINT = "/file";
 
@@ -67,9 +66,6 @@ export class FileChecker extends Module {
             try {
                 const res = await fetch(`${this.API_URL}${this.HASH_ENDPOINT}/${sha256Hash}`, {
                     method: "GET",
-                    headers: {
-                        'apikey': this.API_KEY,
-                    }
                 });
                 if (res.ok) {
                     return await res.json();
@@ -121,9 +117,6 @@ export class FileChecker extends Module {
 
             const uploadResponse = await fetch(this.API_URL + this.FILE_ENDPOINT, {
                 method: 'POST',
-                headers: {
-                    'apikey': this.API_KEY
-                },
                 body: formData
             });
 
@@ -174,7 +167,6 @@ export class FileChecker extends Module {
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
-                        'apikey': this.API_KEY,
                         'Content-Type': 'application/json'
                     }
                 });
