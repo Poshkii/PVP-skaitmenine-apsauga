@@ -14,7 +14,9 @@ function URLScam({ scamURL }: { scamURL: string }) {
     const [result, setResult] = useState("Waiting for input...");
     const [loading, setLoading] = useState(false);
     const [scamData, setScamData] = useState<Array<[string, string]>>([]);
-
+    const [safe, setSafe] = useState(false);
+    const [unsafe, setUnsafe] = useState(false);
+    const [unknown, setUnknown] = useState(false);
     // Path to your CSV file
     const CSV_FILE_PATH = scamList;
 
@@ -55,7 +57,8 @@ function URLScam({ scamURL }: { scamURL: string }) {
                 });
             } catch (error) {
                 console.error("Error loading CSV data:", error);
-                setResult("❌ Error loading scam database.");
+                setUnknown(true);
+                setResult("Error loading scam database.");
             }
         };
 
@@ -66,11 +69,12 @@ function URLScam({ scamURL }: { scamURL: string }) {
         if (!url) return;
         
         setLoading(true);
-        setResult("🔍 Checking against scam database...");
+        //setResult("🔍 Checking against scam database...");
         let formattedUrl = normalizeURL(url);
 
         if (!isValidURL(formattedUrl)) {
-            setResult("❌ Invalid URL format.");
+            setUnknown(true);
+            setResult("Invalid URL format.");
             setLoading(false);
             return;
         }
@@ -85,12 +89,15 @@ function URLScam({ scamURL }: { scamURL: string }) {
             
             if (match) {
                 setResult(`🚨 Alert! ${formattedUrl} appears to be a ${match[1]}.`);
+                setUnsafe(true);
             } else {
-                setResult(`✅ No crypto scam reports found for ${formattedUrl}.`);
+                setResult(`No crypto scam reports found for ${url}.`);
+                setSafe(true);
             }
         } catch (error) {
             console.error("Error checking scam status:", error);
-            setResult("❌ Error checking scam database.");
+            setUnknown(true);
+            setResult("Error checking scam database.");
         }
         setLoading(false);
     };
@@ -104,14 +111,20 @@ function URLScam({ scamURL }: { scamURL: string }) {
 
     return (
         <>
-            <div style={{ marginTop: "0.5rem", fontWeight: "bold", color: "white", padding: "5px"}}>
-                {result}
+            <div className="security-status" style={{ marginTop: "24px" }}>
+                {unsafe && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>🚨</div> }
+                {safe && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>✅</div> }
+                {unknown && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>⚠️</div> }
+                    <div className="status-text">
+                    {unsafe && <h3 className="status-title">Warning: Potential Crypto Scam</h3> }
+                    {safe && <h3 className="status-title">Good to go!</h3> }
+                    {unknown && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
+                    <p className="status-description">
+                        {result}
+                    </p>
+                    </div>
+
             </div>
-            {loading && (
-                <div style={{ paddingTop: "0.8rem"}}>
-                    <div className="loader"></div>
-                </div>
-            )}
         </>
     );
 }

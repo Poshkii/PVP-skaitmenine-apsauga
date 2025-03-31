@@ -45,7 +45,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   width: 100%;
   height: 100%;
-  min-width: 750px;
+  min-width: 800px;
   max-height: 500px;
   overflow: hidden;
   position: relative;
@@ -244,6 +244,7 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1;
   padding: 32px;
   overflow-y: auto;
+  width: 520px;
   background-image: radial-gradient(
     circle at 80% 20%,
     rgba(14, 165, 233, 0.08) 0%,
@@ -270,8 +271,10 @@ h1, h2, h3, h4, h5, h6 {
 .panel-title {
   font-size: 28px;
   font-weight: 700;
-  margin: 0 0 32px 0;
+  margin: 0 0 25px 0;
   background: var(--accent-gradient);
+  -webkit-background-clip: text;  /* Add this line */
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
 }
@@ -281,7 +284,7 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--bg-secondary);
   border-radius: var(--border-radius-lg);
   padding: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
@@ -306,6 +309,18 @@ h1, h2, h3, h4, h5, h6 {
   filter: blur(40px);
   border-radius: 50%;
   z-index: 0;
+}
+
+
+.input-box
+{
+  padding: 12px;
+  width: 100%; 
+  background-color: var(--bg-tertiary); 
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  outline: none;
 }
 
 .security-status {
@@ -562,7 +577,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Loading spinner */
 .loading-spinner {
-  width: 24px;
+  width: 22px;
   height: 24px;
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;

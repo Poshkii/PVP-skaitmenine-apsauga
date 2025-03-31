@@ -5,12 +5,22 @@ import { useReport } from "../report-page/ReportContext";
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
     const [submittedUrl, setSubmittedUrl] = useState('');
-    const [result, setResult] = useState("");
+    const [resultVT, setResultVT] = useState("");
+    const [resultUIO, setResultUIO] = useState("");
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
     const [showURLScam, setShowURLScam] = useState(false);
     const { report, updateReport } = useReport();
-
+    const [safeVT, setSafeVT] = useState(false);
+    const [unknownVT, setUnknownVT] = useState(false);
+    const [unsafeVT, setUnsafeVT] = useState(false);
+    const [suspiciousVT, setSuspiciousVT] = useState(false);
+    const [safeUIO, setSafeUIO] = useState(false);
+    const [unknownUIO, setUnknownUIO] = useState(false);
+    const [unsafeUIO, setUnsafeUIO] = useState(false);
+    const [suspiciousUIO, setSuspiciousUIO] = useState(false);
+    const [inprogressUIO, setInprogressUIO] = useState(false);
+    const [inprogressVT, setInprogressVT] = useState(false);
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
     const API_KEY_URLScanIO = String(useAppConfig().urlscanioApiKey);
@@ -41,13 +51,33 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             return false;
         }
     };
+    const handleClear = () => {
+        setResultVT('');
+        setResultUIO('');
+        setUnsafeVT(false);
+        setSafeVT(false);
+        setSuspiciousVT(false);
+        setUnknownVT(false);
+        setInprogressVT(false);
+        
+        setUnsafeUIO(false);
+        setSafeUIO(false);
+        setSuspiciousUIO(false);
+        setUnknownUIO(false);
+        setInprogressUIO(false);
+        setResultUIO("");
+        
+        setShowURLScam(false);
+        setDebug("");  // Clear debug messages if needed
+    };
 
     const UrlChecker = async (e: FormEvent) => {
+        handleClear();
         updateReport("UrlScans", report.UrlScans + 1);
         e.preventDefault();
         setShowURLScam(false);
         setLoading(true);
-        setResult("🔍 Checking...");
+        //setResult("🔍 Checking...");
         
         /* URL formatavimas
         let formattedUrl = normalizeURL(url);
@@ -70,22 +100,26 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
             // Process VirusTotal result
             if (virusTotalResult.status === 'fulfilled' && virusTotalResult.value) {
-                finalResult += virusTotalResult.value;
+                setResultVT(virusTotalResult.value);
             } else {
-                finalResult += "⚠️ VirusTotal scanning failed. ";
+                setResultVT("VirusTotal scanning failed. ");
+                setUnknownVT(true);
             }
             
             // Process Hybrid Analysis result
             if (hybridAnalysisResult.status === 'fulfilled' && hybridAnalysisResult.value) {
-                finalResult += "\n\n" + hybridAnalysisResult.value;
+                setResultUIO(hybridAnalysisResult.value);
             } else {
-                finalResult += "\n\n⚠️ Hybrid Analysis scanning failed.";
+                setResultUIO("URLScan.io scanning failed.");
+                setUnknownUIO(true);
             }
             
-            setResult(finalResult);
         } catch (error) {
             console.error("Error while scanning URLL:", error);
-            setResult("❌ Error while scanning URL.");
+            setResultUIO("Error while scanning URL.");
+            setResultVT("Error while scanning URL.");
+            setUnknownUIO(true);
+            setUnknownVT(true);
         } finally {
             setLoading(false);
             setSubmittedUrl(url);
@@ -110,24 +144,25 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 // Handle HTTP errors
                 const errorCode = response.status; // Get the HTTP error code
     
-                let errorMessage = "❌ VirusTotal: Error while scanning URL.";
+                let errorMessage = "VirusTotal: Error while scanning URL.";
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "❌ VirusTotal: Wrong query. Domain does not exist";
+                        errorMessage = "VirusTotal: Wrong query. Domain does not exist";
                         break;
                     case 401:
-                        errorMessage = "❌ VirusTotal: Wrong API key.";
+                        errorMessage = "VirusTotal: Wrong API key.";
                         break;
                     case 403:
-                        errorMessage = "❌ VirusTotal: Not enough permissions.";
+                        errorMessage = "VirusTotal: Not enough permissions.";
                         break;
                     case 429:
-                        errorMessage = "❌ VirusTotal: API quota limit reached.";
+                        errorMessage = "VirusTotal: API quota limit reached.";
                         break;
                     case 500:
-                        errorMessage = "❌ VirusTotal: Server error. Try to scan later.";
+                        errorMessage = "VirusTotal: Server error. Try to scan later.";
                         break;
                 }
+                setUnknownVT(true);
                 return errorMessage;
             }
             
@@ -137,7 +172,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
         } catch (error) {
             console.error("VirusTotal error:", error);
-            return "❌ VirusTotal: Error while scanning URL.";
+            setUnknownVT(true);
+            return "VirusTotal: Error while scanning URL.";
         }
     };
 
@@ -186,22 +222,23 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
             if (!scanResponse.ok) {
                 const errorCode = scanResponse.status;
-                let errorMessage = "❌ URLScan.io: Error while submitting scan.";
+                let errorMessage = "URLScan.io: Error while submitting scan.";
                 
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "❌ URLScan.io: Invalid request format.";
+                        errorMessage = "URLScan.io: Invalid request format.";
                         break;
                     case 401:
-                        errorMessage = "❌ URLScan.io: Invalid API key.";
+                        errorMessage = "URLScan.io: Invalid API key.";
                         break;
                     case 429:
-                        errorMessage = "❌ URLScan.io: API quota limit reached.";
+                        errorMessage = "URLScan.io: API quota limit reached.";
                         break;
                     case 500:
-                        errorMessage = "❌ URLScan.io: Server error. Try to scan later.";
+                        errorMessage = "URLScan.io: Server error. Try to scan later.";
                         break;
                 }
+                setUnknownUIO(true);
                 return errorMessage;
             }
             
@@ -214,7 +251,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
         } catch (error) {
             console.error("URLScan.io error:", error);
-            return "❌ URLScan.io: Error while scanning URL.";
+            setUnknownUIO(true);
+            return "URLScan.io: Error while scanning URL.";
         }
     };
     
@@ -278,8 +316,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         } catch (error) {
             console.error("Final attempt error:", error);
         }
-        
-        return `⚠️ URLScan.io: Scanning in progress. View results at: https://urlscan.io/result/${uuid} in a few minutes.`;
+        setInprogressUIO(true);
+        return `URLScan.io: Scanning in progress. View results at: https://urlscan.io/result/${uuid} in a few minutes.`;
     };
     
     const processURLScanResponse = (resultData: any) => {
@@ -301,14 +339,17 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             let result = "";
             
             if (malicious) {
-                result = `🚨 URLScan.io: Website is malicious! Risk score: ${score}/100\n`;
+                setUnsafeUIO(true);
+                result = `URLScan.io: Website is malicious! Risk score: ${score}/100\n`;
                 if (categories.length > 0) {
                     result += `Categories: ${categories.join(", ")}\n`;
                 }
             } else if (score > 0) {
-                result = `⚠️ URLScan.io: Website might be suspicious. Risk score: ${score}/100\n`;
+                setSuspiciousUIO(true);
+                result = `URLScan.io: Website might be suspicious. Risk score: ${score}/100\n`;
             } else {
-                result = `✅ URLScan.io: Website appears safe. Risk score: ${score}/100\n`;
+                setSafeUIO(true);
+                result = `URLScan.io: Website appears safe. Risk score: ${score}/100\n`;
             }
             
             // Add additional details
@@ -322,9 +363,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         } catch (error) {
             console.error("Error processing URLScan.io response:", error);
             if (resultData && resultData.task && resultData.task.uuid) {
-                return `⚠️ URLScan.io: Results available but failed to process. View full results at: https://urlscan.io/result/${resultData.task.uuid}`;
+                setUnknownUIO(true);
+                return `URLScan.io: Results available but failed to process. View full results at: https://urlscan.io/result/${resultData.task.uuid}`;
             } else {
-                return "⚠️ URLScan.io: Results available but failed to process.";
+                setUnknownUIO(true);
+                return "URLScan.io: Results available but failed to process.";
             }
         }
     };
@@ -357,8 +400,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             attempts++;
             await new Promise(resolve => setTimeout(resolve, 6000));
         }
-        
-        return "⚠️ VirusTotal: Scanning took too long. Try again later.";
+        setUnknownVT(true);
+        return "VirusTotal: Scanning took too long. Try again later.";
     };
 
     const processVirusTotalResponse = (resultData: any) => {
@@ -367,73 +410,111 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         const totalVendors = stats.malicious + stats.suspicious + stats.harmless + stats.undetected;
 
         if (totalVendors === 0) {
-            return "⚠️ VirusTotal: URL still hasn't been analysed. Try again later.";
+            setInprogressVT(true);
+            return "VirusTotal: URL still hasn't been analysed. Try again later.";
         }
             
         if (totalDetections > 0) {
             if (stats.malicious >= 5)
-                return `🚨 VirusTotal: Website is malicious! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
+            {
+                setUnsafeVT(true);
+                return `VirusTotal: Website is malicious! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
+            }
             else
-                return `⚠️ VirusTotal: Website could be dangerous! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
+            {
+                setSuspiciousVT(true);
+                return `VirusTotal: Website could be dangerous! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
+            }
         } else {
-            return `✅ VirusTotal: Website is safe. No threats found out of ${totalVendors} vendors.`;
+            setSafeVT(true);
+            return `VirusTotal: Website is safe. No threats found out of ${totalVendors} vendors.`;
         }
     };
 
     return (
         <>
-            <div style={{ 
-                marginTop: "1em", 
-                height: "calc(100vh - 100px)",
-                display: "flex", 
-                flexDirection: "column" 
-}           }>
-            <h2 style={{ color: "white" }}>Check website safety</h2>
 
-            <form onSubmit={UrlChecker}>
-                <input
-                    type="text"
-                    placeholder="Enter website address..."
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    style={{ padding: "0.5rem", width: "90%" }}
-                />
-                <button
-                    disabled={!url || loading}
-                    type="submit"
-                    style={{ 
-                        width: "200px", 
-                        height: "40px", 
-                        backgroundColor: "#4b5563", 
-                        color: "white", 
-                        border: "none",
-                        borderRadius: "8px", 
-                        outline: "none", 
-                        transition: "background-color 0.2s ease-in-out",
-                        marginTop: "0.5rem", 
-                        cursor: !url || loading ? "not-allowed" : "pointer" 
-                    }}
-                >
-                    Check
-                </button>
-            </form>
+            <h1 className="panel-title">Check website safety</h1>
 
-            <div style={{ 
-                flexGrow: 1,
-                overflowY: "auto", 
-                marginTop: "0.5rem", 
-                padding: "5px", 
-                border: "1px solid #666", 
-                borderRadius: "5px",
-                maxHeight: "250px",
-            }}>              
-                <div 
-                    style={{ fontWeight: "bold", color: "white" }}
-                    dangerouslySetInnerHTML={{ __html: result.replace(/\n/g, '<br/>') }}
-                />
+            <div className="security-check-container">
+                <form onSubmit={UrlChecker}>
+                        <input
+                            type="text"
+                            placeholder="Enter website address..."
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className="input-box"
+                        />
+                    
+                    <div className="action-buttons">
+                        <button
+                            disabled={!url || loading}
+                            type="submit"
+                            className={`btn ${!url || loading ? "" : "btn-primary"}`}
+                            style={{ 
+                            width: "200px",
+                            opacity: !url || loading ? "0.6" : "1",
+                            cursor: !url || loading ? "not-allowed" : "pointer",
+                            }}
+                            >
+                            Check
+                        </button>
+                        <button
+                            className="btn btn-secondary"
+                            style={{ 
+                            width: "200px"
+                            }}
+                            onClick={() => setUrl('')}
+                            type="button"
+                            >
+                            Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div className="security-check-container" style={{ maxHeight: "300px", overflowY: "auto" }}> 
 
-                <div style={{ paddingTop: "0.8rem"}}>
-                    {loading && <div className="loader"></div>}
+                {!loading && (
+                <>
+
+                    <div className="security-status" style={{ marginTop: "24px" }}>
+                        {unsafeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>🚨</div> }
+                        {safeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>✅</div> }
+                        {(suspiciousVT || unknownVT || inprogressVT) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>⚠️</div> }
+                            <div className="status-text">
+                            {unsafeVT && <h3 className="status-title">Watchout: harmful website!</h3> }
+                            {safeVT && <h3 className="status-title">Good to go!</h3> }
+                            {suspiciousVT && <h3 className="status-title">Warning: potenial risk</h3> }
+                            {unknownVT && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
+                            {inprogressVT && <h3 className="status-title">Scan in progress.</h3> }
+                            <p className="status-description">
+                                {resultVT}
+                            </p>
+                            </div>
+
+                    </div> 
+
+                    <div className="security-status" style={{ marginTop: "24px" }}>
+                        {unsafeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>🚨</div> }
+                        {safeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>✅</div> }
+                        {(suspiciousUIO || unknownUIO || inprogressUIO) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}>⚠️</div> }
+                            <div className="status-text">
+                            {unsafeUIO && <h3 className="status-title">Watchout: harmful website!</h3> }
+                            {safeUIO && <h3 className="status-title">Good to go!</h3> }
+                            {suspiciousUIO && <h3 className="status-title">Warning: potenial risk</h3> }
+                            {unknownUIO && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
+                            {inprogressUIO && <h3 className="status-title">Scan in progress.</h3> }
+                            <p className="status-description" dangerouslySetInnerHTML={{ __html: resultUIO }}></p>
+                            </div>
+
+                    </div>
+                </>
+                )}  
+                
+
+                <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
+                    {loading && <div className="loading-spinner"></div>}
                 </div>
 
                 <div style={{ marginTop: "0.5rem", color: "#aaa", fontSize: "0.8rem", whiteSpace: "pre-line" }}>
@@ -443,8 +524,17 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 <div>
                     {showURLScam && <URLScam scamURL={submittedUrl} />}
                 </div>
+
             </div> 
-        </div>
+
+            <div className="action-buttons">
+                <button className="btn btn-secondary" onClick={handleClear}>
+                Clear
+                </button>
+                <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
+                Scan Again
+                </button>
+            </div>
 
         </>
     );
