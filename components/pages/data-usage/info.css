@@ -19,7 +19,8 @@
   }
   
   .custom-button {
-    width: 90%;
+    margin: 0 auto;
+    width: 50%;
     max-width: 300px;
     height: 50px;
     background-color: #374151; /* Tailwind bg-gray-800 */
@@ -38,4 +39,41 @@
   .custom-button:hover {
     background-color: #4b5563; /* Darker bg */
     border-color: #4b5563; /* Subtle border effect */
+  }
+
+  .dropdown-section {
+    margin-bottom: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #374151;
+  }
+  
+  .dropdown-button {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    background-color: #4b5563;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    outline: none;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .dropdown-button:hover {
+    background-color: #6b7280; /* Slightly lighter gray for hover effect */
+  }
+  
+  .dropdown-content {
+    padding: 10px 15px;
+    background-color: #374151;
+  }
+  
+  .consent-notice {
+    margin-top: 15px;
+    font-size: 0.9em;
+    font-style: italic;
   }
