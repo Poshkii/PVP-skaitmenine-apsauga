@@ -439,24 +439,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     return (
         <>
             <div style={{ 
-                marginTop: "1em", 
-                height: "calc(100vh - 100px)",
-                display: "flex", 
-                flexDirection: "column" 
+                
             }}>
-                <div style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    position: "relative",
-                    marginBottom: "1rem",
-                }}>
-                    <h2 style={{ color: "white", margin: '0' }}>Check website safety</h2>
-                    
-                    <div onClick={() => navigate("/url-data")} className="data-info"><Info/></div>
-                </div>
 
-                <h1 className="panel-title">Check website safety</h1>
+                <h1 className="panel-title">Check website safety <span onClick={() => navigate("/url-data")}><Info className="info-icon"/></span></h1>
 
                 <div className="security-check-container">
                     <form onSubmit={UrlChecker}>

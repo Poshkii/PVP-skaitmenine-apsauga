@@ -1,3 +1,5 @@
+import {Route, Routes, useNavigate} from "react-router";
+
 import PasswordChecker from "@/components/pages/password-checker/PasswordChecker.tsx";
 import FeatureList from "@/components/pages/home/FeatureList.tsx";
 import SettingsPage from "@/components/pages/settings/Settings.tsx";
@@ -9,12 +11,16 @@ import Profile from "@/components/pages/profile/Profile.tsx";
 import Login from "@/components/pages/profile/Login.tsx";
 import Register from "@/components/pages/profile/Register.tsx";
 import CookiesManager from "@/components/pages/cookies/Cookies";
-import { Cookie } from "lucide-react";
 import ReportPage from "@/components/pages/report-page/ReportPage.tsx";
-import {Route, Routes} from "react-router";
+
+import URLData from "../data-usage/URL/URLDataUsage";
+import FileData from "../data-usage/File/FileDataUsage";
+import PasswordData from "../data-usage/Password/PasswordDataUsage";
+import EmailData from "../data-usage/Email/EmailDataUsage";
+
 import {useBackgroundMessaging} from "@/hooks/useBackgroundMessaging.ts";
-import {useNavigate} from "react-router";
-import {Settings} from "lucide-react";
+
+import {Settings, Cookie} from "lucide-react";
 
 function Home(){
     useBackgroundMessaging();
@@ -47,6 +53,11 @@ function Home(){
               <Route path="/email-checker" element={<EmailChecker />} />
               <Route path="/info-page" element={<InfoPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+
+              <Route path="/url-data" element={<URLData />}></Route>
+              <Route path="/file-data" element={<FileData />}></Route>
+              <Route path="/password-data" element={<PasswordData />}></Route>
+              <Route path="/email-data" element={<EmailData />}></Route>
             </Routes>
           </div>
         </div>
