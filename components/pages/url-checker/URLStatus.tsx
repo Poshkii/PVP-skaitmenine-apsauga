@@ -29,7 +29,17 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const API_KEY_URLScanIO = String(useAppConfig().urlscanioApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
     
-
+    const handleUseCurrentURL = () => {
+        if (chrome?.tabs) {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                if (tabs.length > 0 && tabs[0].url) {
+                    setUrl(tabs[0].url); // Set the real website URL
+                }
+            });
+        } else {
+            console.error("Chrome API not available. Are you running this inside a Chrome extension?");
+        }
+    };
 
     const normalizeURL = (str: string): string => {
         // Check if it already has a valid scheme (http or https)
@@ -460,17 +470,27 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                 type="submit"
                                 className={`btn ${!url || loading ? "" : "btn-primary"}`}
                                 style={{ 
-                                width: "200px",
+                                width: "130px",
                                 opacity: !url || loading ? "0.6" : "1",
                                 cursor: !url || loading ? "not-allowed" : "pointer",
                                 }}
                                 >
                                 Check
                             </button>
+                            <button                               
+                                className="btn btn-secondary"
+                                style={{
+                                    width: "130px"
+                                }}
+                                onClick={handleUseCurrentURL}
+                                 type="button"
+                                >
+                                Use Current URL
+                            </button>
                             <button
                                 className="btn btn-secondary"
                                 style={{ 
-                                width: "200px"
+                                width: "130px"
                                 }}
                                 onClick={() => setUrl('')}
                                 type="button"
@@ -478,6 +498,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                 Clear
                             </button>
                         </div>
+                        
                     </form>
                 </div>
                 
