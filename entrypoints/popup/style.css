@@ -66,6 +66,7 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-md);
   z-index: 10;
   transition: transform var(--transition-medium);
+  overflow-y: auto;
 }
 
 .info-icon {
@@ -77,16 +78,6 @@ h1, h2, h3, h4, h5, h6 {
   color: #0ea5e9;
   cursor: pointer;
   transform: scale(1.1);
-}
-
-.data-title {
-  font-size: 14px;
-  color: #9ca3af; /* Tailwind text-gray-400 */
-}
-
-.data-list {
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 .left-panel:hover .falcon-fort-title::after {
