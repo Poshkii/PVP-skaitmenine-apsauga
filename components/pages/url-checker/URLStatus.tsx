@@ -103,7 +103,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
         try {
             // Run both API checks in parallel
-            const [virusTotalResult, hybridAnalysisResult] = await Promise.allSettled([
+            const [virusTotalResult, urlScanIoResult] = await Promise.allSettled([
                 checkVirusTotal(url),
                 checkURLScanIO(url) // Changed to use quick-scan
             ]);
@@ -119,9 +119,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 setUnknownVT(true);
             }
             
-            // Process Hybrid Analysis result
-            if (hybridAnalysisResult.status === 'fulfilled' && hybridAnalysisResult.value) {
-                setResultUIO(hybridAnalysisResult.value);
+            // Process UrlScanIo Analysis result
+            if (urlScanIoResult.status === 'fulfilled' && urlScanIoResult.value) {
+                setResultUIO(urlScanIoResult.value);
             } else {
                 setResultUIO("URLScan.io scanning failed.");
                 setUnknownUIO(true);
@@ -239,7 +239,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "URLScan.io: Invalid request format.";
+                        errorMessage = "URLScan.io: Domain does not exist. Could not scan.";
                         break;
                     case 401:
                         errorMessage = "URLScan.io: Invalid API key.";
