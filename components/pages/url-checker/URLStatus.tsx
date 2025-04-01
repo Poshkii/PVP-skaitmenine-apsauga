@@ -5,6 +5,9 @@ import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import {useNavigate} from "react-router";
 import { Info } from 'lucide-react';
 
+const VT_API_URL = String(useAppConfig().virusTotalApiUrl);
+const US_API_URL = String(useAppConfig().urlScanApiUrl);
+
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
     const [submittedUrl, setSubmittedUrl] = useState('');
@@ -25,10 +28,6 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [inprogressUIO, setInprogressUIO] = useState(false);
     const [inprogressVT, setInprogressVT] = useState(false);
 
-    const API_KEY = String(useAppConfig().safeBrowsingApiKey);
-    const API_KEY_URLScanIO = String(useAppConfig().urlscanioApiKey);
-    const API_URL = "https://www.virustotal.com/api/v3/urls";
-    
     const handleUseCurrentURL = () => {
         if (chrome?.tabs) {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -72,14 +71,14 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         setSuspiciousVT(false);
         setUnknownVT(false);
         setInprogressVT(false);
-        
+
         setUnsafeUIO(false);
         setSafeUIO(false);
         setSuspiciousUIO(false);
         setUnknownUIO(false);
         setInprogressUIO(false);
         setResultUIO("");
-        
+
         setShowURLScam(false);
         setDebug("");  // Clear debug messages if needed
     };
@@ -126,7 +125,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 setResultUIO("URLScan.io scanning failed.");
                 setUnknownUIO(true);
             }
-            
+
         } catch (error) {
             console.error("Error while scanning URLL:", error);
             setResultUIO("Error while scanning URL.");
@@ -143,10 +142,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const checkVirusTotal = async (urlToCheck: string) => {
         try {
             const normalizedUrl = normalizeURL(urlToCheck);
-            const response = await fetch(API_URL, {
+            const response = await fetch(VT_API_URL + "/urls", {
                 method: "POST",
                 headers: {
-                    "x-apikey": API_KEY,
                     "Content-Type": "application/x-www-form-urlencoded"
                 },
                 body: `url=${encodeURIComponent(normalizedUrl)}`
@@ -195,11 +193,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             const normalizedUrl = normalizeURL(urlToCheck);
             
             // First, check if the URL has already been scanned recently
-            const searchResponse = await fetch(`https://urlscan.io/api/v1/search/?q=page.url:"${encodeURIComponent(normalizedUrl)}"&size=1`, {
-                method: "GET",
-                headers: {
-                    "API-Key": API_KEY_URLScanIO
-                }
+            const searchResponse = await fetch(`${US_API_URL}/search/?q=page.url:"${encodeURIComponent(normalizedUrl)}"&size=1`, {
+                method: "GET"
             });
             
             // If we found a recent scan, use those results instead of creating a new scan
@@ -221,10 +216,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             }
             
             // If no recent scan found, submit the URL for scanning
-            const scanResponse = await fetch("https://urlscan.io/api/v1/scan/", {
+            const scanResponse = await fetch(US_API_URL + "/scan", {
                 method: "POST",
                 headers: {
-                    "API-Key": API_KEY_URLScanIO,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -281,10 +275,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             try {
                 // GET scan results
                 const resultResponse = await fetch(resultUrl, {
-                    method: "GET",
-                    headers: {
-                        "API-Key": API_KEY_URLScanIO
-                    }
+                    method: "GET"
                 });
                 
                 if (resultResponse.ok) {
@@ -312,12 +303,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         
         // If we timeout, check one more time with an alternative method
         try {
-            const directResultUrl = `https://urlscan.io/api/v1/result/${uuid}/`;
-            const finalAttempt = await fetch(directResultUrl, {
-                headers: {
-                    "API-Key": API_KEY_URLScanIO
-                }
-            });
+            const directResultUrl = `${US_API_URL}/result/${uuid}/`;
+            const finalAttempt = await fetch(directResultUrl);
             
             if (finalAttempt.ok) {
                 const resultData = await finalAttempt.json();
@@ -390,16 +377,13 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         let attempts = 0;
         const maxAttempts = 10;
 
-        const resultUrl = `https://www.virustotal.com/api/v3/analyses/${dataId}`;
+        const resultUrl = `${VT_API_URL}/analyses/${dataId}`;
 
         while (attempts < maxAttempts) {
             try {
                 // GET analysis
                 const resultResponse = await fetch(resultUrl, {
-                    method: "GET",
-                    headers: {
-                        "x-apikey": API_KEY
-                    }
+                    method: "GET"
                 });
 
                 if (resultResponse.ok) {
@@ -449,7 +433,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     return (
         <>
             <div style={{ 
-                
+
             }}>
 
                 <h1 className="panel-title">Check website safety <span onClick={() => navigate("/url-data")}><Info className="info-icon"/></span></h1>
@@ -463,13 +447,13 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                 onChange={(e) => setUrl(e.target.value)}
                                 className="input-box"
                             />
-                        
+
                         <div className="action-buttons">
                             <button
                                 disabled={!url || loading}
                                 type="submit"
                                 className={`btn ${!url || loading ? "" : "btn-primary"}`}
-                                style={{ 
+                                style={{
                                 width: "130px",
                                 opacity: !url || loading ? "0.6" : "1",
                                 cursor: !url || loading ? "not-allowed" : "pointer",
@@ -477,7 +461,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                 >
                                 Check
                             </button>
-                            <button                               
+                            <button
                                 className="btn btn-secondary"
                                 style={{
                                     width: "130px"
@@ -489,7 +473,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                             </button>
                             <button
                                 className="btn btn-secondary"
-                                style={{ 
+                                style={{
                                 width: "130px"
                                 }}
                                 onClick={() => setUrl('')}
@@ -498,11 +482,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                 Clear
                             </button>
                         </div>
-                        
+
                     </form>
                 </div>
-                
-                <div className="security-check-container" style={{ maxHeight: "300px", overflowY: "auto" }}> 
+
+                <div className="security-check-container" style={{ maxHeight: "300px", overflowY: "auto" }}>
 
                     {!loading && (
                     <>
@@ -522,7 +506,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                 </p>
                                 </div>
 
-                        </div> 
+                        </div>
 
                         <div className="security-status" style={{ marginTop: "24px" }}>
                             {unsafeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
@@ -539,8 +523,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
                         </div>
                     </>
-                    )}  
-                    
+                    )}
+
 
                     <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
                         {loading && <div className="loading-spinner"></div>}
@@ -554,7 +538,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                         {showURLScam && <URLScam scamURL={submittedUrl} />}
                     </div>
 
-                </div> 
+                </div>
 
                 <div className="action-buttons">
                     <button className="btn btn-secondary" onClick={handleClear}>

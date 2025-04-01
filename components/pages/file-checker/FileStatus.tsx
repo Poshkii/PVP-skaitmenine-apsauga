@@ -8,8 +8,7 @@ import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts"
 import {useNavigate} from "react-router";
 import { Info } from 'lucide-react';
 
-const API_KEY = String(useAppConfig().fileCheckerApiKey);
-const API_URL = "https://api.metadefender.com/v4";
+const API_URL = String(useAppConfig().metaDefenderApiUrl);
 const HASH_ENDPOINT = "/hash";
 const FILE_ENDPOINT = "/file";
 
@@ -59,10 +58,7 @@ async function checkFileByHash(file: File): Promise<any | null> {
     if (sha256Hash) {
         try {
             const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha256Hash}`, {
-                method: "GET",
-                headers: {
-                    'apikey': API_KEY,
-                }
+                method: "GET"
             });
             if (res.ok) {
                 return await res.json();
@@ -80,7 +76,6 @@ async function getScanResult(url: string) {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'apikey': API_KEY,
                 'Content-Type': 'application/json'
             }
         });
@@ -247,9 +242,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
                 // ikelia faila skenavimui
                 const uploadResponse = await fetch(API_URL + FILE_ENDPOINT, {
                     method: 'POST',
-                    headers: {
-                        'apikey': API_KEY
-                    },
                     body: formData
                 });
 
