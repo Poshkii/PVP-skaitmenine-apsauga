@@ -4,8 +4,11 @@ export default defineConfig({
   extensionApi: "chrome",
   modules: [
     "@wxt-dev/module-react",
+    '@wxt-dev/auto-icons'
   ],
   manifest: {
+    name: "FalconFort",
+    description: "Privacy extension",
     permissions: ["storage", "downloads", "downloads.open", "downloads.shelf", "notifications"]
   }
 });
