@@ -1,8 +1,8 @@
-
 import EmailBreachDetails from "@/components/pages/email-checker/EmailBreachData.tsx";
 import EmailBreachData from "@/components/pages/email-checker/EmailBreachData.tsx";
 import { FormEvent } from "react";
 import { data } from "react-router";
+import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { useReport } from "../report-page/ReportContext";
 import {useNavigate} from "react-router";
 import { Info } from 'lucide-react';
@@ -13,6 +13,15 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const [loading, setLoading] = useState(false);
     const [breachData, setBreachData] = useState<any | null>(null); // Stores full API response
     const { addScannedEmail } = useReport();
+    const [safeEmail, setSafe] = useState(false);
+    const [warningEmail, setWarning] = useState(false);
+    const [dangerEmail, setDanger] = useState(false);
+    const [unknownRisk, setUnknownRisk] = useState(false);
+    const [lowRisk, setLowRisk] = useState(false);
+    const [mediumRisk, setMediumRisk] = useState(false);
+    const [highRisk, setHighRisk] = useState(false);
+    const [risk, setRisk] = useState("");
+    const [breachesFound, setBreachesFound] = useState(false)   
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -24,9 +33,9 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             return;
         }
 
-        setResult("🔍 Searching...");
+        setResult("Searching...");
         setLoading(true);
-        setBreachData(null); // Clear previous data before a new search
+        handleClear();
 
         try {
             const response = await fetch(`https://api.xposedornot.com/v1/breach-analytics?email=${email}`);
@@ -36,17 +45,22 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             console.log("API data: ", data)
 
             if (response.status === 200 && data.BreachesSummary.site) {
-                setResult(`⚠️ Found ${data.ExposedBreaches.breaches_details.length} breaches!`);
-                setBreachData(data);
+                setResult(`Found ${data.ExposedBreaches.breaches_details.length} breaches`);
+                data.ExposedBreaches.breaches_details.length < 1 ? setSafe(true) : data.ExposedBreaches.breaches_details.length < 10 ? setWarning(true) : setDanger(true)
+                // Get risk level
+                const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
+                risk === "High" ? setHighRisk(true) : risk === "Medium" ? setMediumRisk(true) : risk === "Low" ? setLowRisk(true) : setUnknownRisk(true);
+                setRisk(risk);
+                setBreachesFound(true)
+                setBreachData(data);                
                 addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
             } else {
-                setResult("✅ Email is safe!");
-                setBreachData(null);
+                setResult("Email is safe!");                
                 addScannedEmail(email, 0);
             }
         } catch (error) {
-            console.error("API klaida:", error);
-            setResult("❌ Error");
+            console.error("API error:", error);
+            setResult("Error");
         }
 
         setLoading(false);
@@ -54,77 +68,131 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
     const navigate = useNavigate();
 
+    const handleClear = () => {
+        setBreachData(null); // Clear previous data before a new search
+        setSafe(false);
+        setDanger(false);
+        setWarning(false);
+        setHighRisk(false);
+        setMediumRisk(false);
+        setLowRisk(false);
+        setUnknownRisk(false);
+        setBreachesFound(false);
+        setRisk("");
+    };
+
     return (
-        <div style={{ marginBottom: "4rem", textAlign: "center" }}>
+        <>
             <div style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                position: "relative",
-                marginTop: '1rem', 
-                marginBottom: "1rem",
+
             }}>
-                <h2 style={{ color: "white", margin: '0' }}>Check Email Safety</h2>
-            
-                <div onClick={() => navigate("/email-data")} className="data-info"><Info/></div>
-            </div>
-            
-            <form onSubmit={EmailCheck}>
-                <input
-                    type="text"
-                    placeholder="Enter your email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{ padding: "0.5rem", width: "90%", marginBottom: "0.5rem" }}
-                />
+                <h1 className="panel-title">Check Email Safety<span onClick={() => navigate("/email-data")}><Info className="info-icon"/></span></h1>
+
+                {/* <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    position: "relative",
+                    marginTop: '1rem', 
+                    marginBottom: "1rem",
+                }}>
+                    <h2 style={{ color: "white", margin: '0' }}>Check Email Safety</h2>
                 
-                <button
-                    onClick={EmailCheck}
-                    disabled={!email.match(emailPattern)}
-                    style={{
-                        width: "200px",
-                        height: "40px",
-                        backgroundColor: email.match(emailPattern) ? "#4b5563" : "#212121",
-                        color: email.match(emailPattern) ? "white" : "#5b5a5b",
-                        border: "none",
-                        borderRadius: "8px",
-                        outline: "none",
-                        transition: "background-color 0.2s ease-in-out",
-                        cursor: email.match(emailPattern) ? "pointer" : "not-allowed"
-                    }}
-                >
-                    🔍 Check
-                </button>
-            </form>
+                    <div onClick={() => navigate("/email-data")} className="data-info"><Info/></div>
+                </div> */}
+                
+                <div className="security-check-container">
+                    <form onSubmit={EmailCheck}>
+                        <input
+                            type="text"
+                            placeholder="Enter email address..."
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="input-box"
+                        />
 
-            <div style={{ padding: "1rem"}}>
-                {loading && <div className="loader"></div>}
-            </div>
+                        <div className="action-buttons">
+                            <button
+                                disabled={!email || loading || !email.match(emailPattern)}
+                                type="submit"
+                                className={`btn ${!email || loading || !email.match(emailPattern) ? "" : "btn-primary"}`}
+                                style={{ 
+                                width: "200px",
+                                opacity: !email || loading || !email.match(emailPattern) ? "0.6" : "1",
+                                cursor: !email || loading || !email.match(emailPattern) ? "not-allowed" : "pointer",
+                                }}
+                                >
+                                Check
+                            </button>                            
+                            <button
+                                className="btn btn-secondary"
+                                style={{ 
+                                width: "200px"
+                                }}
+                                onClick={() => setEmail('')}
+                                type="button"
+                                >
+                                Clear
+                            </button>
+                        </div>                        
+                    </form>
+                </div>
 
-            {/* Display result status */}
-            <h3 style={{ color: breachData ? "red" : "green" }}>{result}</h3>
+                <div className="security-check-container" style={{ maxHeight: "300px", minHeight: "110px", overflowY: "auto" }}> 
 
-            {
-            //Tips button
-            breachData && (
-                <button
-                        onClick={switchPage}
-                        style={{
-                            padding: "0.5rem 1rem",
-                            backgroundColor: "#4b5563",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                        }}
-                    >
-                        What do I do?
+                    {!loading && (
+                    <>
+                        {/* Display result status */}                   
+                        <div className="security-status" style={{ marginTop: "24px" }}>
+                            {dangerEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                            {safeEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                            {warningEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                            <div className="status-text">
+                                {(dangerEmail || warningEmail) && <h3 className="status-title">Your email has been leaked!</h3> }
+                                {safeEmail && <h3 className="status-title">Your email is safe</h3> }                        
+                                <p className="status-description">
+                                    {(dangerEmail || warningEmail) && result}
+                                </p>
+                            </div>
+                        </div> 
+
+                        <div className="security-status" style={{ marginTop: "24px" }}>
+                            {highRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                            {lowRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                            {(mediumRisk || unknownRisk) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                            <div className="status-text">
+                                {breachesFound && <h3 className="status-title">Risk level is {risk}</h3>}
+                                <p className="status-description">
+                                    {lowRisk && "\"Prevention is better than cure.\" - Use strong passwords to keep threats at bay."}
+                                    {mediumRisk && "\"Better safe than sorry.\" - Don't let your guard down, use extra security measures to protect your information."}
+                                    {highRisk && "\"Forewarned is forearmed.\" - Take immediate action to secure your accounts and review for suspicious activity."}
+                                    {unknownRisk && "\"You never know what’s around the corner.\" - Take precautionary measures, even if the risk isn’t clear yet."}
+                                </p>
+                            </div>
+                        </div>                             
+                    </>
+                    )}   
+
+                    <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
+                        {loading && <div className="loading-spinner"></div>}
+                    </div>  
+
+                    {/* Show EmailBreachDetails if breaches are found */}
+                    {breachData && <EmailBreachDetails data={breachData} />}
+
+                </div>               
+
+                {/*Clear & Tips buttons*/}
+                <div className="action-buttons">
+                    <button className="btn btn-secondary" onClick={handleClear}>
+                    Clear
                     </button>
-            )
-            }
-            {/* Show EmailBreachDetails if breaches are found */}
-            {breachData && <EmailBreachDetails data={breachData} />}
-        </div>
+                    <button className="btn btn-primary" onClick={switchPage}>
+                    Tips
+                    </button>
+                </div>
+            </div>
+        </>
     );
 }
 

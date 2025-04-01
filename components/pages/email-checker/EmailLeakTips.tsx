@@ -1,4 +1,5 @@
 import {useState} from "react";
+import { ShieldQuestion} from 'lucide-react';
 
 const titles = [
     { id: 1, content: "Change your password" },
@@ -55,41 +56,101 @@ function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
     }
 
     return (
-        <>            
-                <div style={{ marginTop: "1rem", color: "white" }}>
-                    <h2>Data leak tips</h2>
-                
-                    {titles.map((title, index) => (
-                        <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
-                            <div style={{ marginTop: "2rem", marginBottom: "1rem", textAlign: 'center', fontSize: "1.2rem"}}>{title.content}</div>
-                        </div>
-                    ))}
+        <>          
+            <div style={{ 
+                display: "flex", 
+                flexDirection: "column",
+                height: "100%", // Set height to parent container
+            }}>                  
+                <div style={{ 
+                    marginTop: "1rem", 
+                    color: "white", 
+                    display: "flex", 
+                    flexDirection: "column",
+                    flex: "1", // Makes this container take available space
+                    height: "100%", // Ensure this container uses full height
+                    justifyContent: "space-between" // This is important - distributes space
+                }}>
+                    {/* Top content section */}
+                    <div>
+                        {/* Title */}
+                        <h2 className="panel-title">Data leak tips</h2>
 
-                    {descriptions.map((description, index) => (
-                        <div key={description.id} style={{ display: index === currentIndex ? "block" : "none" }}>
-                            <div style={{ margin: "1rem", color: "#ADADAD", textAlign: 'center', fontSize: "1rem"}}>{description.content}</div>                          
-                            <div>{currentIndex + 1} / {descriptions.length}</div>
+                        {/* Status container */}
+                        <div className="security-status" style={{ 
+                            marginTop: "24px", 
+                            display: "flex", 
+                            flexDirection: "row",
+                            alignItems: "flex-start",
+                            gap: "1rem"
+                        }}>
+                            {/* Icon (Fixed Position) */}
+                            <div className="status-icon" style={{ 
+                                backgroundColor: "var(--error)",                             
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                borderRadius: "50%"
+                            }}>
+                                <ShieldQuestion color="white" size={30} />
+                            </div>
+
+                            {/* Text Content */}
+                            <div className="status-text" style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                                textAlign: "left",
+                                flexGrow: 1,
+                                overflow: "hidden",
+                                minWidth: "0"
+                            }}>
+                                {/* Titles */}
+                                {titles.map((title, index) => (
+                                    <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+                                        <h3 style={{ marginBottom: "0.5rem", fontSize: "1.4rem"}}>{title.content}</h3>
+                                    </div>
+                                ))}
+
+                                {/* Descriptions */}
+                                {descriptions.map((description, index) => (
+                                    <div key={description.id} style={{ 
+                                        display: index === currentIndex ? "block" : "none",
+                                        overflow: "auto",
+                                        maxHeight: "100%"
+                                    }}>
+                                        <div style={{ color: "#ADADAD", fontSize: "1rem"}}>
+                                            {description.content}
+                                        </div>                          
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    ))}
-                </div>        
-                
-                <div className="bottom-slide-buttons-new" style={{ backgroundColor: "#1f2937" }}>                                     
-                    <button className="slide-button" onClick={prevSlide}>❮</button>
-                    <button
-                        onClick={switchPage}
-                        style={{
-                            padding: "0.5rem 1rem",
-                            backgroundColor: "#4b5563",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                        }}
-                    >
-                        Return
-                    </button>
-                    <button className="slide-button" onClick={nextSlide}>❯</button>
-                </div>                
+                    </div>
+
+                    {/* Bottom navigation with explicit padding */}
+                    <div style={{
+                        marginTop: "3rem", // Add significant margin above
+                        paddingBottom: "1rem", // Explicit padding at bottom
+                    }}>  
+                        {/* Page Number */}
+                        <div style={{ textAlign: "center", fontSize: "1.2rem", fontWeight: "bold" }}>
+                            {currentIndex + 1} / {descriptions.length}
+                        </div>
+                        {/* Buttons */}
+                        <div style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "1rem",
+                            marginTop: "1rem"
+                        }}>                              
+                            <button className="btn btn-secondary" onClick={prevSlide}>❮</button>
+                            <button className="btn btn-primary" onClick={switchPage}>Return</button>
+                            <button className="btn btn-secondary" onClick={nextSlide}>❯</button>
+                        </div>  
+                    </div>
+                </div>     
+            </div>
         </>
     );
 }

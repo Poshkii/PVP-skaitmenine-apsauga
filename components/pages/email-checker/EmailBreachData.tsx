@@ -1,3 +1,4 @@
+import { AlignCenter } from "lucide-react";
 import React from "react";
 
 interface BreachData {
@@ -24,29 +25,17 @@ interface BreachData {
 
 const EmailBreachDetails = ({ data }: { data: BreachData }) => {
     if (!data || !data.ExposedBreaches.breaches_details.length) {
-        return <h3 style={{ color: "green", textAlign: "center" }}>✅ Your email is safe!</h3>;
+        return <h3 style={{ color: "green", textAlign: "center" }}>Your email is safe!</h3>;
     }
 
-    // Get risk level
-    const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
-    const riskColor = risk === "High" ? "red" : risk === "Medium" ? "orange" : "#E6BF00";
+    return (       
 
-    return (
-        <div style={{ padding: "1rem", maxWidth: "800px", margin: "auto" }}>
-            {/* Risk Level */}
-            <div style={{
-                backgroundColor: riskColor, 
-                padding: "10px", 
-                borderRadius: "8px", 
-                textAlign: "center", 
-                color: "white", 
-                fontWeight: "bold"
-            }}>
-                📢 Risk level: {risk}
-            </div>
+        <div style={{ padding: "1rem", maxWidth: "800px", margin: "auto"}}>
 
             {/* Breach List */}
-            <h2 style={{ color: "white", textAlign: "center", marginTop: "1rem" }}>Breaches</h2>
+            <div style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.5rem" }}>
+                <h2 className="security-status" style={{ textAlign: "center" }}>Breaches</h2>
+            </div>             
             {data.ExposedBreaches.breaches_details.map((breach, index) => (
                 <div key={index} style={{
                     border: "1px solid #ddd",
@@ -64,7 +53,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
                     {/* Logo */}
                     <div>
                         <img src={breach.logo} alt={breach.breach} 
-                            style={{ width: "30vw", height: "auto", marginBottom: "10px" }} 
+                            style={{ width: "12vw", height: "auto", marginBottom: "10px" }} 
                         />
                     </div>
 
