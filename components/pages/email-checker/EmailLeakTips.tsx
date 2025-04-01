@@ -1,4 +1,5 @@
 import {useState} from "react";
+import { ShieldQuestion} from 'lucide-react';
 
 const titles = [
     { id: 1, content: "Change your password" },
@@ -55,24 +56,34 @@ function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
     }
 
     return (
-        <>            
+        <>          
+            <div>                  
                 <div style={{ marginTop: "1rem", color: "white" }}>
-                    <h2>Data leak tips</h2>
-                
-                    {titles.map((title, index) => (
-                        <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
-                            <div style={{ marginTop: "2rem", marginBottom: "1rem", textAlign: 'center', fontSize: "1.2rem"}}>{title.content}</div>
-                        </div>
-                    ))}
+                    <h2 className="panel-title">Data leak tips</h2>
 
-                    {descriptions.map((description, index) => (
-                        <div key={description.id} style={{ display: index === currentIndex ? "block" : "none" }}>
-                            <div style={{ margin: "1rem", color: "#ADADAD", textAlign: 'center', fontSize: "1rem"}}>{description.content}</div>                          
-                            <div>{currentIndex + 1} / {descriptions.length}</div>
+                    <div className="security-status" style={{ marginTop: "24px" }}>
+                        <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><ShieldQuestion color="white" size={30} /></div>
+                        <div className="status-text">
+                            {titles.map((title, index) => (
+                                <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+                                    <h3 style={{ marginTop: "2rem", marginBottom: "1rem", textAlign: 'center', fontSize: "1.2rem"}}>{title.content}</h3>
+                                </div>
+                            ))}
+                        
+
+                            {descriptions.map((description, index) => (
+                                <div key={description.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+                                    <div style={{ margin: "1rem", color: "#ADADAD", textAlign: 'center', fontSize: "1rem"}}>{description.content}</div>                          
+                                    
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    </div>
                 </div>        
                 
+                <div style={{ textAlign: "center" }}>
+                    <div>{currentIndex + 1} / {descriptions.length}</div>
+                </div>
                 <div className="bottom-slide-buttons-new" style={{ backgroundColor: "#1f2937" }}>                                     
                     <button className="slide-button" onClick={prevSlide}>❮</button>
                     <button
@@ -89,7 +100,8 @@ function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
                         Return
                     </button>
                     <button className="slide-button" onClick={nextSlide}>❯</button>
-                </div>                
+                </div>  
+            </div>             
         </>
     );
 }
