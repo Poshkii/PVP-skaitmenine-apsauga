@@ -21,9 +21,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const [mediumRisk, setMediumRisk] = useState(false);
     const [highRisk, setHighRisk] = useState(false);
     const [risk, setRisk] = useState("");
-    const [breachesFound, setBreachesFound] = useState(false)
-    
-
+    const [breachesFound, setBreachesFound] = useState(false)   
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -37,16 +35,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
         setResult("Searching...");
         setLoading(true);
-        setBreachData(null); // Clear previous data before a new search
-        setSafe(false)
-        setDanger(false)
-        setWarning(false)
-        setHighRisk(false)
-        setMediumRisk(false)
-        setLowRisk(false)
-        setUnknownRisk(false)
-        setBreachesFound(false)
-        setRisk("")
+        handleClear();
 
         try {
             const response = await fetch(`https://api.xposedornot.com/v1/breach-analytics?email=${email}`);
@@ -66,11 +55,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                 setBreachData(data);                
                 addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
             } else {
-                setResult("Email is safe!");
-                setBreachData(null);
-                setSafe(false)
-                setDanger(false)
-                setWarning(false)
+                setResult("Email is safe!");                
                 addScannedEmail(email, 0);
             }
         } catch (error) {
@@ -82,6 +67,19 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     };
 
     const navigate = useNavigate();
+
+    const handleClear = () => {
+        setBreachData(null); // Clear previous data before a new search
+        setSafe(false);
+        setDanger(false);
+        setWarning(false);
+        setHighRisk(false);
+        setMediumRisk(false);
+        setLowRisk(false);
+        setUnknownRisk(false);
+        setBreachesFound(false);
+        setRisk("");
+    };
 
     return (
         <>
@@ -182,18 +180,16 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                     {/* Show EmailBreachDetails if breaches are found */}
                     {breachData && <EmailBreachDetails data={breachData} />}
 
-                </div>
+                </div>               
 
-                {/*Tips button*/}
-                <div>                    
-                        <button
-                            className="btn btn-secondary"
-                            style={{                                    
-                            }}
-                            onClick={switchPage}
-                            >
-                            Tips
-                        </button>                    
+                {/*Clear & Tips buttons*/}
+                <div className="action-buttons">
+                    <button className="btn btn-secondary" onClick={handleClear}>
+                    Clear
+                    </button>
+                    <button className="btn btn-primary" onClick={switchPage}>
+                    Tips
+                    </button>
                 </div>
             </div>
         </>

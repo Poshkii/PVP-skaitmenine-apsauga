@@ -24,22 +24,57 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [suspiciousUIO, setSuspiciousUIO] = useState(false);
     const [inprogressUIO, setInprogressUIO] = useState(false);
     const [inprogressVT, setInprogressVT] = useState(false);
+    const [doCheck, setDoCheck] = useState(false);
 
     const API_KEY = String(useAppConfig().safeBrowsingApiKey);
     const API_KEY_URLScanIO = String(useAppConfig().urlscanioApiKey);
     const API_URL = "https://www.virustotal.com/api/v3/urls";
     
-    const handleUseCurrentURL = () => {
-        if (chrome?.tabs) {
-            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                if (tabs.length > 0 && tabs[0].url) {
-                    setUrl(tabs[0].url); // Set the real website URL
-                }
-            });
-        } else {
-            console.error("Chrome API not available. Are you running this inside a Chrome extension?");
+    useEffect(() => {
+        if (url && doCheck) {
+          const syntheticEvent = { preventDefault: () => {} } as FormEvent;
+          UrlChecker(syntheticEvent);
+          setDoCheck(false)
         }
-    };
+      }, [url]); // Runs when 'url' changes
+      
+      const handleUseCurrentURL = async () => {
+          if (chrome?.tabs) {
+              chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+                  if (tabs.length > 0 && tabs[0].url) {
+                      var strippedURL = handleStripURL(tabs[0].url);
+                      setDoCheck(true);
+                      if (strippedURL) {
+                          try {
+                            
+                              setUrl(strippedURL); // React will update state asynchronously
+                          } catch (error) {
+                              console.error("URL check failed:", error);
+                          }
+                      } else {
+                          console.error("Unable to strip URL");
+                      }
+                  }
+              });
+          } else {
+              console.error("Chrome API not available. Are you running this inside a Chrome extension?");
+          }
+      };
+
+    function handleStripURL(url: string): string | null {
+        try {
+            let hostname = new URL(url).hostname;
+            let parts = hostname.split('.');
+
+            if (parts.length > 2) {
+                return parts.slice(-2).join('.');
+            }
+            return hostname;
+        } catch (e) {
+            console.error("Invalid URL:", e);
+            return null;
+        }
+    }
 
     const normalizeURL = (str: string): string => {
         // Check if it already has a valid scheme (http or https)
@@ -465,32 +500,36 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                             />
                         
                         <div className="action-buttons">
-                            <button
-                                disabled={!url || loading}
-                                type="submit"
-                                className={`btn ${!url || loading ? "" : "btn-primary"}`}
-                                style={{ 
-                                width: "130px",
-                                opacity: !url || loading ? "0.6" : "1",
-                                cursor: !url || loading ? "not-allowed" : "pointer",
-                                }}
-                                >
-                                Check
-                            </button>
-                            <button                               
-                                className="btn btn-secondary"
+                            {!url ? 
+                                <button                               
+                                className="btn btn-primary"
                                 style={{
-                                    width: "130px"
+                                    width: "200px"
                                 }}
                                 onClick={handleUseCurrentURL}
-                                 type="button"
+                                type="button"
                                 >
-                                Use Current URL
-                            </button>
+                                Check Current URL
+                                </button>
+                            :
+                                <button
+                                    disabled={!url || loading}
+                                    type="submit"
+                                    className={`btn ${!url || loading ? "" : "btn-primary"}`}
+                                    style={{ 
+                                    width: "200px",
+                                    opacity: !url || loading ? "0.6" : "1",
+                                    cursor: !url || loading ? "not-allowed" : "pointer",
+                                    }}
+                                    >
+                                    Check
+                                </button>                            
+                            }                            
+                            
                             <button
                                 className="btn btn-secondary"
                                 style={{ 
-                                width: "130px"
+                                width: "200px"
                                 }}
                                 onClick={() => setUrl('')}
                                 type="button"
