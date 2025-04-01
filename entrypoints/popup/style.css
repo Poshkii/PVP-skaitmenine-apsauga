@@ -81,11 +81,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .left-panel:hover .falcon-fort-title::after {
-  width: 67%;
+  width: 85%;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+}
+
+.logo-image {
+  width: 50px;
+  height: 50px;
 }
 
 .falcon-fort-title {
-  padding: 24px 40px;
+  padding: 24px 0px 24px 12px;
   font-size: 22px;
   font-weight: 600;
   color: var(--text-primary);
@@ -99,8 +110,8 @@ h1, h2, h3, h4, h5, h6 {
   content: '';
   position: absolute;
   bottom: 20px;
-  left: 40px;
-  width: 33.5%;
+  left: 12px;
+  width: 50%;
   height: 2px;
   background: var(--accent-gradient);
   transition: width 0.4s ease;
