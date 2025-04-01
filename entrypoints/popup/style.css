@@ -66,6 +66,63 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-md);
   z-index: 10;
   transition: transform var(--transition-medium);
+  align-items: center;
+  background-color: #374151; /* Tailwind bg-gray-700 */
+}
+
+.search-icon {
+  margin-right: 8px;
+  color: #9ca3af; /* Tailwind text-gray-400 */
+}
+
+.search-input {
+  flex-grow: 1;
+  padding: 8px;
+  background-color: #4b5563; /* Tailwind bg-gray-600 */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  outline: none;
+}
+/* Info button styles in the search bar */
+.info-button {
+  margin-left: 8px;
+  padding: 7px 12px;
+  background-color: #4b5563;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-items: center;
+}
+
+.data-info {
+  cursor: pointer;
+  position:absolute;
+  right: 0.5rem;
+}
+
+.info-button:hover{
+  background-color: #6b7280; /* Tailwind bg-gray-900 */
+}
+
+/* Middle Menu Section */
+.middle-menu {
+  flex-grow: 1;
+  width: 100%;
+  padding: 16px;
+  color: #9ca3af;;
+  background-color: #1f2937; /* Match top and bottom sections */
+}
+
+.items-title {
+  font-size: 14px;
+  color: #9ca3af; /* Tailwind text-gray-400 */
+}
+
+.items-list {
+  max-height: 300px;
   overflow-y: auto;
 }
 

@@ -3,6 +3,8 @@ import PasswordStrength from "@/components/pages/password-checker/PasswordStreng
 import PasswordTips from "@/components/pages/password-checker/PasswordTips.tsx";
 import PasswordBreaches from "@/components/pages/password-checker/PasswordBreaches.tsx";
 import {useParams} from "react-router";
+import {useNavigate} from "react-router";
+import { Info } from 'lucide-react';
 
 function PasswordChecker() {
     const { password: urlPassword } = useParams();
@@ -13,13 +15,26 @@ function PasswordChecker() {
         setPassword(newPassword);
     };
 
+    const navigate = useNavigate();
+
     return (
         <>
         <div style={{
                 maxHeight: "calc(100vh - 100px)",
                 overflowY: "auto"
         }}>
-            <h2 style={{color: "white", marginTop: '1rem' }}>Password checker</h2>
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "relative",
+                marginTop: '1rem', 
+                marginBottom: "1rem",
+            }}>
+                <h2 style={{ color: "white", margin: '0' }}>Check Password Safety</h2>
+            
+                <div onClick={() => navigate("/password-data")} className="data-info"><Info/></div>
+            </div>
             <div style={{
                 display: "flex", 
                 justifyContent: "center", 

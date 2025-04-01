@@ -2,6 +2,8 @@ import {FormEvent, useState} from "react";
 import URLScam from "./URLScam";
 import { useReport } from "../report-page/ReportContext";
 import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
+import {useNavigate} from "react-router";
+import { Info } from 'lucide-react';
 
 function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
@@ -432,111 +434,130 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         }
     };
 
+    const navigate = useNavigate();
+
     return (
         <>
-
-            <h1 className="panel-title">Check website safety</h1>
-
-            <div className="security-check-container">
-                <form onSubmit={UrlChecker}>
-                        <input
-                            type="text"
-                            placeholder="Enter website address..."
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            className="input-box"
-                        />
+            <div style={{ 
+                marginTop: "1em", 
+                height: "calc(100vh - 100px)",
+                display: "flex", 
+                flexDirection: "column" 
+            }}>
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    position: "relative",
+                    marginBottom: "1rem",
+                }}>
+                    <h2 style={{ color: "white", margin: '0' }}>Check website safety</h2>
                     
-                    <div className="action-buttons">
-                        <button
-                            disabled={!url || loading}
-                            type="submit"
-                            className={`btn ${!url || loading ? "" : "btn-primary"}`}
-                            style={{ 
-                            width: "200px",
-                            opacity: !url || loading ? "0.6" : "1",
-                            cursor: !url || loading ? "not-allowed" : "pointer",
-                            }}
-                            >
-                            Check
-                        </button>
-                        <button
-                            className="btn btn-secondary"
-                            style={{ 
-                            width: "200px"
-                            }}
-                            onClick={() => setUrl('')}
-                            type="button"
-                            >
-                            Clear
-                        </button>
-                    </div>
-                </form>
-            </div>
-            
-            <div className="security-check-container" style={{ maxHeight: "300px", overflowY: "auto" }}> 
+                    <div onClick={() => navigate("/url-data")} className="data-info"><Info/></div>
+                </div>
 
-                {!loading && (
-                <>
+                <h1 className="panel-title">Check website safety</h1>
 
-                    <div className="security-status" style={{ marginTop: "24px" }}>
-                        {unsafeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                        {safeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                        {(suspiciousVT || unknownVT || inprogressVT) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
-                            <div className="status-text">
-                            {unsafeVT && <h3 className="status-title">Watchout: harmful website!</h3> }
-                            {safeVT && <h3 className="status-title">Good to go!</h3> }
-                            {suspiciousVT && <h3 className="status-title">Warning: potenial risk</h3> }
-                            {unknownVT && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
-                            {inprogressVT && <h3 className="status-title">Scan in progress.</h3> }
-                            <p className="status-description">
-                                {resultVT}
-                            </p>
-                            </div>
-
-                    </div> 
-
-                    <div className="security-status" style={{ marginTop: "24px" }}>
-                        {unsafeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                        {safeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                        {(suspiciousUIO || unknownUIO || inprogressUIO) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
-                            <div className="status-text">
-                            {unsafeUIO && <h3 className="status-title">Watchout: harmful website!</h3> }
-                            {safeUIO && <h3 className="status-title">Good to go!</h3> }
-                            {suspiciousUIO && <h3 className="status-title">Warning: potenial risk</h3> }
-                            {unknownUIO && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
-                            {inprogressUIO && <h3 className="status-title">Scan in progress.</h3> }
-                            <p className="status-description" dangerouslySetInnerHTML={{ __html: resultUIO }}></p>
-                            </div>
-
-                    </div>
-                </>
-                )}  
+                <div className="security-check-container">
+                    <form onSubmit={UrlChecker}>
+                            <input
+                                type="text"
+                                placeholder="Enter website address..."
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                className="input-box"
+                            />
+                        
+                        <div className="action-buttons">
+                            <button
+                                disabled={!url || loading}
+                                type="submit"
+                                className={`btn ${!url || loading ? "" : "btn-primary"}`}
+                                style={{ 
+                                width: "200px",
+                                opacity: !url || loading ? "0.6" : "1",
+                                cursor: !url || loading ? "not-allowed" : "pointer",
+                                }}
+                                >
+                                Check
+                            </button>
+                            <button
+                                className="btn btn-secondary"
+                                style={{ 
+                                width: "200px"
+                                }}
+                                onClick={() => setUrl('')}
+                                type="button"
+                                >
+                                Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
                 
+                <div className="security-check-container" style={{ maxHeight: "300px", overflowY: "auto" }}> 
 
-                <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
-                    {loading && <div className="loading-spinner"></div>}
+                    {!loading && (
+                    <>
+
+                        <div className="security-status" style={{ marginTop: "24px" }}>
+                            {unsafeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                            {safeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                            {(suspiciousVT || unknownVT || inprogressVT) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                                <div className="status-text">
+                                {unsafeVT && <h3 className="status-title">Watchout: harmful website!</h3> }
+                                {safeVT && <h3 className="status-title">Good to go!</h3> }
+                                {suspiciousVT && <h3 className="status-title">Warning: potenial risk</h3> }
+                                {unknownVT && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
+                                {inprogressVT && <h3 className="status-title">Scan in progress.</h3> }
+                                <p className="status-description">
+                                    {resultVT}
+                                </p>
+                                </div>
+
+                        </div> 
+
+                        <div className="security-status" style={{ marginTop: "24px" }}>
+                            {unsafeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                            {safeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                            {(suspiciousUIO || unknownUIO || inprogressUIO) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                                <div className="status-text">
+                                {unsafeUIO && <h3 className="status-title">Watchout: harmful website!</h3> }
+                                {safeUIO && <h3 className="status-title">Good to go!</h3> }
+                                {suspiciousUIO && <h3 className="status-title">Warning: potenial risk</h3> }
+                                {unknownUIO && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
+                                {inprogressUIO && <h3 className="status-title">Scan in progress.</h3> }
+                                <p className="status-description" dangerouslySetInnerHTML={{ __html: resultUIO }}></p>
+                                </div>
+
+                        </div>
+                    </>
+                    )}  
+                    
+
+                    <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
+                        {loading && <div className="loading-spinner"></div>}
+                    </div>
+
+                    <div style={{ marginTop: "0.5rem", color: "#aaa", fontSize: "0.8rem", whiteSpace: "pre-line" }}>
+                        {debug}
+                    </div>
+
+                    <div>
+                        {showURLScam && <URLScam scamURL={submittedUrl} />}
+                    </div>
+
+                </div> 
+
+                <div className="action-buttons">
+                    <button className="btn btn-secondary" onClick={handleClear}>
+                    Clear
+                    </button>
+                    <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
+                    Scan Again
+                    </button>
                 </div>
-
-                <div style={{ marginTop: "0.5rem", color: "#aaa", fontSize: "0.8rem", whiteSpace: "pre-line" }}>
-                    {debug}
-                </div>
-
-                <div>
-                    {showURLScam && <URLScam scamURL={submittedUrl} />}
-                </div>
-
-            </div> 
-
-            <div className="action-buttons">
-                <button className="btn btn-secondary" onClick={handleClear}>
-                Clear
-                </button>
-                <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
-                Scan Again
-                </button>
             </div>
-
         </>
     );
 }

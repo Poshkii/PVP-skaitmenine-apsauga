@@ -5,6 +5,8 @@ import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
+import {useNavigate} from "react-router";
+import { Info } from 'lucide-react';
 
 const API_KEY = String(useAppConfig().fileCheckerApiKey);
 const API_URL = "https://api.metadefender.com/v4";
@@ -368,13 +370,26 @@ function FileStatus({inputFile }: { inputFile: string }) {
         }
     }, [inputFile]);
 
+    const navigate = useNavigate();
+
     return (
         <>
             <div style={{
                 maxHeight: "calc(100vh - 70px)",
                 overflowY: "auto"
             }}>
-                <h2 style={{color: "white", margin: "1rem auto 0 auto"}}>Check File Safety</h2>
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    position: "relative",
+                    marginTop: '1rem', 
+                    marginBottom: "1rem",
+                }}>
+                    <h2 style={{ color: "white", margin: '0' }}>Check File Safety</h2>
+                    
+                    <div onClick={() => navigate("/file-data")} className="data-info"><Info/></div>
+                </div>
                 
                 {/* Tab'ai testinei aplinkai */}
                 <div style={{

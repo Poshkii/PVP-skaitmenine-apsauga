@@ -4,6 +4,8 @@ import EmailBreachData from "@/components/pages/email-checker/EmailBreachData.ts
 import { FormEvent } from "react";
 import { data } from "react-router";
 import { useReport } from "../report-page/ReportContext";
+import {useNavigate} from "react-router";
+import { Info } from 'lucide-react';
 
 function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPage: () => void }) {
     const [email, setEmail] = useState(inputEmail);
@@ -50,9 +52,22 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
         setLoading(false);
     };
 
+    const navigate = useNavigate();
+
     return (
-        <div style={{ marginTop: "1em", marginBottom: "4rem", textAlign: "center" }}>
-            <h2 style={{ color: "white" }}>Check if your email was leaked</h2>
+        <div style={{ marginBottom: "4rem", textAlign: "center" }}>
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                position: "relative",
+                marginTop: '1rem', 
+                marginBottom: "1rem",
+            }}>
+                <h2 style={{ color: "white", margin: '0' }}>Check Email Safety</h2>
+            
+                <div onClick={() => navigate("/email-data")} className="data-info"><Info/></div>
+            </div>
             
             <form onSubmit={EmailCheck}>
                 <input
