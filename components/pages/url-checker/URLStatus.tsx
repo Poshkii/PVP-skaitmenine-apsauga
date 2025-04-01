@@ -227,7 +227,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "URLScan.io: An error has occured. Domain could not be resolved.";
+                        errorMessage = "URLScan.io: Domain does not exist. Could not scan.";
                         break;
                     case 401:
                         errorMessage = "URLScan.io: Invalid API key.";
