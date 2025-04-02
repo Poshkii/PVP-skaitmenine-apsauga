@@ -22,7 +22,7 @@ import EmailData from "../data-usage/Email/EmailDataUsage";
 function HomeRoutes(){
     return (
         <Routes>
-            <Route path="/" element={<FeatureList />}></Route>
+            <Route path="/" element={<ReportPage />}></Route>
             <Route path="/info-page" element={<InfoPage />}></Route>
             <Route path="/password-checker/:password?" element={<PasswordChecker />}/>
             <Route path="/url-checker/:url?" element={<URLChecker />}/>
