@@ -662,3 +662,28 @@ h1, h2, h3, h4, h5, h6 {
     max-height: 300px;
   }
 }
+
+.alert {
+  border: none;
+  padding: 12px 16px;
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #ff6b6b;
+}
+
+.alert-success {
+  background-color: rgba(25, 135, 84, 0.2);
+  color: #75b798;
+}
+
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #ffda6a;
+}
+
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.2);
+  color: #6edff6;
+}
