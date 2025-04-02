@@ -84,10 +84,19 @@ h1, h2, h3, h4, h5, h6 {
   width: 85%;
 }
 
+.bottom-buttons {
+  display: flex;
+  flex-direction: row;
+}
+
 .title-container {
   display: flex;
   align-items: center;
   padding-left: 24px;
+}
+
+.title-hover:hover {
+  cursor: pointer;
 }
 
 .logo-image {
@@ -229,7 +238,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Settings Button */
-.settings-button {
+.bottom-button {
   padding: 16px;
   display: flex;
   align-items: center;
@@ -243,7 +252,7 @@ h1, h2, h3, h4, h5, h6 {
   transition: all var(--transition-fast);
 }
 
-.settings-button:hover {
+.bottom-button:hover {
   color: var(--accent-primary);
   background-color: rgba(255, 255, 255, 0.05);
 }
@@ -256,7 +265,21 @@ h1, h2, h3, h4, h5, h6 {
   transition: transform 0.3s ease;
 }
 
-.settings-text {
+.home-button:hover .home-icon {
+  transform: translateY(-3px);
+}
+.home-icon {
+  transition: transform 0.3s ease;
+}
+
+.profile-button:hover .profile-icon {
+  transform: scale(1.15);
+}
+.profile-icon {
+  transition: transform 0.3s ease;
+}
+
+.bottom-text {
   font-size: 14px;
   font-weight: 500;
 }
@@ -431,6 +454,22 @@ h1, h2, h3, h4, h5, h6 {
   transition: all var(--transition-medium);
   position: relative;
   overflow: hidden;
+}
+
+.overflow-text {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.recent-item-alt {
+  padding: 16px 20px 16px 10px;
+}
+
+.recent-item-text {
+  padding-right: 20px;
 }
 
 .recent-item:hover {
