@@ -4,6 +4,7 @@ export enum BgMessageId {
     PopupOpened = "POPUP_OPENED",
     ModuleChange = "MODULE_CHANGE",
     SendModuleMessage = "MODULE_MESSAGE",
+    GetCookies = "GET_COOKIES",
 }
 
 export interface BgMessage {
