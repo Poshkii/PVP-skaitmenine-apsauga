@@ -16,6 +16,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const [safeEmail, setSafe] = useState(false);
     const [warningEmail, setWarning] = useState(false);
     const [dangerEmail, setDanger] = useState(false);
+    const [unknownEmail, setUnknownEmail] = useState(false);
     const [unknownRisk, setUnknownRisk] = useState(false);
     const [lowRisk, setLowRisk] = useState(false);
     const [mediumRisk, setMediumRisk] = useState(false);
@@ -44,23 +45,34 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             console.log("API response: ", response)
             console.log("API data: ", data)
 
-            if (response.status === 200 && data.BreachesSummary.site) {
-                setResult(`Found ${data.ExposedBreaches.breaches_details.length} breaches`);
-                data.ExposedBreaches.breaches_details.length < 1 ? setSafe(true) : data.ExposedBreaches.breaches_details.length < 10 ? setWarning(true) : setDanger(true)
-                // Get risk level
-                const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
-                risk === "High" ? setHighRisk(true) : risk === "Medium" ? setMediumRisk(true) : risk === "Low" ? setLowRisk(true) : setUnknownRisk(true);
-                setRisk(risk);
-                setBreachesFound(true)
-                setBreachData(data);                
-                addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
-            } else {
-                setResult("Email is safe!");                
-                addScannedEmail(email, 0);
+            // Email found
+            if (response.status === 200) {
+                // Was breached
+                if (data.ExposedBreaches) {
+                    setResult(`Found ${data.ExposedBreaches.breaches_details.length} breaches`);
+                    data.ExposedBreaches.breaches_details.length < 10 ? setWarning(true) : setDanger(true)
+                    // Get risk level
+                    const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
+                    risk === "High" ? setHighRisk(true) : risk === "Medium" ? setMediumRisk(true) : risk === "Low" ? setLowRisk(true) : setUnknownRisk(true);
+                    setRisk(risk);
+                    setBreachesFound(true);
+                    setBreachData(data);                
+                    addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
+                }
+                // Wasn't breached
+                else {
+                    setSafe(true);
+                    addScannedEmail(email, 0);                 
+                }                
+            } 
+            // Email not found
+            else {
+                setResult("The provided email address could not be verified.");   
+                setUnknownEmail(true);           
             }
         } catch (error) {
             console.error("API error:", error);
-            setResult("Error");
+            setResult("Error. Email could not be checked.");
         }
 
         setLoading(false);
@@ -71,6 +83,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const handleClear = () => {
         setBreachData(null); // Clear previous data before a new search
         setSafe(false);
+        setUnknownEmail(false);
         setDanger(false);
         setWarning(false);
         setHighRisk(false);
@@ -88,19 +101,6 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             }}>
                 <h1 className="panel-title">Check Email Safety<span onClick={() => navigate("/email-data")}><Info className="info-icon"/></span></h1>
 
-                {/* <div style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    position: "relative",
-                    marginTop: '1rem', 
-                    marginBottom: "1rem",
-                }}>
-                    <h2 style={{ color: "white", margin: '0' }}>Check Email Safety</h2>
-                
-                    <div onClick={() => navigate("/email-data")} className="data-info"><Info/></div>
-                </div> */}
-                
                 <div className="security-check-container">
                     <form onSubmit={EmailCheck}>
                         <input
@@ -146,12 +146,13 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                         <div className="security-status" style={{ marginTop: "24px" }}>
                             {dangerEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
                             {safeEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                            {warningEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                            {(warningEmail || unknownEmail) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
                             <div className="status-text">
                                 {(dangerEmail || warningEmail) && <h3 className="status-title">Your email has been leaked!</h3> }
-                                {safeEmail && <h3 className="status-title">Your email is safe</h3> }                        
+                                {safeEmail && <h3 className="status-title">Your email is safe</h3> }
+                                {unknownEmail && <h3 className="status-title">Unknown email address</h3> }                        
                                 <p className="status-description">
-                                    {(dangerEmail || warningEmail) && result}
+                                    {(unknownEmail || dangerEmail || warningEmail) && result}
                                 </p>
                             </div>
                         </div> 
@@ -173,9 +174,11 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                     </>
                     )}   
 
+                    {loading &&
                     <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
-                        {loading && <div className="loading-spinner"></div>}
+                        <div className="loading-spinner"></div>
                     </div>  
+                    }
 
                     {/* Show EmailBreachDetails if breaches are found */}
                     {breachData && <EmailBreachDetails data={breachData} />}
