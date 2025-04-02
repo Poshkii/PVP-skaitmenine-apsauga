@@ -24,6 +24,7 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
 
     const saveToLocalStorage = (key: string, value: unknown) => {
         localStorage.setItem(key, JSON.stringify(value));
+        //browser.storage.local.set();
     };
 
     // Initialize state from localStorage

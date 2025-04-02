@@ -22,7 +22,7 @@ function Home() {
                 <FeatureList/>
 
                 {/* Settings button at bottom */}
-                <button className="settings-button "
+                <button className="settings-button"
                         onClick={() => navigate("/settings")}>
                     <div className="settings-icon">
                         <Settings/>

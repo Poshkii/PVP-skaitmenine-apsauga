@@ -137,6 +137,7 @@ export class FileChecker extends Module {
         const scanResults = data.scan_results;
         
         if (scanResults) {
+            //Report update
             const detectedCount = scanResults.total_detected_avs || 0;
             const totalEngines = scanResults.total_avs || 1;
 
