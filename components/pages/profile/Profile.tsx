@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
-import './Profile.css';
 
 interface User {
     userId: number;
@@ -86,26 +85,25 @@ function Profile() {
     }
 
     return (
-        <div style={{padding: '1rem'}}>
-            <div>
-                <h2>Profile</h2>
-            </div>
-            <div>
+        <>
+            <h1 className="panel-title">Profile</h1>
+            <div className="security-check-container">
                 {user ? (
                     <div>
-                        <h3>Welcome, {user.username}!</h3>
-                        <h3>Paid user: {user.isPaid ? "Yes" : "No"}</h3>
+                        <h4>Welcome, {user.username}!</h4>
+                        <h5>Paid user: {user.isPaid ? "Yes" : "No"}</h5>
                     </div>
                 ) : (
                     <p>Unable to load profile information.</p>
                 )}
-
-                <button
-                    className="button"
-                    onClick={logout}>Logout
-                </button>
+                <div className="action-buttons">
+                    <button
+                        className="btn btn-primary"
+                        onClick={logout}>Logout
+                    </button>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

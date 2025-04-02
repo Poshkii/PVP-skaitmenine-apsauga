@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
-import {Link, useNavigate} from 'react-router';
-import {Lock, User} from "lucide-react";
+import {useNavigate} from 'react-router';
 
 const API_URL = useAppConfig().privacyApiUrl;
 
@@ -43,15 +42,14 @@ function Login() {
     };
 
     return (
-        <div style={{padding: '1rem'}}>
-            <h2>Login</h2>
-            <div>
+        <>
+            <h1 className="panel-title">Login</h1>
+            <div className="security-check-container">
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={handleSubmit}>
                     <div>
-                        <label htmlFor="username"><User/></label>
                         <input
-                            className='input'
+                            className='input-box'
                             type="text"
                             id="username"
                             placeholder="Username"
@@ -61,9 +59,9 @@ function Login() {
                         />
                     </div>
                     <div>
-                        <label htmlFor="password"><Lock/></label>
-                        <input  
-                            className='input'
+                        <input
+                            className='input-box'
+                            style={{marginTop: '15px'}}
                             type="password"
                             id="password"
                             placeholder="Password"
@@ -72,21 +70,26 @@ function Login() {
                             required
                         />
                     </div>
-                    <button
-                        className="button"
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading ? 'Logging in...' : 'Login'}
-                    </button>
+                    <div className="action-buttons">
+                        <button
+                            className="btn btn-primary"
+                            style={{width: '100%'}}
+                            type="submit"
+                            disabled={loading}
+                        >
+                            {loading ? 'Logging in...' : 'Login'}
+                        </button>
+                        <button
+                            className="btn btn-secondary"
+                            style={{width: '100%'}}
+                            onClick={() => navigate("/register")}>
+                            Register
+                        </button>
+                    </div>
                 </form>
-                <div>
-                    <p>
-                        <Link to="/register">Register</Link>
-                    </p>
-                </div>
             </div>
-        </div>
+
+        </>
     );
 };
 
