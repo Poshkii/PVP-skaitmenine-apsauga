@@ -662,6 +662,7 @@ h1, h2, h3, h4, h5, h6 {
     max-height: 300px;
   }
 }
+<<<<<<< Updated upstream
 
 .alert {
   border: none;
@@ -686,4 +687,36 @@ h1, h2, h3, h4, h5, h6 {
 .alert-info {
   background-color: rgba(13, 202, 240, 0.2);
   color: #6edff6;
+=======
+/* Add these to your existing CSS */
+.panel-header {
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-label {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text-muted);
+}
+
+.overflow-text {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+>>>>>>> Stashed changes
 }
