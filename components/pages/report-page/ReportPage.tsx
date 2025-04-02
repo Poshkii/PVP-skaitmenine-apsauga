@@ -36,7 +36,7 @@ function ReportPage() {
             </div>
 
             {/* Activity Stats */}
-            <div className="security-check-container">
+            <div className="security-check-container glassmorphism">
                 <h3 className="recent-list-title">Activity Summary</h3>
                 <div className="security-status" style={{justifyContent: 'space-around', marginTop: '20px'}}>
                     <div className="stat-card">
@@ -55,7 +55,7 @@ function ReportPage() {
             </div>
             
             {/* Email Breach Results */}
-            <div className="security-check-container">
+            <div className="security-check-container glassmorphism">
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <h3 className="recent-list-title">Recent Email Security Checks</h3>
                     <span className="status-badge safe">
