@@ -1,24 +1,15 @@
 import PasswordCheckerOptions from "@/components/pages/settings/PasswordCheckerOptions.tsx";
-import {Search} from "lucide-react";
+import './settings.css';
 
-const values = []
-
-function Settings(){
+function Settings() {
     return (
-      <>
-          <div className="top-bar">
-              <Search className="search-icon" size={18}/>
-              <input
-                  type="text"
-                  placeholder="Search"
-                  className="search-input"
-              />
-          </div>
+        <>
+            <h1 className="panel-title">Settings</h1>
 
-          <div className="items-list">
-              <PasswordCheckerOptions/>
-          </div>
-      </>
+            <div className="security-check-container">
+                <PasswordCheckerOptions/>
+            </div>
+        </>
     );
 
 }
