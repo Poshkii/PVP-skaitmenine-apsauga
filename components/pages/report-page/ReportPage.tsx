@@ -12,6 +12,7 @@ function ReportPage() {
         <div className="middle-menu">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             <h1>Report Page</h1>
 
             <div style={{color: "white"}}>
@@ -39,6 +40,13 @@ function ReportPage() {
                 <p className="status-description">Your comprehensive security overview and activity summary</p>
             </div>
 
+=======
+            <div className="panel-header">
+                <h1 className="panel-title">Security Report</h1>
+                <p className="status-description">Your comprehensive security overview and activity summary</p>
+            </div>
+
+>>>>>>> Stashed changes
 =======
             <div className="panel-header">
                 <h1 className="panel-title">Security Report</h1>
@@ -138,6 +146,9 @@ function ReportPage() {
                 )}
             </div>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
