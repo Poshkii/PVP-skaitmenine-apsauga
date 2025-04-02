@@ -9,51 +9,12 @@ function ReportPage() {
     const securityScore = Math.min(100, Math.max(0, 100 - (report.ScannedEmails.reduce((sum, email) => sum + email.BreachCount, 0) * 5)));
     
     return (
-        <div className="middle-menu">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-            <h1>Report Page</h1>
-
-            <div style={{color: "white"}}>
-                <p><strong>URL Scans:</strong> {report.UrlScans}</p>
-                <p><strong>File Scans:</strong> {report.FileScans}</p>
-
-                <h2>5 Latest Scanned Emails:</h2>
-                {report.ScannedEmails.length === 0 ? (
-                    <p>No emails have been scanned so far...</p>
-                ) : (
-                    <ul>
-                        {report.ScannedEmails.slice(-5).reverse().map((email, index) => (
-                            <li key={index}>{email.email} - <strong>{email.BreachCount}</strong> breaches</li>
-                        ))}
-                    </ul>
-                )}
-            </div>
-
-            <button className="menu-button" onClick={clearReport}>
-                <p className="menu-name">Clear All Data</p>
-            </button>
-=======
+        <div className="middle-meniu">
             <div className="panel-header">
                 <h1 className="panel-title">Security Report</h1>
                 <p className="status-description">Your comprehensive security overview and activity summary</p>
             </div>
 
-=======
-            <div className="panel-header">
-                <h1 className="panel-title">Security Report</h1>
-                <p className="status-description">Your comprehensive security overview and activity summary</p>
-            </div>
-
->>>>>>> Stashed changes
-=======
-            <div className="panel-header">
-                <h1 className="panel-title">Security Report</h1>
-                <p className="status-description">Your comprehensive security overview and activity summary</p>
-            </div>
-
->>>>>>> Stashed changes
             {/* Security Score Card */}
             <div className="security-check-container glassmorphism">
                 <div className="security-status">
@@ -75,7 +36,7 @@ function ReportPage() {
             </div>
 
             {/* Activity Stats */}
-            <div className="security-check-container glassmorphism">
+            <div className="security-check-container">
                 <h3 className="recent-list-title">Activity Summary</h3>
                 <div className="security-status" style={{justifyContent: 'space-around', marginTop: '20px'}}>
                     <div className="stat-card">
@@ -145,13 +106,6 @@ function ReportPage() {
                     </>
                 )}
             </div>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         </div>
     );
 }
