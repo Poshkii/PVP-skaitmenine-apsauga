@@ -257,8 +257,10 @@ function FileStatus({inputFile }: { inputFile: string }) {
             if (results) {
                 setScanType("hash");
                 processApiResponse(results);
-                if (hashError)
+                if (hashError){
                     FileUpload(selectedFile);
+                    setHashError(false);
+                }
                 else
                     setIsChecking(false);
             } else {
@@ -296,7 +298,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
             }
             else {
                 setHashError(true);
-                return;
             }
             if (scanDetails) {
                 const threats = extractAVThreats(data);
@@ -304,15 +305,16 @@ function FileStatus({inputFile }: { inputFile: string }) {
             }
             else {
                 setHashError(true);
-                return;
             }
 
-            if (detectedCount > 0) {
-                setSafety("unsafe");
-                setResult(`Threats found: ${detectedCount} out of ${totalEngines} antivirus engines.`);
-            } else {
-                setSafety("safe");
-                setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
+            if (!hashError) {
+                if (detectedCount > 0) {
+                    setSafety("unsafe");
+                    setResult(`Threats found: ${detectedCount} out of ${totalEngines} antivirus engines.`);
+                } else {
+                    setSafety("safe");
+                    setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
+                }
             }
         } else {
             setSafety("unknown");
@@ -448,7 +450,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     </button>
                 </div>
         
-                {!isChecking && result && params.name !== "klaida" && params.time !== -1 && params.scan_results_all != "klaida" && (
+                {!isChecking && result && (
                     <div style={{marginTop:"24px"}} className="security-check-container glassmorphism">
                     <div className="security-status">
                         <div className="status-icon">
