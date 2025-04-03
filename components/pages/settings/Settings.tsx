@@ -19,6 +19,12 @@ function Settings() {
                     description={"Button near password input boxes"}
                     onChangeState={changeContentModuleState}
                 />
+                <ModuleToggle
+                    moduleId={ModuleId.FileChecker}
+                    title={"Automatic Downloads Scanning"}
+                    description={"Automatic download scanning for malware"}
+                    onChangeState={changeBgModuleState}
+                />
             </div>
         </>
     );
