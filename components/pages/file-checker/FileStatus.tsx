@@ -224,7 +224,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
     const FileChecker = async () => {
         if (!selectedFile) return;
         setIsChecking(true);
-        updateReport("FileScans", report.FileScans + 1);
+        
 
         try {
             const results = await checkFileByHash(selectedFile);
@@ -273,6 +273,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
         const scanDetails = data.scan_results.scan_details;
         
         if (scanResults) {
+            updateReport("FileScans", report.FileScans + 1);
             // nzn ar cia reikia, bet atnaujina paskutinio skenavimo reiksme jei ir pagal hash'a tikrina
             const pollUrl = API_URL + FILE_ENDPOINT + '/' + data.data_id;
             browser.storage.local.set({["previousFileScanUrl"] : pollUrl});

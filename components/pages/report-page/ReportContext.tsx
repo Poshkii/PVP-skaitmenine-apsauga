@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 // Define the interface for the report
 interface Report {
@@ -10,72 +10,107 @@ interface Report {
 // Create the context with an initial undefined value
 const ReportContext = createContext<{
     report: Report;
-    updateReport: (key: keyof Report, value: any) => void;
-    clearReport: () => void;
-    addScannedEmail: (email: string, breachCount: number) => void;
+    updateReport: (key: keyof Report, value: any) => Promise<void>;
+    clearReport: () => Promise<void>;
+    addScannedEmail: (email: string, breachCount: number) => Promise<void>;
 } | undefined>(undefined);
 
 // Provider component to wrap around the application
 export const ReportProvider = ({ children }: { children: ReactNode }) => {
-    const getFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
-        const storedValue = localStorage.getItem(key);
-        return storedValue ? JSON.parse(storedValue) as T : defaultValue;
+    // Default report state
+    const defaultReport: Report = {
+        UrlScans: 0,
+        FileScans: 0,
+        ScannedEmails: []
     };
 
-    const saveToLocalStorage = (key: string, value: unknown) => {
-        localStorage.setItem(key, JSON.stringify(value));
-        //browser.storage.local.set();
-    };
+    const [report, setReport] = useState<Report>(defaultReport);
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Initialize state from localStorage
-    const [report, setReport] = useState<Report>({
-        UrlScans: getFromLocalStorage<number>("UrlScans", 0),
-        FileScans: getFromLocalStorage<number>("FileScans", 0),
-        ScannedEmails: getFromLocalStorage<{ email: string; BreachCount: number }[]>("ScannedEmails", [])
-    });
+    // Load initial data from browser.storage.local
+    useEffect(() => {
+        const loadInitialData = async () => {
+            try {
+                const result = await browser.storage.local.get(["UrlScans", "FileScans", "ScannedEmails"]);
+                
+                setReport({
+                    UrlScans: result.UrlScans ?? 0,
+                    FileScans: result.FileScans ?? 0,
+                    ScannedEmails: result.ScannedEmails ?? []
+                });
+            } catch (error) {
+                console.error("Error loading data from browser.storage.local:", error);
+            } finally {
+                setIsLoaded(true);
+            }
+        };
+
+        loadInitialData();
+    }, []);
 
     // Function to update a specific property in the report
-    const updateReport = (key: keyof Report, value: any) => {
-        setReport((prevReport) => {
-            const updatedReport = { ...prevReport, [key]: value };
-            saveToLocalStorage(key, value);
-            return updatedReport;
-        });
+    const updateReport = async (key: keyof Report, value: any) => {
+        try {
+            // Update browser.storage.local
+            await browser.storage.local.set({ [key]: value });
+            
+            // Update state
+            setReport((prevReport) => ({
+                ...prevReport,
+                [key]: value
+            }));
+        } catch (error) {
+            console.error(`Error updating ${key} in browser.storage.local:`, error);
+        }
     };
-    const addScannedEmail = (email: string, breachCount: number) => {
-        setReport((prevReport) => {
-            const existingIndex = prevReport.ScannedEmails.findIndex((e) => e.email === email);
+
+    const addScannedEmail = async (email: string, breachCount: number) => {
+        try {
             let updatedEmails;
-    
+            
+            const existingIndex = report.ScannedEmails.findIndex((e) => e.email === email);
+            
             if (existingIndex !== -1) {
                 // Update existing email's breach count
-                updatedEmails = prevReport.ScannedEmails.map((e, i) =>
+                updatedEmails = report.ScannedEmails.map((e, i) =>
                     i === existingIndex ? { ...e, BreachCount: breachCount } : e
                 );
             } else {
                 // Add new scanned email
-                updatedEmails = [...prevReport.ScannedEmails, { email, BreachCount: breachCount }];
+                updatedEmails = [...report.ScannedEmails, { email, BreachCount: breachCount }];
             }
-    
+            
             // Ensure that the array does not exceed 5 emails
             if (updatedEmails.length > 5) {
                 updatedEmails = updatedEmails.slice(1); // Remove the first email (oldest)
             }
-    
-            // Update report state and local storage
-            const updatedReport = { ...prevReport, ScannedEmails: updatedEmails };
-            saveToLocalStorage("ScannedEmails", updatedEmails);
-            return updatedReport;
-        });
+            
+            // Update browser.storage.local
+            await browser.storage.local.set({ ScannedEmails: updatedEmails });
+            
+            // Update state
+            setReport((prevReport) => ({
+                ...prevReport,
+                ScannedEmails: updatedEmails
+            }));
+        } catch (error) {
+            console.error("Error adding scanned email to browser.storage.local:", error);
+        }
     };
 
     // Function to clear all stored data
-    const clearReport = () => {
-        localStorage.removeItem("UrlScans");
-        localStorage.removeItem("FileScans");
-        localStorage.removeItem("ScannedEmails");
-        setReport({ UrlScans: 0, FileScans: 0, ScannedEmails: [] });
+    const clearReport = async () => {
+        try {
+            await browser.storage.local.remove(["UrlScans", "FileScans", "ScannedEmails"]);
+            setReport(defaultReport);
+        } catch (error) {
+            console.error("Error clearing data from browser.storage.local:", error);
+        }
     };
+
+    if (!isLoaded) {
+        return null; // Or a loading indicator
+    }
 
     return (
         <ReportContext.Provider value={{ report, updateReport, clearReport, addScannedEmail }}>
