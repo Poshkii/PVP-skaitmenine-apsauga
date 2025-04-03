@@ -44,7 +44,7 @@ export default defineBackground(async () => {
             case BgMessageId.GetCookies: {
                 try {
                     // Get cookies from the active tab
-                    const cookies = await getCookiesForCurrentTab();
+                    const cookies = await getAllCookies();
                     // Send cookies back to the frontend
                     browser.runtime.sendMessage({ id: UiMessageId.CookiesRetrieved, data: cookies });
                     console.log("Cookies sent:", cookies);
