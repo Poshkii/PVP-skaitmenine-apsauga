@@ -11,7 +11,7 @@ function sendMessage(message: ContentMessage) {
 }
 
 export function useContentMessaging() {
-    const sendModuleChangeMessage = useCallback((moduleId: ModuleId, enabled: boolean) => {
+    const changeContentModuleState = useCallback((moduleId: ModuleId, enabled: boolean) => {
         sendMessage({
             id: ContentMessageId.ModuleChange,
             data: {
@@ -21,5 +21,5 @@ export function useContentMessaging() {
         });
     }, []);
 
-    return { sendModuleChangeMessage };
+    return { changeContentModuleState };
 }
