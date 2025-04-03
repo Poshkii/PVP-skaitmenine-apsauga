@@ -2,31 +2,35 @@ import {ModuleMessage, ModuleMessageId} from "@/entrypoints/content/types/module
 import {Module, ModuleId} from "../../types/module.ts";
 import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {showNotification} from "@/utils/notifications.ts";
+import DownloadDelta = chrome.downloads.DownloadDelta;
 
 export class FileChecker extends Module {
     readonly id = ModuleId.FileChecker;
-    private activePolling: Map<number, boolean> = new Map();
     private API_URL = String(useAppConfig().metaDefenderApiUrl);
     private HASH_ENDPOINT = "/hash";
     private FILE_ENDPOINT = "/file";
 
     load(): void {
-        chrome.downloads.onChanged.addListener(async (downloadDelta) => {
-            if (downloadDelta.state && downloadDelta.state.current === 'complete') {
-                chrome.downloads.search({
-                    id: downloadDelta.id
-                }, async (downloads) => {
-                    if (downloads.length > 0) {
-                        const download = downloads[0];
-                        await this.onDownloadFinished(download);
-                    }
-                });
-            }
-        });
+        chrome.downloads.onChanged.addListener(this.onDownloadChanged);
     }
 
     unload(): void {
+        chrome.downloads.onChanged.removeListener(this.onDownloadChanged);
     }
+
+    private onDownloadChanged = async (downloadDelta: DownloadDelta) => {
+        if (downloadDelta.state && downloadDelta.state.current === 'complete') {
+            chrome.downloads.search({
+                id: downloadDelta.id
+            }, async (downloads) => {
+                if (downloads.length > 0) {
+                    const download = downloads[0];
+                    await this.onDownloadFinished(download);
+                }
+            });
+        }
+    }
+
 
     private onDownloadFinished = async (downloadItem: chrome.downloads.DownloadItem) => {
         if (!downloadItem.finalUrl || !downloadItem.filename) {

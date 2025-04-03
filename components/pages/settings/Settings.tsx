@@ -1,24 +1,32 @@
-import PasswordCheckerOptions from "@/components/pages/settings/PasswordCheckerOptions.tsx";
-import {Search} from "lucide-react";
+import './settings.css';
+import ModuleToggle from "@/components/pages/settings/ModuleToggle.tsx";
+import {ModuleId} from "@/entrypoints/content/types/module.ts";
+import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
+import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 
-const values = []
+function Settings() {
+    const { changeBgModuleState } = useModuleMessaging();
+    const { changeContentModuleState } = useContentMessaging();
 
-function Settings(){
     return (
-      <>
-          <div className="top-bar">
-              <Search className="search-icon" size={18}/>
-              <input
-                  type="text"
-                  placeholder="Search"
-                  className="search-input"
-              />
-          </div>
+        <>
+            <h1 className="panel-title">Settings</h1>
 
-          <div className="items-list">
-              <PasswordCheckerOptions/>
-          </div>
-      </>
+            <div className="security-check-container">
+                <ModuleToggle
+                    moduleId={ModuleId.PasswordChecker}
+                    title={"Password Checker Button"}
+                    description={"Button near password input boxes"}
+                    onChangeState={changeContentModuleState}
+                />
+                <ModuleToggle
+                    moduleId={ModuleId.FileChecker}
+                    title={"Automatic Downloads Scanning"}
+                    description={"Automatic download scanning for malware"}
+                    onChangeState={changeBgModuleState}
+                />
+            </div>
+        </>
     );
 
 }

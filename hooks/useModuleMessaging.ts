@@ -15,5 +15,17 @@ export function useModuleMessaging() {
         return browser.runtime.sendMessage(moduleMessage);
     }, []);
 
-    return { sendToModule };
+    const changeBgModuleState = useCallback((moduleId: ModuleId, enabled: boolean) => {
+        const message: BgMessage = {
+            id: BgMessageId.ModuleChange,
+            data: {
+                moduleId,
+                enabled,
+            }
+        };
+
+        return browser.runtime.sendMessage(message);
+    }, []);
+
+    return { sendToModule, changeBgModuleState };
 }

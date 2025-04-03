@@ -48,7 +48,7 @@ export class ModuleManager {
     sendMessage(id: ModuleId, message: ModuleMessage): any {
         const module = this.modules.get(id);
 
-        if (!module || !this.activeModules.has(id)) {
+        if (!module) {
             console.warn(`Cannot send message to module ${id}: module not found or not active`);
             return null;
         }
@@ -62,7 +62,7 @@ export class ModuleManager {
     }
 
     broadcastMessage(message: ModuleMessage): void {
-        for (const id of this.activeModules) {
+        for (const id of this.modules.keys()) {
             this.sendMessage(id, message);
         }
     }
