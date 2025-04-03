@@ -4,6 +4,11 @@ import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {Configuration} from "@/utils/config.ts";
 
+interface BreachInfo {
+    [email: string]: any;  // Stores breach data by email
+}
+
+const breachInfo: BreachInfo = {};  // Object to store breach data
 
 export default defineBackground(async () => {
     console.log("Background script initialized.");
@@ -53,6 +58,21 @@ export default defineBackground(async () => {
                     // Type-cast error to any to access message directly
                     browser.runtime.sendMessage({ id: UiMessageId.CookiesError, data: { message: (error as any).message } });
                 }
+                break;
+            }
+            case BgMessageId.StoreEmailData: {
+                // Store the breach data associated with the email
+                const { email, breachData } = message.data;
+                breachInfo[email] = breachData;
+                console.log(`Stored breach data for email: ${email}`);
+                break;
+            }
+            case BgMessageId.GetEmailData: {
+                const { email } = message.data;
+                // Retrieve and send breach data for the email
+                const data = breachInfo[email] || null;
+                browser.runtime.sendMessage({ id: UiMessageId.EmailBreachData, data });  // Send the breach data back to the requester
+                console.log(`Retrieved breach data for email: ${email}`);
                 break;
             }
         }

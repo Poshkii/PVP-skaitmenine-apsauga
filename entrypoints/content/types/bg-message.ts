@@ -5,6 +5,8 @@ export enum BgMessageId {
     ModuleChange = "MODULE_CHANGE",
     SendModuleMessage = "MODULE_MESSAGE",
     GetCookies = "GET_COOKIES",
+    GetEmailData = "GET_EMAIL_DATA",
+    StoreEmailData = "STORE_EMAIL_DATA",
 }
 
 export interface BgMessage {
