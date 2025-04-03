@@ -467,10 +467,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
     return (
         <>
-            <div style={{ 
-
-            }}>
-
+            <div className="middle-menu" >
                 <h1 className="panel-title">Check website safety <span onClick={() => navigate("/url-data")}><Info className="info-icon"/></span></h1>
 
                 <div className="security-check-container">
