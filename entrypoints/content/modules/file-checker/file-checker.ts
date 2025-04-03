@@ -137,6 +137,20 @@ export class FileChecker extends Module {
         const scanResults = data.scan_results;
         
         if (scanResults) {
+            //Report update
+            try {
+                // Get current FileScans count
+                const result = await chrome.storage.local.get(["FileScans"]);
+                const currentCount = result.FileScans || 0;
+                
+                // Increment the count by 1
+                await chrome.storage.local.set({ 
+                    "FileScans": currentCount + 1 
+                });
+            } catch (error) {
+                console.error("Error updating file scan report:", error);
+            }
+
             const detectedCount = scanResults.total_detected_avs || 0;
             const totalEngines = scanResults.total_avs || 1;
 

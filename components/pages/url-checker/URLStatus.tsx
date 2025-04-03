@@ -120,7 +120,6 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
     const UrlChecker = async (e: FormEvent) => {
         handleClear();
-        updateReport("UrlScans", report.UrlScans + 1);
         e.preventDefault();
         setShowURLScam(false);
         setLoading(true);
@@ -168,6 +167,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             setUnknownUIO(true);
             setUnknownVT(true);
         } finally {
+            updateReport("UrlScans", report.UrlScans + 1);
             setLoading(false);
             setSubmittedUrl(url);
             setShowURLScam(true);
