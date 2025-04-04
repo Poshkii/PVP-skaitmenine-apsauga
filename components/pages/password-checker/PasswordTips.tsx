@@ -1,4 +1,5 @@
 import {useState} from "react";
+import { Lightbulb } from 'lucide-react';
 
 const slides = [
     { id: 1, content: "The length of a password is significantly more important than its complexity.", img: "/pswd_images/complexity.png"  },
@@ -25,65 +26,59 @@ function PasswordTips() {
 
     return (
         <>
-            <div style={{
-                width: "100%",
-                padding: "16px 16px",
-                textAlign: "center",
-                backgroundColor: "#1f2937",
-                color: "#9ca3af",
-            }}>
-                <h2 className="menu-name">Tips for your passwords</h2>
-               
-                <div style={{ flex: "1" }}>
+            <div className="security-check-container glassmorphism">
+                <div className="security-status">
+                    <div className="status-icon" style={{background: "var(--accent-gradient)"}}>
+                        <span><Lightbulb/></span>
+                    </div>
+                    <div className="status-text">
+                        <h3 className="status-title">Password Security Tips</h3>
+                        <p className="status-description">
+                            Improve your password security by following these recommendations
+                        </p>
+                    </div>
+                </div>
+                
+                <div className="recent-items" style={{marginTop: "20px"}}>
                     {slides.map((slide, index) => (
-                        <div key={slide.id} style={{ 
-                            display: index === currentIndex ? "block" : "none",
-                            height: "100%"
-                        }}>
-                            <div style={{textAlign: 'left', fontSize: "0.9rem"}}>{slide.content}</div>
+                        <div key={slide.id} 
+                            className="recent-item" 
+                            style={{ 
+                                display: index === currentIndex ? "block" : "none",
+                                padding: "16px",
+                                textAlign: "left"
+                            }}
+                        >
+                            <div className="status-text">
+                                <p className="status-description">{slide.content}</p>
+                            </div>
+                            <div style={{textAlign: "center", marginTop: "16px"}}>
+                                <img 
+                                    src={slide.img} 
+                                    alt={`Tip ${slide.id}`} 
+                                    style={{maxWidth:"90%", objectFit: "contain"}} 
+                                />
+                            </div>
                         </div>
                     ))}
                 </div>
                 
-                <div style={{ 
-                    position: "fixed",
-                    bottom: "180px",
-                    left: "0",
-                    width: "100%",
-                    textAlign: "center",
-                    backgroundColor: "#1f2937",
-                }}>
-                    {slides.map((slide, index) => (
-                        <div key={`img-${slide.id}`} style={{ 
-                            display: index === currentIndex ? "block" : "none" 
-                        }}>
-                            <img 
-                                className="slide-image" 
-                                src={slide.img} 
-                                alt={`Slide ${slide.id}`} 
-                                style={{ maxHeight: "100px", objectFit: "contain" }} 
-                            />
-                        </div>
-                    ))}
+                <div className="action-buttons slide-buttons" style={{marginTop: "16px"}}>
+                    <button onClick={prevSlide} className="btn btn-secondary" style={{width:"35%"}}>
+                        ← Previous
+                    </button>
+                    <div style={{
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        color: "var(--text-primary)"
+                    }}>
+                        {currentIndex + 1} / {slides.length}
+                    </div>
+                    <button onClick={nextSlide} className="btn btn-secondary" style={{width:"35%"}}>
+                        Next →
+                    </button>
                 </div>
-            </div>
-            
-            <div className="bottom-slide-controls" style={{ 
-                position: "fixed",
-                bottom: "120px", 
-                width: "100%", 
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "#1f2937",
-                zIndex: "100",
-            }}>
-                <button className="slide-button" onClick={prevSlide} style={{ marginRight: "15px" }}>❮</button>
-                <div style={{ margin: "0 15px", color: "white" }}>
-                    {slides[currentIndex]?.id || 1} / {slides.length}
-                </div>
-                <button className="slide-button" onClick={nextSlide} style={{ marginLeft: "15px" }}>❯</button>
             </div>
         </>
     );

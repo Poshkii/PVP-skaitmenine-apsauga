@@ -1,5 +1,6 @@
 import {useState, useEffect, useRef } from 'react';
 import zxcvbn from 'zxcvbn';
+import { AlertTriangle, CheckCircle } from 'lucide-react';
 
 function PasswordStrength({ inputPassword } : {inputPassword: string }) {
     const [score, setScore] = useState(0);
@@ -33,25 +34,50 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
         }
     }
 
+    const getColor = (score: number) => {
+        switch (score) {
+            case 0:
+            case 1:
+                return "var(--error)";
+            case 2:
+                return "var(--warning)";
+            case 3:
+            case 4:
+                return "var(--success)";
+            default:
+                return "var(--text-primary)";
+        }
+    }
+
     // UI atvaizduoti stipruma
     return (
         <>
-            <div style={{marginTop: "1em"}}>
-                {inputPassword.length > 0 && (
-                    <>
-                        <div style={{ fontWeight: "bold", color: "white" }}>
-                            Strength: {getLabel(score)}
+            {inputPassword.length > 0 && (
+                <div style={{marginTop:"24px"}}>
+                    <div className="security-status">
+                        <div className="status-icon" style={{ background: getColor(score) }}>
+                            {score >= 3 ? (
+                                <span><CheckCircle/></span>
+                            ) : (
+                                <span><AlertTriangle/></span>
+                            )}
                         </div>
-                        {feedback.length > 0 && (
-                            <ul style={{marginTop: "0.5rem", fontSize: "0.9rem", color: "red", marginBottom: '0'}}>
-                                {feedback.map((msg, index) => (
-                                    <li key={index}>{msg}</li>
-                                ))}
-                            </ul>
-                        )}
-                    </>
-                )}
-            </div>
+                        <div className="status-text">
+                            <h3 className="status-title">
+                                Password Strength: <br></br>
+                                {getLabel(score)}
+                            </h3>
+                            {feedback.length > 0 && (
+                                <ul className="status-description" style={{marginTop: "0.5rem", listStylePosition: "inside", paddingLeft: 0}}>
+                                    {feedback.map((msg, index) => (
+                                        <li key={index}>{msg}</li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
