@@ -27,21 +27,21 @@ function Home() {
                             onClick={() => navigate("/report-page")}>
                         <div>
                             <House className="home-icon"/>
-                            <span className="bottom-text">Home</span>
+                            <div className="bottom-text">Home</div>
                         </div>
                     </button>
                     <button className="bottom-button profile-button"
                             onClick={() => navigate("/profile")}>
                         <div>
                             <User className="profile-icon"/>
-                            <span className="bottom-text">Profile</span>
+                            <div className="bottom-text">Profile</div>
                         </div>
                     </button>
                     <button className="bottom-button settings-button"
                             onClick={() => navigate("/settings")}>
                         <div>
                             <Settings className="settings-icon"/>
-                            <span className="bottom-text">Settings</span>
+                            <div className="bottom-text">Settings</div>
                         </div>
                     </button>
                 </div>
