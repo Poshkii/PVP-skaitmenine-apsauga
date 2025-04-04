@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AlertTriangle, CheckCircle } from 'lucide-react';
 
 function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
     interface Result {
@@ -87,40 +88,56 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
         return hashHex.toUpperCase();
     }
 
+    const getColor = (result:boolean) => {
+        switch (result) {
+            case true:
+                return "var(--error)";
+            default:
+                return "var(--success)";
+        }
+    }
+
     return (
         <>
-            <div style={{ color: "white" }}>
-                <div className="password-breach-checker">
-                    <div className="input-group">
-                        <button
-                            onClick={checkPasswordBreach}
-                            disabled={!inputPassword || isChecking}
-                            style={{
-                                width: "70%",
-                                height: "40px",
-                                margin: "1rem auto",
-                                backgroundColor: !inputPassword || isChecking ? "#6b7280" : "#4b5563",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "8px",
-                                outline: "none",
-                                cursor: !inputPassword || isChecking ? "not-allowed" : "pointer"
-                            }}
-                        >
-                            <div>
-                                {isChecking ? "Checking..." : "Check password status"}
-                            </div>
-                        </button>
+            <div className="">
+                <button
+                    onClick={checkPasswordBreach}
+                    disabled={!inputPassword || isChecking}
+                    className={`btn btn-primary ${(!inputPassword || isChecking) ? 'disabled-button' : ''}`}
+                >
+                    <div className="button-content">
+                        {isChecking ? (
+                            <>
+                                <div className="loading-spinner"></div>
+                                Checking...
+                            </>
+                        ) : (
+                            <>
+                                Check for Breaches
+                            </>
+                        )}
                     </div>
-                    
-                    {result && (
-                        <div style={{ width: '80%', margin: '0 auto' }} className={`result ${result.breached ? 'breached' : 'safe'}`}>
-                        <p>{result.message}</p>
-                            {result.breached}
-                        </div>
-                    )}
-                </div>
+                </button>
             </div>
+            {result && (
+                <div className="security-check-container" style={{marginTop: "16px"}}>
+                    <div className="security-status" style={{marginTop: "16px"}}>
+                        <div className="status-icon" style={{ background: getColor(result.breached)}}>
+                            {result.breached ? (
+                                <span><AlertTriangle/></span>
+                            ) : (
+                                <span><CheckCircle/></span>
+                            )}
+                        </div>
+                        <div className="status-text">
+                            <h3 className="status-title">
+                                {result.breached ? 'Password Compromised' : 'Password Not Found in Breaches'}
+                            </h3>
+                            <p className="status-description">{result.message}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

@@ -4,7 +4,7 @@ import PasswordTips from "@/components/pages/password-checker/PasswordTips.tsx";
 import PasswordBreaches from "@/components/pages/password-checker/PasswordBreaches.tsx";
 import {useParams} from "react-router";
 import {useNavigate} from "react-router";
-import { Info } from 'lucide-react';
+import { Info, Lock, Book } from 'lucide-react';
 
 function PasswordChecker() {
     const { password: urlPassword } = useParams();
@@ -19,81 +19,69 @@ function PasswordChecker() {
 
     return (
         <>
-        <div style={{
-                maxHeight: "calc(100vh - 100px)",
-                overflowY: "auto"
-        }}>
-            <div style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                position: "relative",
-                marginTop: '1rem', 
-                marginBottom: "1rem",
-            }}>
-                <h2 style={{ color: "white", margin: '0' }}>Check Password Safety</h2>
-            
-                <div onClick={() => navigate("/password-data")} className="data-info"><Info/></div>
-            </div>
-            <div style={{
-                display: "flex", 
-                justifyContent: "center", 
-                margin: "0 auto 1rem auto",
-                width: "90%"
-            }}>
-                <button 
-                    onClick={() => setActiveTab("checker")} 
-                    style={{
-                        backgroundColor: activeTab === "checker" ? "#4b5563" : "#374151",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "8px 0 0 8px",
-                        padding: "0.5rem 1rem",
-                        cursor: "pointer",
-                        width: "50%"
-                    }}
-                >
-                    Check
-                </button>
-                <button 
-                    onClick={() => setActiveTab("tips")} 
-                    style={{
-                        backgroundColor: activeTab === "tips" ? "#4b5563" : "#374151",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "0 8px 8px 0",
-                        padding: "0.5rem 1rem",
-                        cursor: "pointer",
-                        width: "50%"
-                    }}
-                >
-                    Tips
-                </button>
-            </div>
+            <div className="middle-menu">
+                <h1 className="panel-title">
+                    Check Password Strength <span onClick={() => navigate("/password-data")}><Info className="info-icon"/></span>
+                </h1>
+                
+                <div className="tab-buttons">
+                    <button 
+                        onClick={() => setActiveTab("checker")} 
+                        className={`btn ${activeTab === "checker" ? "btn-primary" : "btn-secondary"} tab-button`}
+                    >
+                        <div className="button-content">
+                            <Lock size={18} />
+                            Password Checker
+                        </div>
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab("tips")} 
+                        className={`btn ${activeTab === "tips" ? "btn-primary" : "btn-secondary"} tab-button`}
+                    >
+                        <div className="button-content">
+                            <Book size={18} />
+                            Security Tips
+                        </div>
+                    </button>
+                </div>
 
-            {activeTab === "checker" && (
-                <>
-                    <div>
-                        <input
-                            type="password"
-                            placeholder="Enter password"
-                            value={password}
-                            onChange={(e) => handlePasswordChange(e.target.value)}
-                            style={{padding: "0.5rem", width: "90%", margin: "0 auto"}}
-                        />
-                    </div>
-                    
-                    <PasswordStrength inputPassword={password} />
-                    <PasswordBreaches inputPassword={password} />
-                </>
-            )}
+                {activeTab === "checker" && (
+                    <>
+                        <div className="security-check-container glassmorphism">
+                            <div className="security-status">
+                                <div className="status-icon">
+                                    <Lock size={32} />
+                                </div>
+                                <div className="status-text">
+                                    <h3 className="status-title">
+                                        Check Password Security
+                                    </h3>
+                                    <p className="status-description">
+                                        Enter your password to check its strength and if it has appeared in data breaches
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div style={{marginTop: "16px"}}>
+                                <input
+                                    type="password"
+                                    placeholder="Enter password to check"
+                                    value={password}
+                                    onChange={(e) => handlePasswordChange(e.target.value)}
+                                    className="input-box"
+                                />
+                            </div>
 
-            {activeTab === "tips" && (
-                <>
-                    <PasswordTips/>
-                </>
-            )}
-        </div>
+                            
+                            {password && <PasswordStrength inputPassword={password} />}
+                        </div>
+                        
+                        {password && <PasswordBreaches inputPassword={password} />}
+                    </>
+                )}
+
+                {activeTab === "tips" && <PasswordTips />}
+            </div>
         </>
     );
 }
