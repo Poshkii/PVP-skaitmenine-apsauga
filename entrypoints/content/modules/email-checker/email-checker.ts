@@ -4,6 +4,8 @@ import infoBtn from "@/public/btn_images/info_btn.png"
 import { RailSymbolIcon } from "lucide-react";
 import { AlertCircle } from "lucide-react";
 
+
+
 export class EmailChecker extends Module { 
     readonly id = ModuleId.EmailChecker;
     private buttonId = "email-action-button";
@@ -199,26 +201,111 @@ export class EmailChecker extends Module {
     }
 
     private displayBreachInfo(breaches: any, emailField: HTMLInputElement) {
+        const styles = document.createElement('style');
+        styles.textContent = `
+        :root {
+            --ff-bg-primary: #0f172a;
+            --ff-bg-secondary: #1e293b;
+            --ff-bg-tertiary: #334155;
+            --ff-text-primary: #f8fafc;
+            --ff-text-secondary: #cbd5e1;
+            --ff-text-muted: #64748b;
+            --ff-accent-primary: #0ea5e9;
+            --ff-accent-secondary: #2dd4bf;
+            --ff-accent-gradient: linear-gradient(135deg, #0ea5e9, #2dd4bf);
+            --ff-success: #10b981;
+            --ff-warning: #f59e0b;
+            --ff-error: #ef4444;
+            --ff-border-radius-sm: 6px;
+            --ff-border-radius-md: 12px;
+            --ff-border-radius-lg: 16px;
+            --ff-transition-fast: 0.2s;
+            --ff-transition-medium: 0.3s;
+            --ff-shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --ff-shadow-md: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --ff-shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.1);
+            --ff-font-heading: 'Inter', sans-serif;
+            --ff-font-body: 'Inter', sans-serif;
+        }
+
+        .ff-btn {
+            padding: 12px 24px;
+            border-radius: var(--ff-border-radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--ff-transition-medium);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ff-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .ff-btn:hover::after {
+            left: 100%;
+        }
+
+        .ff-btn-primary {
+            background: var(--ff-accent-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+        }
+
+        .ff-btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(14, 165, 233, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .ff-btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .ff-btn-secondary {
+            background-color: transparent;
+            color: var(--ff-text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ff-btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--ff-accent-primary);
+            color: var(--ff-accent-primary);
+        }
+        
+       .ff-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* centers children horizontally */
+        }
+        `;
+        document.head.appendChild(styles);
+
         // Create a div to hold the information
         const infoDiv = document.createElement("div");
         infoDiv.style.position = "absolute";
         infoDiv.style.backgroundColor = "#0f172a";
         infoDiv.style.border = "1px solid #ccc";
+        infoDiv.style.display = "flex";
+        infoDiv.style.flexDirection = "column";
+        infoDiv.style.alignItems = "center";         // center horizontally
+        //infoDiv.style.justifyContent = "center";     // center vertically
+        //infoDiv.style.height = "200px";              // important for vertical centering
         infoDiv.style.borderRadius = "4px";
-        infoDiv.style.padding = "10px";
+        infoDiv.style.padding = "16px";
         infoDiv.style.zIndex = "9999";
         infoDiv.style.maxWidth = "400px";
         infoDiv.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
         infoDiv.style.transform = "translateX(10px)";
-    
-        // Add the alert circle icon from lucide-react
-        const iconDiv = document.createElement("div");
-        iconDiv.classList.add("security-status");
-    
-        // Alert circle icon with red color for warning        
-    
-        // Append icon to the info div
-        infoDiv.appendChild(iconDiv);
     
         // Update the position of the div near the email field
         const updateDivPosition = () => {
@@ -236,26 +323,55 @@ export class EmailChecker extends Module {
     
         // Position the infoDiv
         updateDivPosition();
+
+        window.addEventListener("scroll", updateDivPosition);
+        window.addEventListener("resize", updateDivPosition);        
     
-        // Show the breach summary
+        const wrapperDiv = document.createElement("div");
+        wrapperDiv.className = "ff-wrapper";
+
+        // Create summary div
         const breachesCount = breaches.ExposedBreaches.breaches_details.length;
-        const breachSummary = document.createElement("p");
-        breachSummary.innerHTML = `Found ${breachesCount} breach${breachesCount > 1 ? "es" : ""}.`;
-    
-        infoDiv.appendChild(breachSummary);
-    
-        // Button to navigate to more details
-        const navigateButton = document.createElement("button");
-        navigateButton.innerText = "See more details";
-        navigateButton.addEventListener("click", () => {
+        const riskLevel = breaches.BreachMetrics.risk[0]?.risk_label;  
+        const riskColor = breaches.BreachMetrics.risk[0]?.risk_label === "High" ? "red" : breaches.BreachMetrics.risk[0]?.risk_label === "Low" ? "orange" : "green";   
+        
+        const summaryDiv = document.createElement("div");
+        summaryDiv.style.textAlign = "center";
+        summaryDiv.innerHTML = `<h2>Found ${breachesCount} breach${breachesCount > 1 ? "es" : ""}</h2><p>Risk level is <span style="color: ${riskColor}; font-weight: 600;">${riskLevel}</span></p>`;           
+
+        // Create buttons
+        const buttonsWrapper = document.createElement("div");
+        buttonsWrapper.style.display = "flex";
+        buttonsWrapper.style.gap = "10px"; // spacing between buttons
+        buttonsWrapper.style.marginTop = "10px"; // spacing from text above
+        buttonsWrapper.style.justifyContent = "center";
+        buttonsWrapper.style.width = "100%";
+
+        const closeButton = document.createElement("button");
+        
+        closeButton.className = "ff-btn ff-btn-secondary";
+        closeButton.innerText = "Close";
+        closeButton.addEventListener("click", () => {
+            infoDiv.remove();
+        });
+
+        const detailsButton = document.createElement("button");
+        
+        detailsButton.className = "ff-btn ff-btn-primary";
+        detailsButton.innerText = "Details";
+        detailsButton.addEventListener("click", () => {
             this.sendToRuntime({
                 id: BgMessageId.NavigateTo,
                 data: {
                     route: `/email-checker/${emailField.value}`
                 }
             });
-        });
-        infoDiv.appendChild(navigateButton);
+        });       
+         
+        buttonsWrapper.appendChild(closeButton);
+        buttonsWrapper.appendChild(detailsButton);
+        infoDiv.appendChild(summaryDiv); 
+        infoDiv.appendChild(buttonsWrapper);      
     
         // Append the infoDiv to the document body
         document.body.appendChild(infoDiv);
