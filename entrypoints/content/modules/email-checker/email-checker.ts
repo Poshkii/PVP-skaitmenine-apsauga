@@ -1,10 +1,9 @@
 import {Module, ModuleId} from "../../types/module.ts";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
+import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import infoBtn from "@/public/btn_images/info_btn.png"
 import { RailSymbolIcon } from "lucide-react";
 import { AlertCircle } from "lucide-react";
-
-
 
 export class EmailChecker extends Module { 
     readonly id = ModuleId.EmailChecker;
@@ -156,7 +155,7 @@ export class EmailChecker extends Module {
                     if (storedData) {
                         // If stored data exists and email matches, use the stored data
                         console.log("Using stored breach data:", storedData);
-                        this.displayBreachInfo(storedData.data, emailField);
+                        this.displayBreachInfo(storedData, emailField);
                     } else {
                         // No stored data or email doesn't match, fetch new data
                         console.log("No stored data or email doesn't match. Fetching new data...");
@@ -167,8 +166,9 @@ export class EmailChecker extends Module {
                 console.error("Error processing email check:", error);
             }
 
-            if (!isStored) {         
+            if (isStored) {         
                 try {
+                    console.log("Fetching API results");
                     // API call to fetch breach data
                     const response = await fetch(`https://api.xposedornot.com/v1/breach-analytics?email=${email}`);
                     const data = await response.json();
@@ -341,14 +341,20 @@ export class EmailChecker extends Module {
         wrapperDiv.className = "ff-wrapper";
 
         // Create summary div
-        const breachesCount = breaches.ExposedBreaches.breaches_details.length;
-        const riskLevel = breaches.BreachMetrics.risk[0]?.risk_label;  
-        const riskColor = breaches.BreachMetrics.risk[0]?.risk_label === "High" ? "red" : breaches.BreachMetrics.risk[0]?.risk_label === "Low" ? "orange" : "green";   
-        
         const summaryDiv = document.createElement("div");
-        summaryDiv.style.textAlign = "center";
-        summaryDiv.innerHTML = `<h2>Found ${breachesCount} breach${breachesCount > 1 ? "es" : ""}</h2><p>Risk level is <span style="color: ${riskColor}; font-weight: 600;">${riskLevel}</span></p>`;           
 
+        if (breaches.ExposedBreaches) {
+            const breachesCount = breaches.ExposedBreaches.breaches_details.length;
+            const riskLevel = breaches.BreachMetrics.risk[0]?.risk_label;  
+            const riskColor = breaches.BreachMetrics.risk[0]?.risk_label === "High" ? "red" : breaches.BreachMetrics.risk[0]?.risk_label === "Low" ? "orange" : "green";   
+            
+            summaryDiv.style.textAlign = "center";
+            summaryDiv.innerHTML = `<h2>Found ${breachesCount} breach${breachesCount > 1 ? "es" : ""}</h2><p>Risk level is <span style="color: ${riskColor}; font-weight: 600;">${riskLevel}</span></p>`;           
+        }
+        else {            
+            summaryDiv.style.textAlign = "center";
+            summaryDiv.innerHTML = `<h2>Your email is safe</h2>`
+        }
         // Create buttons
         const buttonsWrapper = document.createElement("div");
         buttonsWrapper.style.display = "flex";
@@ -370,12 +376,20 @@ export class EmailChecker extends Module {
         detailsButton.className = "ff-btn ff-btn-primary";
         detailsButton.innerText = "Details";
         detailsButton.addEventListener("click", () => {
+            // this.sendToRuntime({
+            //     id: BgMessageId.NavigateTo,
+            //     data: {
+            //         route: `/email-checker/${emailField.value}`
+            //     }
+            // });
+            console.log("Sending ScanEmail");
             this.sendToRuntime({
-                id: BgMessageId.NavigateTo,
+                id: BgMessageId.ScanEmail,
                 data: {
-                    route: `/email-checker/${emailField.value}`
-                }
-            });
+                    route: `/email-checker/${emailField.value}`,
+                    email: emailField.value                    
+                }              
+            });            
         });       
          
         buttonsWrapper.appendChild(closeButton);

@@ -26,9 +26,39 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const [highRisk, setHighRisk] = useState(false);
     const [risk, setRisk] = useState("");
     const [breachesFound, setBreachesFound] = useState(false);
+    const [scanDone, setScanDone] = useState(false);
     const [isStored, setStored] = useState(false);
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    useEffect(() => {
+        const listener = (message: any) => {
+          if (message.id === UiMessageId.ScanEmail) {
+            console.log("Message received in the frontend, scanning email...");
+            // Process the data similar to how EmailCheck would handle it
+            const email = message.data;
+            setEmail(email);            
+            // Process the rest of your state updates based on the data
+            // This would be similar to the logic in your EmailCheck function
+            const syntheticEvent = { preventDefault: () => {} } as FormEvent;
+            EmailCheck(syntheticEvent);
+            
+            setLoading(false);
+          }
+        };
+        
+        browser.runtime.onMessage.addListener(listener);
+        
+        return () => {
+          browser.runtime.onMessage.removeListener(listener);
+        };
+      }, []);
+
+      useEffect(() => {
+        // Tell background script we're ready
+        console.log("Popup ready!");
+        browser.runtime.sendMessage({ id: UiMessageId.PopupReady });
+      }, []);
 
     const EmailCheck = async (e: FormEvent) => {
         e.preventDefault();
@@ -40,61 +70,93 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
         setResult("Searching...");
         setLoading(true);
-        handleClear();              
+        handleClear();  
+        
+        var isStored = true;
 
         try {
-
-            browser.runtime.sendMessage({id: BgMessageId.GetEmailData}, async (response) => {
+            // First check if data is stored, then proceed with appropriate action
+            browser.runtime.sendMessage({id: BgMessageId.GetEmailData, data: {email: email}}, async (response) => {
                 if (response) {                    
-                    // fetch data
-                    const {email, apiResponse, data} = response;
+                    // Data exists in storage, use it
                     console.log("Breach info:", response);
-                    setBreachData(data);
-                    setEmail(email);
-                    setResponse(apiResponse);
+                    setBreachData(response);
                     setStored(true);
-                } 
+                    setScanDone(true);
+                    
+                    // Process the stored data
+                    processBreachData(response, email);
+                }
                 else {
-                    // get new data
+                    // No stored data, fetch from API
                     console.log("No stored breach data for this email, starting scan...");
                     setStored(false);
+                    
+                    // Fetch new data from API
+                    try {
+                        const response = await fetch(`https://api.xposedornot.com/v1/breach-analytics?email=${email}`);
+                        const data = await response.json();
+                   
+                        console.log("API response: ", response);
+                        console.log("API data: ", data);
+                        
+                        if (response.status === 200) {
+                            // Save data
+                            chrome.runtime.sendMessage({
+                                id: BgMessageId.StoreEmailData,
+                                data: {
+                                    email: email,
+                                    breachData: data
+                                }                                    
+                            });
+
+                            // Process the fetched data
+                            processBreachData(data, email);
+                            setScanDone(true);
+                        }
+                        // Email not found
+                        else {
+                            setResult("The provided email address could not be verified.");  
+                            setScanDone(true);
+                            setUnknownEmail(true);          
+                        }
+                    } catch (fetchError) {
+                        console.error("API fetch error:", fetchError);
+                        setResult("Error. Email could not be checked.");
+                    }
                 }
             });
-
-            const response = await fetch(`https://api.xposedornot.com/v1/breach-analytics?email=${email}`);
-            const data = await response.json();
-
-            console.log("API response: ", response)
-            console.log("API data: ", data)
-
-            // Email found
-            if (response.status === 200) {
-                // Was breached
-                if (data.ExposedBreaches) {
-                    setResult(`Found ${data.ExposedBreaches.breaches_details.length} breaches`);
-                    data.ExposedBreaches.breaches_details.length < 10 ? setWarning(true) : setDanger(true)
-                    // Get risk level
-                    const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
-                    risk === "High" ? setHighRisk(true) : risk === "Medium" ? setMediumRisk(true) : risk === "Low" ? setLowRisk(true) : setUnknownRisk(true);
-                    setRisk(risk);
-                    setBreachesFound(true);
-                    setBreachData(data);                
-                    addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
-                }
-                // Wasn't breached
-                else {
-                    setSafe(true);
-                    addScannedEmail(email, 0);                 
-                }                
-            } 
-            // Email not found
-            else {
-                setResult("The provided email address could not be verified.");   
-                setUnknownEmail(true);           
-            }
         } catch (error) {
-            console.error("API error:", error);
+            console.error("Runtime error:", error);
             setResult("Error. Email could not be checked.");
+        }
+        
+        // Helper function to process breach data consistently
+        function processBreachData(data: any, email: string) {
+
+            console.log("DATA:", data);
+            // Was breached
+            if (data.ExposedBreaches) {
+                setResult(`Found ${data.ExposedBreaches.breaches_details.length} breaches`);
+                data.ExposedBreaches.breaches_details.length < 10 ? setWarning(true) : setDanger(true);
+                
+                // Get risk level
+                const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
+                risk === "High" ? setHighRisk(true) : 
+                risk === "Medium" ? setMediumRisk(true) : 
+                risk === "Low" ? setLowRisk(true) : 
+                setUnknownRisk(true);
+                
+                setRisk(risk);
+                setBreachesFound(true);
+                setBreachData(data);                
+                addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
+            }
+            // Wasn't breached
+            else {
+                setSafe(true);
+                addScannedEmail(email, 0);                
+            }
         }
 
         setLoading(false);
@@ -105,7 +167,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const handleClear = () => {
         setBreachData(null); // Clear previous data before a new search
         setSafe(false);
-        setUnknownEmail(false);
+        setUnknownEmail(false);        
         setDanger(false);
         setWarning(false);
         setHighRisk(false);
@@ -113,6 +175,8 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
         setLowRisk(false);
         setUnknownRisk(false);
         setBreachesFound(false);
+        setScanDone(false);
+        setStored(false);
         setRisk("");
     };
 
@@ -159,8 +223,9 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                         </div>                        
                     </form>
                 </div>
-
-                <div className="security-check-container" style={{ maxHeight: "300px", minHeight: "110px", overflowY: "auto" }}> 
+                
+                {scanDone && (
+                    <div className="security-check-container" style={{ maxHeight: "300px", minHeight: "110px", overflowY: "auto" }}> 
 
                     {!loading && (
                     <>
@@ -203,9 +268,11 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                     }
 
                     {/* Show EmailBreachDetails if breaches are found */}
-                    {breachData && <EmailBreachDetails data={breachData} />}
+                    {breachData && breachesFound && <EmailBreachDetails data={breachData} />}
 
-                </div>               
+                </div>
+                )}
+                               
 
                 {/*Clear & Tips buttons*/}
                 <div className="action-buttons">

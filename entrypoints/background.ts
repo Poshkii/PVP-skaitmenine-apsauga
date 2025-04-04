@@ -66,8 +66,7 @@ export default defineBackground(async () => {
             case BgMessageId.StoreEmailData: {
                 console.log("Received StoreEmailData message:", message);
                 // Then continue with the existing code...
-                const { email } = message.data.email;
-                const { breachData } = message.data.breachData;
+                const { email, breachData } = message.data;
                 breachInfo[email] = breachData;
                 console.log(`Stored breach data for email: ${email}`);
                 console.log(`Stored data: ${breachData}`);
@@ -88,6 +87,39 @@ export default defineBackground(async () => {
                 // Only needed if sendResponse might be called after this handler returns
                 break; // Note: break is not needed after return
             }
+            case BgMessageId.ScanEmail: {
+                const openPopupAndScan = async () => {
+                  try {
+                    waitForPopup(() => {
+                        browser.runtime.sendMessage({id: UiMessageId.NavigateTo, data: message.data.route});
+                    });                     
+              
+                    const waitForPopupReady = new Promise<void>((resolve) => {
+                      const listener = (message: any) => {
+                        if (message.id === UiMessageId.PopupReady) {
+                          console.log("Popup is ready");
+                          browser.runtime.onMessage.removeListener(listener);
+                          resolve();
+                        }
+                      };
+                      browser.runtime.onMessage.addListener(listener);
+                    });
+              
+                    await waitForPopupReady;            
+              
+                    browser.runtime.sendMessage({
+                      id: UiMessageId.ScanEmail,
+                      data: message.data.email
+                    });
+              
+                  } catch (error) {
+                    console.error("Error opening popup:", error);
+                  }
+                };
+              
+                openPopupAndScan();
+                break;
+              }
         }
     });
 });

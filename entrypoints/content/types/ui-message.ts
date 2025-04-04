@@ -3,7 +3,9 @@ export enum UiMessageId {
     ScanFinished = "SCAN_FINISHED",
     CookiesRetrieved = "COOKIES_RETRIEVED",
     CookiesError = "COOKIES_ERROR",
-    EmailBreachData = "EMAIL_BREACH_DATA"
+    EmailBreachData = "EMAIL_BREACH_DATA",
+    ScanEmail = "SCAN_EMAIL",
+    PopupReady = "POPUP_READY"
 }
 
 export interface UiMessage {
