@@ -147,48 +147,58 @@ export class EmailChecker extends Module {
                 return;
             }
 
+            var isStored = true;
 
             // Make API request to check for email breaches
             try {
-                const response = await fetch(`https://api.xposedornot.com/v1/breach-analytics?email=${email}`);
-                    const data = await response.json();  
-                    
-                    console.log("API response: ", response);
+                // Fetch stored email data
+                chrome.runtime.sendMessage({ id: BgMessageId.GetEmailData, data: {email: email}}, async (storedData) => {
+                    if (storedData) {
+                        // If stored data exists and email matches, use the stored data
+                        console.log("Using stored breach data:", storedData);
+                        this.displayBreachInfo(storedData.data, emailField);
+                    } else {
+                        // No stored data or email doesn't match, fetch new data
+                        console.log("No stored data or email doesn't match. Fetching new data...");
+                        isStored = false;
+                    }
+                });
+            } catch (error) {
+                console.error("Error processing email check:", error);
+            }
 
+            if (!isStored) {         
+                try {
+                    // API call to fetch breach data
+                    const response = await fetch(`https://api.xposedornot.com/v1/breach-analytics?email=${email}`);
+                    const data = await response.json();
+        
                     if (response.status === 200) {
-                        console.log("Email was breached!");
-                        chrome.runtime.sendMessage({ id: BgMessageId.StoreEmailData, email: email, data: data})
-                        // Was breached
-                        if (data.ExposedBreaches) {
-                            // setResult(`Found ${data.ExposedBreaches.breaches_details.length} breaches`);
-                            //data.ExposedBreaches.breaches_details.length < 10 ? setWarning(true) : setDanger(true)
-                            // Get risk level
-                            // const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
-                            // risk === "High" ? setHighRisk(true) : risk === "Medium" ? setMediumRisk(true) : risk === "Low" ? setLowRisk(true) : setUnknownRisk(true);
-                            // setRisk(risk);
-                            // setBreachesFound(true);
-                            // setBreachData(data);                
-                            // addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
-                            this.displayBreachInfo(data, emailField)
-                        }
-                        // Wasn't breached
-                        else {
-                            //setSafe(true);
-                            // addScannedEmail(email, 0);                 
-                        }                
-                    } 
-                    // Email not found
-                    else {
-                        // setResult("The provided email address could not be verified.");   
-                        //setUnknownEmail(true);           
+                        console.log("Email breach information fetched.");
+                        // Store new data for future use
+                        chrome.runtime.sendMessage({
+                            id: BgMessageId.StoreEmailData,
+                            data: {
+                                email: email,
+                                breachData: data
+                            }                                    
+                        });
+        
+                        // Display the breach info
+                        this.displayBreachInfo(data, emailField);
+                    } else {
+                        console.error("Email not found or API error.");
                     }
                 } catch (error) {
-                    console.error("API error:", error);
+                    console.error("Error fetching breach data:", error);
                 }
+            }
 
             // Optional: Remove button after click
             button.remove();
         });
+
+        
 
         // Cleanup on blur
         emailField.addEventListener("blur", () => {

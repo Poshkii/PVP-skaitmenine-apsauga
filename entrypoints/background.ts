@@ -19,7 +19,10 @@ export default defineBackground(async () => {
     const moduleManager = new ModuleManager();
     moduleManager.registerModule(fileChecker, config.isModuleEnabled(fileChecker.id));
 
-    browser.runtime.onMessage.addListener(async (message: BgMessage) => {
+    browser.runtime.onMessage.addListener(async (
+        message: BgMessage,
+        sender: chrome.runtime.MessageSender,
+        sendResponse: (response?: any) => void ) => {
         switch (message.id) {
             case BgMessageId.OpenPopup: {
                 browser.action.openPopup()
@@ -61,19 +64,29 @@ export default defineBackground(async () => {
                 break;
             }
             case BgMessageId.StoreEmailData: {
-                // Store the breach data associated with the email
-                const { email, breachData } = message.data;
+                console.log("Received StoreEmailData message:", message);
+                // Then continue with the existing code...
+                const { email } = message.data.email;
+                const { breachData } = message.data.breachData;
                 breachInfo[email] = breachData;
                 console.log(`Stored breach data for email: ${email}`);
+                console.log(`Stored data: ${breachData}`);
                 break;
             }
             case BgMessageId.GetEmailData: {
                 const { email } = message.data;
-                // Retrieve and send breach data for the email
+                // Retrieve breach data for the email
                 const data = breachInfo[email] || null;
-                browser.runtime.sendMessage({ id: UiMessageId.EmailBreachData, data });  // Send the breach data back to the requester
+                
+                // Use sendResponse to send data back to the requester
+                sendResponse(data);
+                
                 console.log(`Retrieved breach data for email: ${email}`);
-                break;
+                console.log(`Data: ${data}`);
+                
+                // Return true to indicate you're handling the response asynchronously
+                // Only needed if sendResponse might be called after this handler returns
+                break; // Note: break is not needed after return
             }
         }
     });

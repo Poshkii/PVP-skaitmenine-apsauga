@@ -6,12 +6,15 @@ import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { useReport } from "../report-page/ReportContext";
 import {useNavigate} from "react-router";
 import { Info } from 'lucide-react';
+import { UiMessageId } from "@/entrypoints/content/types/ui-message";
+import { BgMessageId } from "@/entrypoints/content/types/bg-message";
 
 function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPage: () => void }) {
     const [email, setEmail] = useState(inputEmail);
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
     const [breachData, setBreachData] = useState<any | null>(null); // Stores full API response
+    const [responseData, setResponse] = useState<any | null>(null); // Stores API response
     const { addScannedEmail } = useReport();
     const [safeEmail, setSafe] = useState(false);
     const [warningEmail, setWarning] = useState(false);
@@ -22,7 +25,8 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const [mediumRisk, setMediumRisk] = useState(false);
     const [highRisk, setHighRisk] = useState(false);
     const [risk, setRisk] = useState("");
-    const [breachesFound, setBreachesFound] = useState(false)   
+    const [breachesFound, setBreachesFound] = useState(false);
+    const [isStored, setStored] = useState(false);
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -36,9 +40,27 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
         setResult("Searching...");
         setLoading(true);
-        handleClear();
+        handleClear();              
 
         try {
+
+            browser.runtime.sendMessage({id: BgMessageId.GetEmailData}, async (response) => {
+                if (response) {                    
+                    // fetch data
+                    const {email, apiResponse, data} = response;
+                    console.log("Breach info:", response);
+                    setBreachData(data);
+                    setEmail(email);
+                    setResponse(apiResponse);
+                    setStored(true);
+                } 
+                else {
+                    // get new data
+                    console.log("No stored breach data for this email, starting scan...");
+                    setStored(false);
+                }
+            });
+
             const response = await fetch(`https://api.xposedornot.com/v1/breach-analytics?email=${email}`);
             const data = await response.json();
 
