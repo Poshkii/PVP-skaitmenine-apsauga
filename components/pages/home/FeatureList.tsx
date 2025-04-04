@@ -37,7 +37,7 @@ const menuItems = [
     { 
       name: "Tracker Check", 
       hint: "Tracker analysis", 
-      route: "/",
+      route: "",
       icon: <Radar size={18} />
     },
   ];

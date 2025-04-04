@@ -96,10 +96,8 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
     return (
         <>
-            <div style={{
-
-            }}>
-                <h1 className="panel-title">Check Email Safety<span onClick={() => navigate("/email-data")}><Info className="info-icon"/></span></h1>
+            <div className="middle-menu">
+                <h1 className="panel-title">Check Email Safety <span onClick={() => navigate("/email-data")}><Info className="info-icon"/></span></h1>
 
                 <div className="security-check-container">
                     <form onSubmit={EmailCheck}>
