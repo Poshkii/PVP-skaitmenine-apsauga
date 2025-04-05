@@ -87,7 +87,7 @@ function Profile() {
     return (
         <>
             <h1 className="panel-title">Profile</h1>
-            <div className="security-check-container">
+            <div className="security-check-container glassmorphism">
                 {user ? (
                     <div>
                         <h4>Welcome, {user.username}!</h4>

@@ -12,7 +12,7 @@ function Settings() {
         <>
             <h1 className="panel-title">Settings</h1>
 
-            <div className="security-check-container">
+            <div className="security-check-container glassmorphism">
                 <ModuleToggle
                     moduleId={ModuleId.PasswordChecker}
                     title={"Password Checker Button"}

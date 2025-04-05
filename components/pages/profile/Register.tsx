@@ -51,7 +51,7 @@ function Register() {
     return (
         <>
             <h1 className="panel-title">Register</h1>
-            <div className="security-check-container">
+            <div className="security-check-container glassmorphism">
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={handleSubmit}>
                     <div>
