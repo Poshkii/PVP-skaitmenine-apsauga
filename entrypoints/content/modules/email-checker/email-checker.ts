@@ -2,8 +2,6 @@ import {Module, ModuleId} from "../../types/module.ts";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import infoBtn from "@/public/btn_images/info_btn.png"
-import { RailSymbolIcon } from "lucide-react";
-import { AlertCircle } from "lucide-react";
 
 export class EmailChecker extends Module { 
     readonly id = ModuleId.EmailChecker;
@@ -375,13 +373,7 @@ export class EmailChecker extends Module {
         
         detailsButton.className = "ff-btn ff-btn-primary";
         detailsButton.innerText = "Details";
-        detailsButton.addEventListener("click", () => {
-            // this.sendToRuntime({
-            //     id: BgMessageId.NavigateTo,
-            //     data: {
-            //         route: `/email-checker/${emailField.value}`
-            //     }
-            // });
+        detailsButton.addEventListener("click", () => {            
             console.log("Sending ScanEmail");
             this.sendToRuntime({
                 id: BgMessageId.ScanEmail,
