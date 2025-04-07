@@ -127,14 +127,6 @@ export class EmailChecker extends Module {
 
         // Add event listener to send message to background
         button.addEventListener("click", async () => {
-            // console.log("Email button clicked, sending message to background script...");
-            // this.sendToRuntime({
-            //     id: BgMessageId.NavigateTo,
-            //     data: {
-            //         route: `/email-checker/${emailField.value}`
-            //     }
-            // });
-
             console.log("Email button clicked, fetching breach data...");
 
             const email = emailField.value.trim();
@@ -194,9 +186,7 @@ export class EmailChecker extends Module {
 
             // Optional: Remove button after click
             button.remove();
-        });
-
-        
+        });        
 
         // Cleanup on blur
         emailField.addEventListener("blur", () => {
@@ -305,9 +295,7 @@ export class EmailChecker extends Module {
         infoDiv.style.border = "1px solid #ccc";
         infoDiv.style.display = "flex";
         infoDiv.style.flexDirection = "column";
-        infoDiv.style.alignItems = "center";         // center horizontally
-        //infoDiv.style.justifyContent = "center";     // center vertically
-        //infoDiv.style.height = "200px";              // important for vertical centering
+        infoDiv.style.alignItems = "center";
         infoDiv.style.borderRadius = "4px";
         infoDiv.style.padding = "16px";
         infoDiv.style.zIndex = "9999";
@@ -391,8 +379,7 @@ export class EmailChecker extends Module {
     
         // Append the infoDiv to the document body
         document.body.appendChild(infoDiv);
-    }
-    
+    }    
 
     private onFocusIn = (event: FocusEvent) => {
         const target = event.target as HTMLInputElement;

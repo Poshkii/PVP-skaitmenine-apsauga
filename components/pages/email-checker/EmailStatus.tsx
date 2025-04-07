@@ -131,7 +131,6 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             setResult("Error. Email could not be checked.");
         }
         
-        // Helper function to process breach data consistently
         function processBreachData(data: any, email: string) {
 
             console.log("DATA:", data);
@@ -158,7 +157,6 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                 addScannedEmail(email, 0);                
             }
         }
-
         setLoading(false);
     };
 

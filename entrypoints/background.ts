@@ -76,15 +76,9 @@ export default defineBackground(async () => {
                 const { email } = message.data;
                 // Retrieve breach data for the email
                 const data = breachInfo[email] || null;
-                
-                // Use sendResponse to send data back to the requester
                 sendResponse(data);
-                
                 console.log(`Retrieved breach data for email: ${email}`);
-                console.log(`Data: ${data}`);
-                
-                // Return true to indicate you're handling the response asynchronously
-                // Only needed if sendResponse might be called after this handler returns
+                console.log(`Data: ${data}`);              
                 break; // Note: break is not needed after return
             }
             case BgMessageId.ScanEmail: {
@@ -180,11 +174,6 @@ async function scanTrackingCookies(): Promise<chrome.cookies.Cookie[]> {
         return [];
     }
 }
-
-
-
-
-
 
 export function waitForPopup(callback: () => void) {
     const onMessage = (message: BgMessage) => {
