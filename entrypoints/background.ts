@@ -4,6 +4,11 @@ import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {Configuration} from "@/utils/config.ts";
 
+interface BreachInfo {
+    [email: string]: any;  // Stores breach data by email
+}
+
+const breachInfo: BreachInfo = {};  // Object to store breach data
 
 export default defineBackground(async () => {
     console.log("Background script initialized.");
@@ -14,7 +19,10 @@ export default defineBackground(async () => {
     const moduleManager = new ModuleManager();
     moduleManager.registerModule(fileChecker, config.isModuleEnabled(fileChecker.id));
 
-    browser.runtime.onMessage.addListener(async (message: BgMessage) => {
+    browser.runtime.onMessage.addListener(async (
+        message: BgMessage,
+        sender: chrome.runtime.MessageSender,
+        sendResponse: (response?: any) => void ) => {
         switch (message.id) {
             case BgMessageId.OpenPopup: {
                 browser.action.openPopup()
@@ -55,6 +63,57 @@ export default defineBackground(async () => {
                 }
                 break;
             }
+            case BgMessageId.StoreEmailData: {
+                console.log("Received StoreEmailData message:", message);
+                // Then continue with the existing code...
+                const { email, breachData } = message.data;
+                breachInfo[email] = breachData;
+                console.log(`Stored breach data for email: ${email}`);
+                console.log(`Stored data: ${breachData}`);
+                break;
+            }
+            case BgMessageId.GetEmailData: {
+                const { email } = message.data;
+                // Retrieve breach data for the email
+                const data = breachInfo[email] || null;
+                sendResponse(data);
+                console.log(`Retrieved breach data for email: ${email}`);
+                console.log(`Data: ${data}`);              
+                break; // Note: break is not needed after return
+            }
+            case BgMessageId.ScanEmail: {
+                const openPopupAndScan = async () => {
+                  try {
+                    waitForPopup(() => {
+                        browser.runtime.sendMessage({id: UiMessageId.NavigateTo, data: message.data.route});
+                    });                     
+              
+                    const waitForPopupReady = new Promise<void>((resolve) => {
+                      const listener = (message: any) => {
+                        if (message.id === UiMessageId.PopupReady) {
+                          console.log("Popup is ready");
+                          browser.runtime.onMessage.removeListener(listener);
+                          resolve();
+                        }
+                      };
+                      browser.runtime.onMessage.addListener(listener);
+                    });
+              
+                    await waitForPopupReady;            
+              
+                    browser.runtime.sendMessage({
+                      id: UiMessageId.ScanEmail,
+                      data: message.data.email
+                    });
+              
+                  } catch (error) {
+                    console.error("Error opening popup:", error);
+                  }
+                };
+              
+                openPopupAndScan();
+                break;
+              }
         }
     });
 });
@@ -115,11 +174,6 @@ async function scanTrackingCookies(): Promise<chrome.cookies.Cookie[]> {
         return [];
     }
 }
-
-
-
-
-
 
 export function waitForPopup(callback: () => void) {
     const onMessage = (message: BgMessage) => {
