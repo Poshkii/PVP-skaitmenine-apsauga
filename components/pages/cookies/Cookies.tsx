@@ -12,7 +12,7 @@ function Cookies(){
 
             <CookieTips/>
 
-            <CookieData/>
+            
             
           </div>
       </>

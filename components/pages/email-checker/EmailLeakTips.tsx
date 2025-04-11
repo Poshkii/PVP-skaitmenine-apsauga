@@ -1,5 +1,5 @@
 import {useState} from "react";
-import { ShieldQuestion} from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 
 const titles = [
     { id: 1, content: "Change your password" },
@@ -92,7 +92,7 @@ function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
                                 justifyContent: "center",
                                 borderRadius: "50%"
                             }}>
-                                <ShieldQuestion color="white" size={30} />
+                                <Lightbulb color="white" size={30} />
                             </div>
 
                             {/* Text Content */}
