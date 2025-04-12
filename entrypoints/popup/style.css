@@ -24,6 +24,12 @@
   --font-body: 'Inter', sans-serif;
 }
 
+.animations-disabled * {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
 /* Base Styles */
 body, html {
   margin: 0;

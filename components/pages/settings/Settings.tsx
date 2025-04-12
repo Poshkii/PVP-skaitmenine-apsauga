@@ -25,6 +25,12 @@ function Settings() {
                     description={"Automatic download scanning for malware"}
                     onChangeState={changeBgModuleState}
                 />
+                <ModuleToggle
+                    moduleId={ModuleId.HoverAnimations}
+                    title={"Toggle Hover Animations"}
+                    description={"On-hover effect animations and transitions"}
+                    onChangeState={changeContentModuleState}
+                />
             </div>
         </>
     );
