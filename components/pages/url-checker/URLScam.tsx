@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import scamList from "./crypto_scam_data.csv?url";
 import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 // Define types for PapaParse results
 interface ParseResult {
@@ -18,6 +19,7 @@ function URLScam({ scamURL }: { scamURL: string }) {
     const [safe, setSafe] = useState(false);
     const [unsafe, setUnsafe] = useState(false);
     const [unknown, setUnknown] = useState(false);
+    const { t } = useTranslation('urls');
     // Path to your CSV file
     const CSV_FILE_PATH = scamList;
 
