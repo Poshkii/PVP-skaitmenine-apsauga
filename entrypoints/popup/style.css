@@ -732,6 +732,29 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-between;
 }
 
+.dropdown-button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+}
+
+.dropdown-button:hover {
+  transform: none;
+}
+
+.data-content {
+  padding: 16px 20px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  transition: all var(--transition-medium);
+  position: relative;
+  overflow: hidden;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .left-panel {

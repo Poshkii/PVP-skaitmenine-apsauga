@@ -1,4 +1,5 @@
-import "../info.css";
+import "/entrypoints/popup/style.css";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
 function InfoPage(){
@@ -12,41 +13,44 @@ function InfoPage(){
     };
 
     return (
-        <div className="info-page"
-            style={{
-            maxHeight: "calc(100vh - 100px)",
-            overflowY: "auto",
-            paddingBottom: "30px",
-        }}>
-            <h2 className="info-title"><b>File Data Usage</b></h2>
-
-            <div style={{width: "90%", margin: "0 auto", textAlign: "left"}}>
+        <div className="middle-menu">
+            <h1 className="panel-title">File Data Usage</h1>
+            <div className="security-check-container glassmorphism">
                 <p>
                     When scanning files, attachments are sent to third-party security services.
                     No personal data content is shared or saved. Click the service for details:
                 </p>
-
-                <div className="dropdown-section">
-                    <button 
-                        className="dropdown-button"
+                <div style={{marginBottom: "14px"}}>
+                    <button
+                        className="dropdown-button btn btn-primary"
+                        style={{
+                            borderBottomLeftRadius: openSection === 'metadefender' ? '0' : '12px',
+                            borderBottomRightRadius: openSection === 'metadefender' ? '0' : '12px'
+                        }}
                         onClick={() => toggleSection('metadefender')}
                     >
-                        MetaDefender {openSection === 'metadefender' ? '▲' : '▼'}
+                        MetaDefender {openSection === 'metadefender' ? <ChevronUp/> : <ChevronDown/>}
                     </button>
-                    {openSection === 'metadefender' && (
-                        <div className="dropdown-content">
-                            <p>Files are submitted to MetaDefender Cloud for multi-scanning malware detection.
-                            Results may be stored in their database for improved threat intelligence.</p>
-                            <a style={{color:"white"}} href="https://www.opswat.com/docs/mdcloud/compliance/confidentiality" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
-                        </div>
-                    )}
+                    <div 
+                        className="data-content"
+                        style={{
+                            maxHeight: openSection === 'metadefender' ? '100vh' : '0',
+                            opacity: openSection === 'metadefender' ? 1 : 0,
+                            padding: openSection === 'metadefender' ? '16px 20px' : '0 20px',
+                            visibility: openSection === 'metadefender' ? 'visible' : 'hidden'
+                        }}
+                    >
+                        <p>Files are submitted to MetaDefender Cloud for multi-scanning malware detection.
+                        Results may be stored in their database for improved threat intelligence.</p>
+                        <a style={{color:"white"}} href="https://www.opswat.com/docs/mdcloud/compliance/confidentiality" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                    </div>
                 </div>
-                
-                <p className="consent-notice">
+            
+                <p style={{fontStyle: "italic"}}>
                     By using this feature, you consent to file sharing for security verification.
                 </p>
-                
-                <button className="custom-button"
+            
+                <button className="btn btn-secondary"
                     onClick={() => window.history.back()}
                 >
                     Go back
