@@ -6,10 +6,12 @@ import {useBackgroundMessaging} from "@/hooks/useBackgroundMessaging.ts";
 import {Settings, House, User} from "lucide-react";
 import logo from "@/assets/icon.png";
 import HomeRoutes from "@/components/pages/home/HomeRoutes.tsx";
+import { useTranslation } from "react-i18next";
 
 function Home() {
     useBackgroundMessaging();
     const navigate = useNavigate();
+    
 
     return (
         <div className="main-window">

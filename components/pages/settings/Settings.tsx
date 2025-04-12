@@ -3,10 +3,16 @@ import ModuleToggle from "@/components/pages/settings/ModuleToggle.tsx";
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
 import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
+import { useTranslation } from 'react-i18next';
 
 function Settings() {
     const { changeBgModuleState } = useModuleMessaging();
     const { changeContentModuleState } = useContentMessaging();
+    const { t, i18n } = useTranslation();
+
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+      };
 
     return (
         <>
@@ -15,11 +21,11 @@ function Settings() {
             <div className="security-check-container glassmorphism">
                     <div className="setting-container">
                 <div className="setting-text">
-                    <p className="setting-title">Language</p>
+                    <p className="setting-title">{t('language')}</p>
                     <p className="setting-description">Choose your preferred language</p>
                 </div>
                 <div className="language-selector">
-                    <select className="language-dropdown">
+                    <select className="language-dropdown" onChange={(e) => changeLanguage(e.target.value)}>
                         <option value="en">English</option>
                         <option value="lt">Lithuanian</option>
                     </select>
