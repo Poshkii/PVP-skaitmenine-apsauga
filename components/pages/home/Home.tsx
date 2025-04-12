@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 function Home() {
     useBackgroundMessaging();
     const navigate = useNavigate();
-    
+    const { t } = useTranslation();
 
     return (
         <div className="main-window">
@@ -29,21 +29,21 @@ function Home() {
                             onClick={() => navigate("/report-page")}>
                         <div>
                             <House className="home-icon"/>
-                            <div className="bottom-text">Home</div>
+                            <div className="bottom-text">{t('meniu:home')}</div>
                         </div>
                     </button>
                     <button className="bottom-button profile-button"
                             onClick={() => navigate("/profile")}>
                         <div>
                             <User className="profile-icon"/>
-                            <div className="bottom-text">Profile</div>
+                            <div className="bottom-text">{t('meniu:profile')}</div>
                         </div>
                     </button>
                     <button className="bottom-button settings-button"
                             onClick={() => navigate("/settings")}>
                         <div>
                             <Settings className="settings-icon"/>
-                            <div className="bottom-text">Settings</div>
+                            <div className="bottom-text">{t('meniu:settings')}</div>
                         </div>
                     </button>
                 </div>

@@ -1,0 +1,30 @@
+{
+    "home" : "Home",
+    "settings": "Settings",
+    "profile": "Profile",
+    "name": "Security Features",
+    "websiteCheck": {
+        "name": "Website Check",
+        "hint": "Are you sure you want to visit this site?"
+    },
+    "fileCheck": {
+        "name": "File Check",
+        "hint": "Scan your files"
+    },
+    "passwordCheck": {
+        "name": "Password Check",
+        "hint": "Feeling safe?"
+    },
+    "cookies": {
+        "name": "Cookies",
+        "hint": "Cookies, mmmm..."
+    },
+    "emailProtection": {
+        "name": "Email Protection",
+        "hint": "Check your email for breaches"
+    },
+    "trackerCheck": {
+        "name": "Tracker Check",
+        "hint": "Tracker analysis"
+    }
+}

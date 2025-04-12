@@ -1,0 +1,30 @@
+{
+    "home": "Pradžia",
+    "settings": "Nustatymai",
+    "profile": "Profilis",
+    "name": "Saugumo funkcijos",
+    "websiteCheck": {
+        "name": "Svetainės patikrinimas",
+        "hint": "Ar tikrai norite aplankyti šią svetainę?"
+    },
+    "fileCheck": {
+        "name": "Failų skenavimas",
+        "hint": "Skenuokite savo failus"
+    },
+    "passwordCheck": {
+        "name": "Slaptažodžio patikra",
+        "hint": "Jaučiatės saugiai?"
+    },
+    "cookies": {
+        "name": "Sausainiai",
+        "hint": "Sausainiai, mmmm..."
+    },
+    "emailProtection": {
+        "name": "El. pašto apsauga",
+        "hint": "Patikrinkite savo el. paštą nuo nutekinimų"
+    },
+    "trackerCheck": {
+        "name": "Sekikliai",
+        "hint": "Sekiklių analizė ir trynimas"
+    }
+}

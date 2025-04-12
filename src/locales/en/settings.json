@@ -1,0 +1,11 @@
+{
+    "pageName" : "Settings",
+    "lng": "Language selection",
+    "lngDsc": "Choose your preferred language",
+    "eng": "English",
+    "lith": "Lithuanian",
+    "pswd": "Password Checker Button",
+    "pswdDsc": "Button near password input boxes",
+    "scan": "Automatic Downloads Scanning",
+    "scanDsc": "Automatic download scanning for malware"
+}
