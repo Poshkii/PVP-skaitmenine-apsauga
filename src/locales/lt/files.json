@@ -1,0 +1,22 @@
+{
+    "failRead": "Nepavyko nuskaityti failo.",
+    "noPrevScan": "Anksčiau nebuvo skenuotas joks failas",
+    "notCompleted": "Klaida: Skenavimas dar nebaigtas",
+    "errorCheck": "Klaida: Failo patikrinimas nepavyko",
+    "threats": "Rasta grėsmių: {{detected}} iš {{total}} antivirusinių variklių.",
+    "noThreats": "Patikrinta su {{total}} antivirusiniais varikliais. Grėsmių nerasta.",
+    "failSafety": "Nepavyko nustatyti failo saugumo.",
+    "analyzing": "Analizuojamas failas...",
+    "scan": "Skenuoti failą",
+    "pageName": "Failų saugumo skenavimas",
+    "newScan": "Naujas skenavimas",
+    "prevScan": "Ankstesnis skenavimas",
+    "select": "Pasirinkite arba nuvilkite failą skenavimui",
+    "completedTime": "Skenavimas baigtas per {{seconds}} sekundes",
+    "safe": "Failas yra saugus",
+    "detected": "Aptiktos grėsmės",
+    "results": "Skenavimo rezultatai",
+    "fileName": "Failo pavadinimas:",
+    "noScans": "Nerasta ankstesnių skenavimo įrašų",
+    "lastChecked": "Paskutinis skenuotas failas"
+}

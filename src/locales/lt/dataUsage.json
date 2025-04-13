@@ -1,0 +1,38 @@
+{
+    "back": "Grįžti atgal",
+    "policy": "Privatumo politika",
+    "email": {
+        "title": "El. pašto duomenų naudojimas",
+        "infoBanner": "Tikrinant duomenų nutekėjimus, jūsų el. pašto adresas tikrinamas žinomose nutekėjimų duomenų bazėse. \nSpustelėkite paslaugą, kad gautumėte daugiau informacijos:",
+        "serviceName": "XposedOrNot ",
+        "content": "Jūsų el. pašto adresas siunčiamas į XposedOrNot, kad būtų patikrintas jų žinomų duomenų nutekėjimų duomenų bazėje. Paslauga nesaugo jūsų el. pašto adreso kitais tikslais nei tiesioginis patikrinimas.",
+        "notice": "Naudodamiesi šia funkcija, sutinkate, kad jūsų el. pašto adresas būtų bendrinamas nutekėjimų patikrinimui."
+    },
+    "file": {
+        "title": "Failų duomenų naudojimas",
+        "infoBanner": "Skenuojant failus, priedai siunčiami į trečiųjų šalių saugumo paslaugas. Jokie asmeniniai duomenys nėra bendrinami ar saugomi. Spustelėkite paslaugą, kad gautumėte daugiau informacijos:",
+        "serviceName": "MetaDefender ",
+        "content": "Failai pateikiami į MetaDefender Cloud daugybiniam kenkėjiškų programų aptikimui. Rezultatai gali būti saugomi jų duomenų bazėje, siekiant pagerinti grėsmių žvalgybą.",
+        "notice": "Naudodamiesi šia funkcija, sutinkate dalintis failais saugumo patikrinimui."
+    },
+    "pswd": {
+        "title": "Slaptažodžių duomenų naudojimas",
+        "infoBanner": "Tikrinant slaptažodžio stiprumą, jūsų slaptažodis apdorojamas lokaliai jūsų naršyklėje. Jokie slaptažodžio duomenys nėra perduodami ar saugomi. Spustelėkite paslaugą, kad gautumėte daugiau informacijos:",
+        "serviceName": "zxcvbn ",
+        "content": "zxcvbn biblioteka veikia tik jūsų naršyklėje, kad įvertintų slaptažodžio stiprumą. Jūsų slaptažodis niekada nėra siunčiamas į jokį serverį, o visas apdorojimas vyksta lokaliai jūsų įrenginyje.",
+        "notice": "Ši funkcija sukurta atsižvelgiant į privatumą ir užtikrina jūsų slaptažodžio duomenų saugumą.",
+        "page": "Projekto puslapis"
+    },
+    "url": {
+        "title": "URL duomenų naudojimas",
+        "infoBanner": "Skenuojant URL, įtartinos nuorodos siunčiamos į trečiųjų šalių saugumo paslaugas. Jokie asmeniniai duomenys nėra bendrinami ar saugomi. Spustelėkite kiekvieną paslaugą, kad gautumėte daugiau informacijos:",
+        "serviceName": "VirusTotal ",
+        "content": "URL yra pateikiami į VirusTotal duomenų bazę ir tampa jų viešos saugyklos dalimi.",
+        "serviceName1": "DFPI kriptovaliutų sukčiavimo duomenų bazė ",
+        "content1": "URL tikrinami tik per kriptovaliutų sukčiavimo duomenų bazę, jokie duomenys nėra siunčiami ar bendrinami.",
+        "serviceName2": "URLscan.io ",
+        "content2": "URL yra analizuojami ir gali būti užfiksuoti svetainių ekrano vaizdai. Rezultatai gali būti viešai prieinami jų duomenų bazėje.",
+        "notice": "Naudodamiesi šia funkcija, sutinkate dalintis URL saugumo patikrinimui.",
+        "page": "Duomenų bazė"
+    }
+}

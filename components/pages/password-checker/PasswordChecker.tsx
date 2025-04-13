@@ -5,11 +5,13 @@ import PasswordBreaches from "@/components/pages/password-checker/PasswordBreach
 import {useParams} from "react-router";
 import {useNavigate} from "react-router";
 import { Info, Lock, Book } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 function PasswordChecker() {
     const { password: urlPassword } = useParams();
     const [activeTab, setActiveTab] = useState<"checker" | "tips">("checker");
     const [password, setPassword] = useState(urlPassword || '');
+    const { t } = useTranslation('passwords');
 
     const handlePasswordChange = (newPassword: string) => {
         setPassword(newPassword);
@@ -21,7 +23,7 @@ function PasswordChecker() {
         <>
             <div className="middle-menu">
                 <h1 className="panel-title">
-                    Check Password Strength <span onClick={() => navigate("/password-data")}><Info className="info-icon"/></span>
+                    {t('pageName')}<span onClick={() => navigate("/password-data")}><Info className="info-icon"/></span>
                 </h1>
                 
                 <div className="tab-buttons">
@@ -31,7 +33,7 @@ function PasswordChecker() {
                     >
                         <div className="button-content">
                             <Lock size={18} />
-                            Password Checker
+                            {t('pswdCheck')}
                         </div>
                     </button>
                     <button 
@@ -40,7 +42,7 @@ function PasswordChecker() {
                     >
                         <div className="button-content">
                             <Book size={18} />
-                            Security Tips
+                            {t('secTips')}
                         </div>
                     </button>
                 </div>
@@ -54,10 +56,10 @@ function PasswordChecker() {
                                 </div>
                                 <div className="status-text">
                                     <h3 className="status-title">
-                                        Check Password Security
+                                        {t('statusTitle')}
                                     </h3>
                                     <p className="status-description">
-                                        Enter your password to check its strength and if it has appeared in data breaches
+                                        {t('desc')}
                                     </p>
                                 </div>
                             </div>
@@ -65,7 +67,7 @@ function PasswordChecker() {
                             <div style={{marginTop: "16px"}}>
                                 <input
                                     type="password"
-                                    placeholder="Enter password to check"
+                                    placeholder={t('enter')}
                                     value={password}
                                     onChange={(e) => handlePasswordChange(e.target.value)}
                                     className="input-box"

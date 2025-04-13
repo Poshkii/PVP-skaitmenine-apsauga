@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { BgMessageId } from "@/entrypoints/content/types/bg-message";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
+
 
 const CookiesData = () => {
     const [cookies, setCookies] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const { t } = useTranslation('cookies');
 
     const fetchCookies = () => {
         // Send a message to the background script to retrieve cookies
@@ -64,18 +67,18 @@ const CookiesData = () => {
 
     return (
         <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-            <h1>Cookie Reader</h1>
+            <h1>{t('reader')}</h1>
             <button onClick={fetchCookies} style={{ padding: "10px", marginBottom: "10px", cursor: "pointer" }}>
-                Get Cookies
+                {t('getCookies')}
             </button>
             {error && <p style={{ color: "red" }}>{error}</p>}
             {cookies.length > 0 ? (
                 <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
                 <thead>
                     <tr style={{ background: "#ddd" }}>
-                        <th style={tableHeaderStyle}>Name</th>
-                        <th style={tableHeaderStyle}>Value</th>
-                        <th style={tableHeaderStyle}>Domain</th>
+                        <th style={tableHeaderStyle}>{t('name')}</th>
+                        <th style={tableHeaderStyle}>{t('value')}</th>
+                        <th style={tableHeaderStyle}>{t('domain')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,7 +92,7 @@ const CookiesData = () => {
                 </tbody>
             </table>
             ) : (
-                <p>No cookies retrieved.</p>
+                <p>{t('noCookies')}</p>
             )}
         </div>
     );

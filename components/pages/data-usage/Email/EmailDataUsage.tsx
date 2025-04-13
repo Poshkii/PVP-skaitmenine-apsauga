@@ -1,6 +1,7 @@
 import "/entrypoints/popup/style.css";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function InfoPage(){
     const handleButtonClick = (url: string | URL | undefined) => {
@@ -11,14 +12,14 @@ function InfoPage(){
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
     };
+    const { t } = useTranslation('dataUsage');
 
     return (
         <div className="middle-menu">
-            <h1 className="panel-title">Email Data Usage</h1>
+            <h1 className="panel-title">{t('email.title')}</h1>
             <div className="security-check-container glassmorphism">
                 <p>
-                    When scanning for data breaches, your email address is checked against known breach databases.
-                    Click the service for details:
+                    {t('email.infoBanner')}
                 </p>
                 <div style={{marginBottom: "14px"}}>
                     <button
@@ -29,7 +30,7 @@ function InfoPage(){
                         }}
                         onClick={() => toggleSection('xposedornot')}
                     >
-                        XposedOrNot {openSection === 'xposedornot' ? <ChevronUp/> : <ChevronDown/>}
+                        {t('email.serviceName')}{openSection === 'xposedornot' ? <ChevronUp/> : <ChevronDown/>}
                     </button>
                     <div 
                         className="data-content"
@@ -40,21 +41,19 @@ function InfoPage(){
                             visibility: openSection === 'xposedornot' ? 'visible' : 'hidden'
                         }}
                     >
-                        <p>Your email address is sent to XposedOrNot to check against their database of
-                        known data breaches. The service does not store your email for purposes
-                        beyond the immediate check.</p>
-                        <a style={{color:"white"}} href="https://xposedornot.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                        <p>{t('email.content')}</p>
+                        <a style={{color:"white"}} href="https://xposedornot.com/privacy" target="_blank" rel="noopener noreferrer">{t('policy')}</a>
                     </div>
                 </div>
                
                 <p style={{fontStyle: "italic"}}>
-                    By using this feature, you consent to your email address being shared for breach verification.
+                    {t('email.notice')}
                 </p>
                
                 <button className="btn btn-secondary"
                     onClick={() => window.history.back()}
                 >
-                    Go back
+                    {t('back')}
                 </button>
             </div>
         </div>

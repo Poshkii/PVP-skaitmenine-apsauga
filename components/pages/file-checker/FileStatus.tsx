@@ -6,6 +6,7 @@ import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {useNavigate} from "react-router";
+import { useTranslation } from "react-i18next";
 
 const API_URL = String(useAppConfig().metaDefenderApiUrl);
 const HASH_ENDPOINT = "/hash";
@@ -14,11 +15,12 @@ const FILE_ENDPOINT = "/file";
 async function calculateSHA256(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
+        const { t } = useTranslation('files');
 
         reader.onload = async (event) => {
             try {
                 if (!event.target?.result) {
-                    throw new Error("Failed to read file");
+                    throw new Error(t('failRead'));
                 }
 
                 const arrayBuffer = event.target.result as ArrayBuffer;
@@ -37,7 +39,7 @@ async function calculateSHA256(file: File): Promise<string> {
         };
 
         reader.onerror = () => {
-            reject(new Error("Error reading file"));
+            reject(new Error(t('failRead')));
         };
 
         reader.readAsArrayBuffer(file);
@@ -93,6 +95,7 @@ async function getScanResult(url: string) {
 }
 
 function FileStatus({inputFile }: { inputFile: string }) {
+    const { t } = useTranslation('files');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState(inputFile || "");
     const [result, setResult] = useState("");
@@ -126,7 +129,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
         const url = prevResult["previousFileScanUrl"];
 
         if (!url) {
-            setPrevResult("No file was scanned previously");
+            setPrevResult(t('noPrevScan'));
             setPrevSafety("unknown");
             return;
         }
@@ -134,7 +137,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
         const data = await getScanResult(url);
 
         if (!data) {
-            setPrevResult(`Error: Scan has not completed yet`);
+            setPrevResult(t('notCompleted'));
             setPrevSafety("unknown");
             return;
         }
@@ -147,7 +150,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
         const url = result["previousFileScanUrl"];
 
         if (!url) {
-            setResult("Error: No file was scanned previously");
+            setResult(t('noPrevScan'));
             setSafety("unknown");
             return;
         }
@@ -155,7 +158,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
         const data = await getScanResult(url);
 
         if (!data) {
-            setResult(`Error: Scan has not completed yet`);
+            setResult(t('notCompleted'));
             setSafety("unknown");
             return;
         }
@@ -241,7 +244,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
             //processApiResponse(results);
         } else {
             const errorData = await uploadResponse.json();
-            setResult(`Error: ${errorData.error?.messages || 'File check failed'}`);
+            setResult(t('errorCheck'));
             setSafety("unknown");
         }
     }
@@ -267,7 +270,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                 FileUpload(selectedFile);
             }
         } catch (error) {
-            setResult(`Error: ${error instanceof Error ? error.message : 'File check failed'}`);
+            setResult(t('errorCheck'));
             setSafety("unknown");
         }
     };
@@ -311,15 +314,17 @@ function FileStatus({inputFile }: { inputFile: string }) {
             if (!hashError) {
                 if (detectedCount > 0) {
                     setSafety("unsafe");
-                    setResult(`Threats found: ${detectedCount} out of ${totalEngines} antivirus engines.`);
+                    //setResult(`Threats found: ${detectedCount} out of ${totalEngines} antivirus engines.`);
+                    setResult(t('threats', {detected: detectedCount, total: totalEngines}));
                 } else {
                     setSafety("safe");
-                    setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
+                    //setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
+                    setResult(t('noThreats', {total: totalEngines}));
                 }
             }
         } else {
             setSafety("unknown");
-            setResult("Failed to determine file safety.");
+            setResult(t('failSafety'));
         }
     };
 
@@ -346,14 +351,14 @@ function FileStatus({inputFile }: { inputFile: string }) {
 
             if (detectedCount > 0) {
                 setPrevSafety("unsafe");
-                setPrevResult(`Detected threats: ${detectedCount} from ${totalEngines} anti-virus engines.`);
+                setPrevResult(t('threats', {detected: detectedCount, total: totalEngines}));
             } else {
                 setPrevSafety("safe");
-                setPrevResult(`Checked with ${totalEngines} anti-virus engines. No threats found.`);
+                setPrevResult(t('noThreats', {total: totalEngines}));
             }
         } else {
             setPrevSafety("unknown");
-            setPrevResult("Couldn't determine file safety.");
+            setPrevResult(t('failSafety'));
         }
     };
 
@@ -385,7 +390,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
     return (
         <div className="middle-menu">
             <h1 className="panel-title">
-                File Safety Scanner <span onClick={() => navigate("/file-data")}><Info className="info-icon"/></span>
+                {t('pageName')} <span onClick={() => navigate("/file-data")}><Info className="info-icon"/></span>
             </h1>
             
             <div>
@@ -393,12 +398,12 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     <button 
                         onClick={() => setActiveTab("file")} 
                         className={`btn ${activeTab === "file" ? "btn-primary" : "btn-secondary"} tab-button`}>
-                        New Scan
+                        {t('newScan')}
                     </button>
                     <button
                         onClick={() => { viewPreviousScan(); setActiveTab("history"); }}
                         className={`btn ${activeTab === "history" ? "btn-primary" : "btn-secondary"} tab-button`}>
-                        Previous Scan
+                        {t('prevScan')}
                     </button>
                 </div>
         
@@ -415,7 +420,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     >
                     <Upload size={40} color="var(--accent-primary)" />
                     <div className="status-text">
-                        Select or drag & drop file to scan
+                        {t('select')}
                     </div>
                     {fileName && (
                         <div className="file-name-display" title={fileName}>
@@ -440,12 +445,12 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         {isChecking ? (
                             <div className="button-content">
                             <div className="loading-spinner"></div>
-                            Analyzing file...
+                                {t('analyzing')}
                             </div>
                         ) : (
                             <div className="button-content">
                             <Shield size={20} />
-                            Scan File
+                                {t('scan')}
                             </div>
                         )}
                     </button>
@@ -466,15 +471,15 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         <div className="status-text">
                             <h3 className="status-title">
                                 {safety === "safe" 
-                                ? "File is Safe" 
+                                ? t('safe')
                                 : safety === "unsafe" 
-                                    ? "Threats Detected" 
-                                    : "Scan Results"}
+                                    ? t('detected')
+                                    : t('results')}
                             </h3>
                             <p className="status-description">{result}</p>
                             {params.time > 0 && (
                                 <p className="status-description">
-                                Scan completed in {(params.time / 1000).toFixed(2)} seconds
+                                {t('completedTime', {seconds: (params.time / 1000).toFixed(2)})}
                                 </p>
                             )}
                         </div>
@@ -504,13 +509,13 @@ function FileStatus({inputFile }: { inputFile: string }) {
         
             {activeTab === "history" && (
                 <div className="security-check-container glassmorphism">
-                <h3 className="recent-list-title">Last Checked File</h3>
+                <h3 className="recent-list-title">{t('lastChecked')}</h3>
         
                 {prevResult ? (
                     <>
                     {prevParams.name && (
                         <div className="status-text">
-                        File Name: <strong>{prevParams.name.split(/[/\\]/).pop()}</strong>
+                        {t('fileName')} <strong>{prevParams.name.split(/[/\\]/).pop()}</strong>
                         </div>
                     )}
 
@@ -527,15 +532,15 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         <div className="status-text">
                             <h3 className="status-title">
                                 {prevSafety === "safe" 
-                                ? "File is Safe" 
+                                ? t('safe')
                                 : prevSafety === "unsafe" 
-                                    ? "Threats Detected" 
-                                    : "Scan Results"}
+                                    ? t('detected')
+                                    : t('results')}
                             </h3>
                             <p className="status-description">{prevResult}</p>
                             {prevParams.time > 0 && (
                                 <p className="status-description">
-                                Scan completed in {(prevParams.time / 1000).toFixed(2)} seconds
+                                {t('completedTime', {seconds: (params.time / 1000).toFixed(2)})}
                                 </p>
                             )}
                         </div>
@@ -561,7 +566,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     </>
                 ) : (
                     <div style={{marginTop: "16px", color: "var(--text-muted)"}}>
-                        No previous scan records found
+                        {t('noScans')}
                     </div>
                 )}
                 </div>

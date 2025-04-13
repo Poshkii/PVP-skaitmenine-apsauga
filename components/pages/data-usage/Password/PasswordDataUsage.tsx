@@ -1,6 +1,7 @@
 import "/entrypoints/popup/style.css";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function InfoPage(){
     const handleButtonClick = (url: string | URL | undefined) => {
@@ -11,14 +12,14 @@ function InfoPage(){
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
     };
+    const { t } = useTranslation('dataUsage');
 
     return (
         <div className="middle-menu">
-            <h1 className="panel-title">Password Data Usage</h1>
+            <h1 className="panel-title">{t('pswd.title')}</h1>
             <div className="security-check-container glassmorphism">
                 <p>
-                    When checking password strength and breaches, your password is processed locally in your browser.
-                    No password data is stored. Click the service for details:
+                    {t('pswd.infoBanner')}
                 </p>
                 <div style={{marginBottom: "14px"}}>
                     <button
@@ -29,7 +30,7 @@ function InfoPage(){
                         }}
                         onClick={() => toggleSection('zxcvbn')}
                     >
-                        zxcvbn {openSection === 'zxcvbn' ? <ChevronUp/> : <ChevronDown/>}
+                        {t('pswd.serviceName')}{openSection === 'zxcvbn' ? <ChevronUp/> : <ChevronDown/>}
                     </button>
                     <div 
                         className="data-content"
@@ -40,9 +41,8 @@ function InfoPage(){
                             visibility: openSection === 'zxcvbn' ? 'visible' : 'hidden'
                         }}
                     >
-                        <p>The zxcvbn library runs entirely in your browser to evaluate password strength.
-						Your password is never sent to any server and all processing happens locally on your device.</p>
-						<a style={{color:"white"}} href="https://github.com/dropbox/zxcvbn" target="_blank" rel="noopener noreferrer">Project Page</a>
+                        <p>{t('pswd.content')}</p>
+						<a style={{color:"white"}} href="https://github.com/dropbox/zxcvbn" target="_blank" rel="noopener noreferrer">{t('pswd.page')}</a>
                     </div>
                 </div>
 
@@ -55,7 +55,7 @@ function InfoPage(){
                         }}
                         onClick={() => toggleSection('hibp')}
                     >
-                        Have I Been Pwned {openSection === 'zxcvbn' ? <ChevronUp/> : <ChevronDown/>}
+                        {t('pswd.serviceName1')}{openSection === 'zxcvbn' ? <ChevronUp/> : <ChevronDown/>}
                     </button>
                     <div 
                         className="data-content"
@@ -66,21 +66,19 @@ function InfoPage(){
                             visibility: openSection === 'hibp' ? 'visible' : 'hidden'
                         }}
                     >
-                        <p>A secure hash of your password is used to query the 
-                        Have I Been Pwned API using a method called k-Anonymity . This means your full password is never sent, 
-                        and your privacy is preserved.</p>
-						<a style={{color:"white"}} href="https://haveibeenpwned.com/Privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                        <p>{t('pswd.content1')}</p>
+						<a style={{color:"white"}} href="https://haveibeenpwned.com/Privacy" target="_blank" rel="noopener noreferrer">{t('policy')}</a>
                     </div>
                 </div>
             
                 <p style={{fontStyle: "italic"}}>
-                    This feature is designed with privacy in mind and keeps your password data secure.
+                    {t('pswd.notice')}
                 </p>
             
                 <button className="btn btn-secondary"
                     onClick={() => window.history.back()}
                 >
-                    Go back
+                    {t('back')}
                 </button>
             </div>
         </div>

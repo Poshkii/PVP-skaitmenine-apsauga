@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router';
+import { useTranslation } from "react-i18next";
 
 const API_URL = useAppConfig().privacyApiUrl;
 
@@ -10,6 +11,7 @@ function Register() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { t } = useTranslation('login');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -17,7 +19,7 @@ function Register() {
 
         // Validate passwords match
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setError(t('noMatch'));
             return;
         }
 
@@ -50,7 +52,7 @@ function Register() {
 
     return (
         <>
-            <h1 className="panel-title">Register</h1>
+            <h1 className="panel-title">{t('register')}</h1>
             <div className="security-check-container glassmorphism">
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={handleSubmit}>
@@ -59,7 +61,7 @@ function Register() {
                             className='input-box'
                             type="text"
                             id="username"
-                            placeholder="Username"
+                            placeholder={t('user')}
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
@@ -71,7 +73,7 @@ function Register() {
                             style={{marginTop: '15px'}}
                             type="password"
                             id="password"
-                            placeholder="Password"
+                            placeholder={t('pswd')}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -83,7 +85,7 @@ function Register() {
                             style={{marginTop: '15px'}}
                             type="password"
                             id="confirmPassword"
-                            placeholder="Confirm Password"
+                            placeholder={t('confirm')}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
@@ -96,13 +98,13 @@ function Register() {
                             type="submit"
                             disabled={loading}
                         >
-                            {loading ? 'Registering...' : 'Register'}
+                            {loading ? t('registering') : t('register')}
                         </button>
                         <button
                             className="btn btn-secondary"
                             style={{width: '100%'}}
                             onClick={() => navigate("/login")}>
-                            Login
+                            {t('login')}
                         </button>
                     </div>
                 </form>

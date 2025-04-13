@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router';
+import { useTranslation } from "react-i18next";
 
 const API_URL = useAppConfig().privacyApiUrl;
 
@@ -9,6 +10,7 @@ function Login() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { t } = useTranslation('login');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,7 +45,7 @@ function Login() {
 
     return (
         <>
-            <h1 className="panel-title">Login</h1>
+            <h1 className="panel-title">{t('login')}</h1>
             <div className="security-check-container glassmorphism">
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={handleSubmit}>
@@ -52,7 +54,7 @@ function Login() {
                             className='input-box'
                             type="text"
                             id="username"
-                            placeholder="Username"
+                            placeholder={t('user')}
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
@@ -64,7 +66,7 @@ function Login() {
                             style={{marginTop: '15px'}}
                             type="password"
                             id="password"
-                            placeholder="Password"
+                            placeholder={t('pswd')}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -77,13 +79,13 @@ function Login() {
                             type="submit"
                             disabled={loading}
                         >
-                            {loading ? 'Logging in...' : 'Login'}
+                            {loading ? t('loading') : t('login')}
                         </button>
                         <button
                             className="btn btn-secondary"
                             style={{width: '100%'}}
                             onClick={() => navigate("/register")}>
-                            Register
+                            {t('register')}
                         </button>
                     </div>
                 </form>

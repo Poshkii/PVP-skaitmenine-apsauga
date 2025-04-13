@@ -1,6 +1,7 @@
 import "/entrypoints/popup/style.css";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function InfoPage(){
     const handleButtonClick = (url: string | URL | undefined) => {
@@ -11,14 +12,14 @@ function InfoPage(){
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
     };
+    const { t } = useTranslation('dataUsage');
 
     return (
         <div className="middle-menu">
-            <h1 className="panel-title">URL Data Usage</h1>
+            <h1 className="panel-title">{t('url.title')}</h1>
             <div className="security-check-container glassmorphism">
                 <p>
-                    When scanning URLs, suspicious links are sent to third-party security services. 
-                    No personal data content is shared or saved. Click each service for details:
+                    {t('url.infoBanner')}
                 </p>
                 <div style={{marginBottom: "14px"}}>
                     <button
@@ -29,7 +30,7 @@ function InfoPage(){
                         }}
                         onClick={() => toggleSection('virustotal')}
                     >
-                        VirusTotal {openSection === 'virustotal' ? <ChevronUp/> : <ChevronDown/>}
+                        {t('url.serviceName')}{openSection === 'virustotal' ? <ChevronUp/> : <ChevronDown/>}
                     </button>
                     <div 
                         className="data-content"
@@ -40,8 +41,8 @@ function InfoPage(){
                             visibility: openSection === 'virustotal' ? 'visible' : 'hidden'
                         }}
                     >
-                        <p>URLs are submitted to VirusTotal's database and become part of their public repository.</p>
-                        <a style={{color:"white"}} href="https://cloud.google.com/terms/secops/privacy-notice" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                        <p>{t('url.content')}</p>
+                        <a style={{color:"white"}} href="https://cloud.google.com/terms/secops/privacy-notice" target="_blank" rel="noopener noreferrer">{t('policy')}</a>
                     </div>
                 </div>
                 
@@ -49,36 +50,60 @@ function InfoPage(){
                     <button
                         className="dropdown-button btn btn-primary"
                         style={{
-                            borderBottomLeftRadius: openSection === 'google' ? '0' : '12px',
-                            borderBottomRightRadius: openSection === 'google' ? '0' : '12px'
+                            borderBottomLeftRadius: openSection === 'cryptoscam' ? '0' : '12px',
+                            borderBottomRightRadius: openSection === 'cryptoscam' ? '0' : '12px'
                         }}
-                        onClick={() => toggleSection('google')}
+                        onClick={() => toggleSection('cryptoscam')}
                     >
-                        Google Safe Browsing {openSection === 'google' ? <ChevronUp/> : <ChevronDown/>}
+                        {t('url.serviceName1')}{openSection === 'cryptoscam' ? <ChevronUp/> : <ChevronDown/>}
                     </button>
                     <div 
                         className="data-content"
                         style={{
-                            maxHeight: openSection === 'google' ? '100vh' : '0',
-                            opacity: openSection === 'google' ? 1 : 0,
-                            padding: openSection === 'google' ? '16px 20px' : '0 20px',
-                            visibility: openSection === 'google' ? 'visible' : 'hidden'
+                            maxHeight: openSection === 'cryptoscam' ? '100vh' : '0',
+                            opacity: openSection === 'cryptoscam' ? 1 : 0,
+                            padding: openSection === 'cryptoscam' ? '16px 20px' : '0 20px',
+                            visibility: openSection === 'cryptoscam' ? 'visible' : 'hidden'
                         }}
                     >
-                        <p>URLs are checked against Google's database of known malicious websites. 
-                        Limited data is shared with Google for verification purposes only.</p>
-                        <a style={{color:"white"}} href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                        <p>{t('url.content1')}</p>
+                        <a style={{color:"white"}} href="https://dfpi.ca.gov/consumers/crypto/crypto-scam-tracker/" target="_blank" rel="noopener noreferrer">{t('url.page')}</a>
+                    </div>
+                </div>
+
+                <div style={{marginBottom: "14px"}}>
+                    <button
+                        className="dropdown-button btn btn-primary"
+                        style={{
+                            borderBottomLeftRadius: openSection === 'urlscan' ? '0' : '12px',
+                            borderBottomRightRadius: openSection === 'urlscan' ? '0' : '12px'
+                        }}
+                        onClick={() => toggleSection('urlscan')}
+                    >
+                        {t('url.serviceName2')}{openSection === 'urlscan' ? <ChevronUp/> : <ChevronDown/>}
+                    </button>
+                    <div 
+                        className="data-content"
+                        style={{
+                            maxHeight: openSection === 'urlscan' ? '100vh' : '0',
+                            opacity: openSection === 'urlscan' ? 1 : 0,
+                            padding: openSection === 'urlscan' ? '16px 20px' : '0 20px',
+                            visibility: openSection === 'urlscan' ? 'visible' : 'hidden'
+                        }}
+                    >
+                        <p>{t('url.content2')}</p>
+                        <a style={{color:"white"}} href="https://urlscan.io/privacy/" target="_blank" rel="noopener noreferrer">{t('policy')}</a>
                     </div>
                 </div>
             
                 <p style={{fontStyle: "italic"}}>
-                    By using this feature, you consent to URL sharing for security verification.
+                    {t('url.notice')}
                 </p>
             
                 <button className="btn btn-secondary"
                     onClick={() => window.history.back()}
                 >
-                    Go back
+                    {t('back')}
                 </button>
             </div>
         </div>

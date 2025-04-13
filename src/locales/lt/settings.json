@@ -1,0 +1,11 @@
+{
+    "pageName" : "Nustatymai",
+    "lng": "Kalbos pasirinkimas",
+    "lngDsc": "Pasirinkite norimą kalbą",
+    "eng": "Anglų",
+    "lith": "Lietuvių",
+    "pswd": "Slaptažodžio tikrinimo mygtukas",
+    "pswdDsc": "Mygtukas šalia slaptažodžio įvedimo lauko",
+    "scan": "Automatinis atsisiųstų failų skenavimas",
+    "scanDsc": "Automatinis atsisiuntimų skenavimas dėl kenkėjiškų programų"
+}

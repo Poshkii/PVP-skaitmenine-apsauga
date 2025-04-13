@@ -1,20 +1,23 @@
 import {useState} from "react";
 import { Lightbulb } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
-const slides = [
-    { id: 1, content: "The length of a password is significantly more important than its complexity.", img: "/pswd_images/complexity.png"  },
-    { id: 2, content: "Passwords should be minimum 8 characters long, preferably at least 16 characters long.", img: "/pswd_images/length.png"  },
-    { id: 3, content: "Avoid using common, simple and easy to guess dictionary words in passwords.", img: "/pswd_images/dictionary.png"  },
-    { id: 4, content: "Do not use repeating or predictable sequences in passwords (e.g., 'aaaa' or '1234').", img: "/pswd_images/repetition.png"  },
-    { id: 5, content: "Do not include personal information in passwords (e.g., birthdate, name, etc.).", img: "/pswd_images/personal.png"  },
-    { id: 6, content: "Store passwords in a specialized password manager.", img: "/pswd_images/manager.png"  },
-    { id: 7, content: "Change your password immediately if a data breach occurs.", img: "/pswd_images/leaks.png"  },
-    { id: 8, content: "Do not reuse the same password across multiple systems, websites, etc.", img: "/pswd_images/reuse.png"  },
-    { id: 9, content: "Avoid using password recovery or reminder questions and hints.", img: "/pswd_images/hints.png"  },
-    { id: 10, content: "Protect your logins by enabling two-factor authentication (2FA).", img: "/pswd_images/2fa.png"  }
-];
+
 
 function PasswordTips() {
+    const { t } = useTranslation('passwords');
+    const slides = [
+    { id: 1, content: t('slide1'), img: "/pswd_images/complexity.png"  },
+    { id: 2, content: t('slide2'), img: "/pswd_images/length.png"  },
+    { id: 3, content: t('slide3'), img: "/pswd_images/dictionary.png"  },
+    { id: 4, content: t('slide4'), img: "/pswd_images/repetition.png"  },
+    { id: 5, content: t('slide5'), img: "/pswd_images/personal.png"  },
+    { id: 6, content: t('slide6'), img: "/pswd_images/manager.png"  },
+    { id: 7, content: t('slide7'), img: "/pswd_images/leaks.png"  },
+    { id: 8, content: t('slide8'), img: "/pswd_images/reuse.png"  },
+    { id: 9, content: t('slide9'), img: "/pswd_images/hints.png"  },
+    { id: 10, content: t('slide10'), img: "/pswd_images/2fa.png"  }
+];
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const nextSlide = () => {
@@ -32,9 +35,9 @@ function PasswordTips() {
                         <span><Lightbulb/></span>
                     </div>
                     <div className="status-text">
-                        <h3 className="status-title">Password Security Tips</h3>
+                        <h3 className="status-title">{t('tips')}</h3>
                         <p className="status-description">
-                            Improve your password security by following these recommendations
+                            {t('recommend')}
                         </p>
                     </div>
                 </div>
@@ -65,7 +68,7 @@ function PasswordTips() {
                 
                 <div className="action-buttons slide-buttons" style={{marginTop: "16px"}}>
                     <button onClick={prevSlide} className="btn btn-secondary" style={{width:"35%"}}>
-                        ← Previous
+                        {t('prev')}
                     </button>
                     <div style={{
                         display: "flex", 
@@ -76,7 +79,7 @@ function PasswordTips() {
                         {currentIndex + 1} / {slides.length}
                     </div>
                     <button onClick={nextSlide} className="btn btn-secondary" style={{width:"35%"}}>
-                        Next →
+                        {t('next')}
                     </button>
                 </div>
             </div>

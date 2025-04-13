@@ -8,6 +8,7 @@ import {useNavigate} from "react-router";
 import { Info } from 'lucide-react';
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import { BgMessageId } from "@/entrypoints/content/types/bg-message";
+import { useTranslation } from "react-i18next";
 
 function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPage: () => void }) {
     const [email, setEmail] = useState(inputEmail);
@@ -28,6 +29,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const [breachesFound, setBreachesFound] = useState(false);
     const [scanDone, setScanDone] = useState(false);
     const [isStored, setStored] = useState(false);
+    const { t } = useTranslation('emails');
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -64,11 +66,11 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
         e.preventDefault();
 
         if (!email.match(emailPattern)) {
-            setResult("Wrong email format");
+            setResult(t('wrongFormat'));
             return;
         }
 
-        setResult("Searching...");
+        setResult(t('searching'));
         setLoading(true);
         handleClear();  
         
@@ -116,19 +118,19 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                         }
                         // Email not found
                         else {
-                            setResult("The provided email address could not be verified.");  
+                            setResult(t('notVerified'));  
                             setScanDone(true);
                             setUnknownEmail(true);          
                         }
                     } catch (fetchError) {
                         console.error("API fetch error:", fetchError);
-                        setResult("Error. Email could not be checked.");
+                        setResult(t('error'));
                     }
                 }
             });
         } catch (error) {
             console.error("Runtime error:", error);
-            setResult("Error. Email could not be checked.");
+            setResult(t('error'));
         }
         
         function processBreachData(data: any, email: string) {
@@ -136,17 +138,29 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
             console.log("DATA:", data);
             // Was breached
             if (data.ExposedBreaches) {
-                setResult(`Found ${data.ExposedBreaches.breaches_details.length} breaches`);
+                //setResult(`Found ${data.ExposedBreaches.breaches_details.length} breaches`);
+                setResult(t('found', {count: data.ExposedBreaches.breaches_details.length}));
                 data.ExposedBreaches.breaches_details.length < 10 ? setWarning(true) : setDanger(true);
                 
                 // Get risk level
-                const risk = data.BreachMetrics.risk[0]?.risk_label ?? "Unknown";
-                risk === "High" ? setHighRisk(true) : 
-                risk === "Medium" ? setMediumRisk(true) : 
-                risk === "Low" ? setLowRisk(true) : 
+                const riskLabel = data.BreachMetrics.risk[0]?.risk_label ?? 'unknown';
+
+                // Map the English label to a code
+                const riskCode = 
+                riskLabel.toLowerCase() === 'high' ? 'high' :
+                riskLabel.toLowerCase() === 'medium' ? 'medium' :
+                riskLabel.toLowerCase() === 'low' ? 'low' : 'unknown';
+
+                // Set state based on the code
+                riskCode === 'high' ? setHighRisk(true) : 
+                riskCode === 'medium' ? setMediumRisk(true) : 
+                riskCode === 'low' ? setLowRisk(true) : 
                 setUnknownRisk(true);
+
+                // Store the translated label for display
+                const translatedRisk = t(riskCode);
                 
-                setRisk(risk);
+                setRisk(translatedRisk);
                 setBreachesFound(true);
                 setBreachData(data);                
                 addScannedEmail(email, data.ExposedBreaches.breaches_details.length);
@@ -181,13 +195,13 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     return (
         <>
             <div className="middle-menu">
-                <h1 className="panel-title">Check Email Safety <span onClick={() => navigate("/email-data")}><Info className="info-icon"/></span></h1>
+                <h1 className="panel-title">{t('pageName')}<span onClick={() => navigate("/email-data")}><Info className="info-icon"/></span></h1>
 
                 <div className="security-check-container">
                     <form onSubmit={EmailCheck}>
                         <input
                             type="text"
-                            placeholder="Enter email address..."
+                            placeholder={t('enter')}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="input-box"
@@ -204,7 +218,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                                 cursor: !email || loading || !email.match(emailPattern) ? "not-allowed" : "pointer",
                                 }}
                                 >
-                                Check
+                                {t('check')}
                             </button>                            
                             <button
                                 className="btn btn-secondary"
@@ -214,7 +228,7 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                                 onClick={() => setEmail('')}
                                 type="button"
                                 >
-                                Clear
+                                {t('clear')}
                             </button>
                         </div>                        
                     </form>
@@ -231,9 +245,9 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                             {safeEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
                             {(warningEmail || unknownEmail) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
                             <div className="status-text">
-                                {(dangerEmail || warningEmail) && <h3 className="status-title">Your email has been leaked!</h3> }
-                                {safeEmail && <h3 className="status-title">Your email is safe</h3> }
-                                {unknownEmail && <h3 className="status-title">Unknown email address</h3> }                        
+                                {(dangerEmail || warningEmail) && <h3 className="status-title">{t('leaked')}</h3> }
+                                {safeEmail && <h3 className="status-title">{t('safe')}</h3> }
+                                {unknownEmail && <h3 className="status-title">{t('badEmail')}</h3> }                        
                                 <p className="status-description">
                                     {(unknownEmail || dangerEmail || warningEmail) && result}
                                 </p>
@@ -245,12 +259,12 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                             {lowRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
                             {(mediumRisk || unknownRisk) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
                             <div className="status-text">
-                                {breachesFound && <h3 className="status-title">Risk level is {risk}</h3>}
+                                {breachesFound && <h3 className="status-title">{t('risk')}{risk}</h3>}
                                 <p className="status-description">
-                                    {lowRisk && "\"Prevention is better than cure.\" - Use strong passwords to keep threats at bay."}
-                                    {mediumRisk && "\"Better safe than sorry.\" - Don't let your guard down, use extra security measures to protect your information."}
-                                    {highRisk && "\"Forewarned is forearmed.\" - Take immediate action to secure your accounts and review for suspicious activity."}
-                                    {unknownRisk && "\"You never know what’s around the corner.\" - Take precautionary measures, even if the risk isn’t clear yet."}
+                                    {lowRisk && t('riskMessages.low')}
+                                    {mediumRisk && t('riskMessages.medium')}
+                                    {highRisk && t('riskMessages.high')}
+                                    {unknownRisk && t('riskMessages.unknown')}
                                 </p>
                             </div>
                         </div>                             
@@ -273,10 +287,10 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                 {/*Clear & Tips buttons*/}
                 <div className="action-buttons">
                     <button className="btn btn-secondary" onClick={handleClear}>
-                    Clear
+                    {t('clear')}
                     </button>
                     <button className="btn btn-primary" onClick={switchPage}>
-                    Tips
+                    {t('tips')}
                     </button>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
+import { useTranslation } from "react-i18next";
 
 interface User {
     userId: number;
@@ -15,6 +16,7 @@ function Profile() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { t } = useTranslation('login');
 
     const logout = async () => {
         try {
@@ -81,25 +83,25 @@ function Profile() {
     }, [navigate]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div>{t('Loading')}</div>;
     }
 
     return (
         <>
-            <h1 className="panel-title">Profile</h1>
+            <h1 className="panel-title">{t('profile')}</h1>
             <div className="security-check-container glassmorphism">
                 {user ? (
                     <div>
-                        <h4>Welcome, {user.username}!</h4>
-                        <h5>Paid user: {user.isPaid ? "Yes" : "No"}</h5>
+                        <h4>{t('welcome', {user: user.username})}</h4>
+                        <h5>{t('paid')}{user.isPaid ? t('yes') : t('no')}</h5>
                     </div>
                 ) : (
-                    <p>Unable to load profile information.</p>
+                    <p>{t('cannotLoad')}</p>
                 )}
                 <div className="action-buttons">
                     <button
                         className="btn btn-primary"
-                        onClick={logout}>Logout
+                        onClick={logout}>{t('logout')}
                     </button>
                 </div>
             </div>

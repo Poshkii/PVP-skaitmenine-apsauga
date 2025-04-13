@@ -1,9 +1,10 @@
-import {FormEvent, useState} from "react";
+import {FormEvent, useState, useEffect } from "react";
 import URLScam from "./URLScam";
 import { useReport } from "../report-page/ReportContext";
 import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import {useNavigate} from "react-router";
 import { Info } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 const VT_API_URL = String(useAppConfig().virusTotalApiUrl);
 const US_API_URL = String(useAppConfig().urlScanApiUrl);
@@ -27,7 +28,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [suspiciousUIO, setSuspiciousUIO] = useState(false);
     const [inprogressUIO, setInprogressUIO] = useState(false);
     const [inprogressVT, setInprogressVT] = useState(false);
-    const [doCheck, setDoCheck] = useState(false);   
+    const [doCheck, setDoCheck] = useState(false);
+    const { t } = useTranslation('urls');
     
     useEffect(() => {
         if (url && doCheck) {
@@ -138,7 +140,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             // Run both API checks in parallel
             const [virusTotalResult, urlScanIoResult] = await Promise.allSettled([
                 checkVirusTotal(url),
-                checkURLScanIO(url) // Changed to use quick-scan
+                checkURLScanIO(url)
             ]);
 
             // Process combined results
@@ -148,7 +150,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             if (virusTotalResult.status === 'fulfilled' && virusTotalResult.value) {
                 setResultVT(virusTotalResult.value);
             } else {
-                setResultVT("VirusTotal scanning failed. ");
+                setResultVT(t('VirusTotal.failed'));
                 setUnknownVT(true);
             }
             
@@ -156,14 +158,14 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             if (urlScanIoResult.status === 'fulfilled' && urlScanIoResult.value) {
                 setResultUIO(urlScanIoResult.value);
             } else {
-                setResultUIO("URLScan.io scanning failed.");
+                setResultUIO(t('ScanIO.failed'));
                 setUnknownUIO(true);
             }
 
         } catch (error) {
             console.error("Error while scanning URLL:", error);
-            setResultUIO("Error while scanning URL.");
-            setResultVT("Error while scanning URL.");
+            setResultUIO(t('errorScan'));
+            setResultVT(t('errorScan'));
             setUnknownUIO(true);
             setUnknownVT(true);
         } finally {
@@ -190,22 +192,22 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 // Handle HTTP errors
                 const errorCode = response.status; // Get the HTTP error code
     
-                let errorMessage = "VirusTotal: Error while scanning URL.";
+                let errorMessage = t('VirusTotal.errorScan');
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "VirusTotal: Wrong query. Domain does not exist";
+                        errorMessage = t('VirusTotal.400');
                         break;
                     case 401:
-                        errorMessage = "VirusTotal: Wrong API key.";
+                        errorMessage = t('VirusTotal.401');
                         break;
                     case 403:
-                        errorMessage = "VirusTotal: Not enough permissions.";
+                        errorMessage = t('VirusTotal.403');
                         break;
                     case 429:
-                        errorMessage = "VirusTotal: API quota limit reached.";
+                        errorMessage = t('VirusTotal.429');
                         break;
                     case 500:
-                        errorMessage = "VirusTotal: Server error. Try to scan later.";
+                        errorMessage = t('VirusTotal.500');
                         break;
                 }
                 setUnknownVT(true);
@@ -219,7 +221,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         } catch (error) {
             console.error("VirusTotal error:", error);
             setUnknownVT(true);
-            return "VirusTotal: Error while scanning URL.";
+            return t('VirusTotal.errorScan');
         }
     };
 
@@ -264,20 +266,20 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
             if (!scanResponse.ok) {
                 const errorCode = scanResponse.status;
-                let errorMessage = "URLScan.io: Error while submitting scan.";
+                let errorMessage = t('ScanIO.errorScan');
                 
                 switch (errorCode) {
                     case 400:
-                        errorMessage = "URLScan.io: Domain does not exist. Could not scan.";
+                        errorMessage = t('ScanIO.400');
                         break;
                     case 401:
-                        errorMessage = "URLScan.io: Invalid API key.";
+                        errorMessage = t('ScanIO.401');
                         break;
                     case 429:
-                        errorMessage = "URLScan.io: API quota limit reached.";
+                        errorMessage = t('ScanIO.429');
                         break;
                     case 500:
-                        errorMessage = "URLScan.io: Server error. Try to scan later.";
+                        errorMessage = t('ScanIO.500');
                         break;
                 }
                 setUnknownUIO(true);
@@ -294,7 +296,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         } catch (error) {
             console.error("URLScan.io error:", error);
             setUnknownUIO(true);
-            return "URLScan.io: Error while scanning URL.";
+            return t('ScanIO.errorScan');
         }
     };
     
@@ -352,7 +354,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             console.error("Final attempt error:", error);
         }
         setInprogressUIO(true);
-        return `URLScan.io: Scanning in progress. View results at: https://urlscan.io/result/${uuid} in a few minutes.`;
+        //return `URLScan.io: Scanning in progress. View results at: https://urlscan.io/result/${uuid} in a few minutes.`;
+        return t('ScanIO.inProgess', { 
+            uuid: uuid,
+            url: `https://urlscan.io/result/${uuid}`
+          });
     };
     
     const processURLScanResponse = (resultData: any) => {
@@ -375,23 +381,30 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
             if (malicious) {
                 setUnsafeUIO(true);
-                result = `URLScan.io: Website is malicious! Risk score: ${score}/100\n`;
+                //result = `URLScan.io: Website is malicious! Risk score: ${score}/100\n`;
+                result = t('ScanIO.malicious', {score: score}) + '\n';
                 if (categories.length > 0) {
-                    result += `Categories: ${categories.join(", ")}\n`;
+                    //result += `Categories: ${categories.join(", ")}\n`;
+                    result += t('ScanIO.categories') + `${categories.join(", ")}\n`;
                 }
             } else if (score > 0) {
                 setSuspiciousUIO(true);
-                result = `URLScan.io: Website might be suspicious. Risk score: ${score}/100\n`;
+                //result = `URLScan.io: Website might be suspicious. Risk score: ${score}/100\n`;
+                result = t('ScanIO.suspicious', {score: score}) + '\n';
             } else {
                 setSafeUIO(true);
-                result = `URLScan.io: Website appears safe. Risk score: ${score}/100\n`;
+                //result = `URLScan.io: Website appears safe. Risk score: ${score}/100\n`;
+                result = t('ScanIO.safe', {score: score}) + '\n';
             }
             
-            // Add additional details
-            //result += `Page title: ${pageTitle}\n`;
-            //result += `Server: ${server}\n`;
-            //result += `IP Address: ${ipAddress}\n`;
-            result += `Full report - <a href="${reportUrl}" target="_blank" style="color: #3b82f6; text-decoration: underline;">here</a>`;
+            /*
+            //Add additional details
+            result += `Page title: ${pageTitle}\n`;
+            result += `Server: ${server}\n`;
+            result += `IP Address: ${ipAddress}\n`;
+            */
+            //result += `Full report - <a href="${reportUrl}" target="_blank" style="color: #3b82f6; text-decoration: underline;">here</a>`;
+            result += t('ScanIO.fullReport', {reportUrl: reportUrl,});
             
             return result;
             
@@ -399,10 +412,15 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             console.error("Error processing URLScan.io response:", error);
             if (resultData && resultData.task && resultData.task.uuid) {
                 setUnknownUIO(true);
-                return `URLScan.io: Results available but failed to process. View full results at: https://urlscan.io/result/${resultData.task.uuid}`;
+                //return `URLScan.io: Results available but failed to process. View full results at: https://urlscan.io/result/${resultData.task.uuid}`;
+                return t('ScanIO.processingFailed', { 
+                    uuid: resultData.task.uuid,
+                    url: `https://urlscan.io/result/${resultData.task.uuid}`
+                  });
             } else {
                 setUnknownUIO(true);
-                return "URLScan.io: Results available but failed to process.";
+                //return "URLScan.io: Results available but failed to process.";
+                return t('ScanIO.processingFailedNoScan')
             }
         }
     };
@@ -433,7 +451,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             await new Promise(resolve => setTimeout(resolve, 6000));
         }
         setUnknownVT(true);
-        return "VirusTotal: Scanning took too long. Try again later.";
+        //return "VirusTotal: Scanning took too long. Try again later.";
+        return t('VirusTotal.timeout');
     };
 
     const processVirusTotalResponse = (resultData: any) => {
@@ -443,23 +462,27 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
         if (totalVendors === 0) {
             setInprogressVT(true);
-            return "VirusTotal: URL still hasn't been analysed. Try again later.";
+            //return "VirusTotal: URL still hasn't been analysed. Try again later.";
+            return t('VirusTotal.noResult');
         }
             
         if (totalDetections > 0) {
             if (stats.malicious >= 5)
             {
                 setUnsafeVT(true);
-                return `VirusTotal: Website is malicious! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
+                //return `VirusTotal: Website is malicious! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
+                return t('VirusTotal.malicious', {total: totalDetections, vendors: totalVendors});
             }
             else
             {
                 setSuspiciousVT(true);
-                return `VirusTotal: Website could be dangerous! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
+                //return `VirusTotal: Website could be dangerous! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
+                return t('VirusTotal.dangerous', {total: totalDetections, vendors: totalVendors});
             }
         } else {
             setSafeVT(true);
-            return `VirusTotal: Website is safe. No threats found out of ${totalVendors} vendors.`;
+            //return `VirusTotal: Website is safe. No threats found out of ${totalVendors} vendors.`;
+            return t('VirusTotal.safe', {vendors: totalVendors});
         }
     };
 
@@ -468,13 +491,13 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     return (
         <>
             <div className="middle-menu" >
-                <h1 className="panel-title">Check website safety <span onClick={() => navigate("/url-data")}><Info className="info-icon"/></span></h1>
+                <h1 className="panel-title">{t('pageName')} <span onClick={() => navigate("/url-data")}><Info className="info-icon"/></span></h1>
 
                 <div className="security-check-container">
                     <form onSubmit={UrlChecker}>
                             <input
                                 type="text"
-                                placeholder="Enter website address..."
+                                placeholder= {t('enter')}
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                                 className="input-box"
@@ -490,7 +513,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                     onClick={handleUseCurrentURL}
                                     type="button"
                                     >
-                                    Check Current URL
+                                    {t('checkCurrent')}
                                 </button>
                             :
                                 <button
@@ -503,7 +526,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                     cursor: !url || loading ? "not-allowed" : "pointer",
                                     }}
                                     >
-                                    Check
+                                    {t('check')}
                                 </button>                            
                             }                            
                             
@@ -515,7 +538,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                 onClick={() => setUrl('')}
                                 type="button"
                                 >
-                                Clear
+                                {t('clear')}
                             </button>
                         </div>
 
@@ -532,11 +555,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                             {safeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
                             {(suspiciousVT || unknownVT || inprogressVT) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
                                 <div className="status-text">
-                                {unsafeVT && <h3 className="status-title">Watchout: harmful website!</h3> }
-                                {safeVT && <h3 className="status-title">Good to go!</h3> }
-                                {suspiciousVT && <h3 className="status-title">Warning: potenial risk</h3> }
-                                {unknownVT && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
-                                {inprogressVT && <h3 className="status-title">Scan in progress.</h3> }
+                                {unsafeVT && <h3 className="status-title">{t('harmful')}</h3> }
+                                {safeVT && <h3 className="status-title">{t('safe')}</h3> }
+                                {suspiciousVT && <h3 className="status-title">{t('risky')}</h3> }
+                                {unknownVT && <h3 className="status-title">{t('error')}</h3> }
+                                {inprogressVT && <h3 className="status-title">{t('inProgress')}</h3> }
                                 <p className="status-description">
                                     {resultVT}
                                 </p>
@@ -549,11 +572,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                             {safeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
                             {(suspiciousUIO || unknownUIO || inprogressUIO) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
                                 <div className="status-text">
-                                {unsafeUIO && <h3 className="status-title">Watchout: harmful website!</h3> }
-                                {safeUIO && <h3 className="status-title">Good to go!</h3> }
-                                {suspiciousUIO && <h3 className="status-title">Warning: potenial risk</h3> }
-                                {unknownUIO && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
-                                {inprogressUIO && <h3 className="status-title">Scan in progress.</h3> }
+                                {unsafeUIO && <h3 className="status-title">{t('harmful')}</h3> }
+                                {safeUIO && <h3 className="status-title">{t('safe')}</h3> }
+                                {suspiciousUIO && <h3 className="status-title">{t('risky')}</h3> }
+                                {unknownUIO && <h3 className="status-title">{t('error')}</h3> }
+                                {inprogressUIO && <h3 className="status-title">{t('inProgress')}</h3> }
                                 <p className="status-description" dangerouslySetInnerHTML={{ __html: resultUIO }}></p>
                                 </div>
 
@@ -578,10 +601,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
                 <div className="action-buttons">
                     <button className="btn btn-secondary" onClick={handleClear}>
-                    Clear
+                    {t('clear')}
                     </button>
                     <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
-                    Scan Again
+                    {t('scanAgain')}
                     </button>
                 </div>
             </div>

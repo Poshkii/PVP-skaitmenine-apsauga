@@ -1,27 +1,8 @@
 import {useState} from "react";
 import { ShieldQuestion} from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
-const titles = [
-    { id: 1, content: "Change your password" },
-    { id: 2, content: "Activate two factor authentication" },
-    { id: 3, content: "Check your accounts" },
-    { id: 4, content: "Add or update account recovery details" },
-    { id: 5, content: "Look out for phishing emails" },
-]
 
-const descriptions = [
-    {id: 1, content: "Leaked passwords can be used to login to your other accounts if the passwords are the same "+
-                     "or similar. By changing the password into a new and safe one, you take away the opportunity "+
-                     "for hackers to easily access your data."},
-    {id: 2, content: "Activating 2FA will require you to use an additional code from SMS or authentication app when logging in. "+
-                     " Even if your password is cracked, the hackers won't be able to login without the code."},
-    {id: 3, content: "Realizing that the information was leaked takes a long time. This gives time to hackers to access your "+
-                     "accounts. Therefore it is recommended to check your accounts for suspicious activity."},
-    {id: 4, content: "By adding recovery information and keeping it updated, you ensure that in case of account theft, " +
-                     "you could easily recover access."},
-    {id: 5, content: "Leaked email addresses are commonly targeted by phishing attacks. Be cautious when "+
-                     "opening unknown emails, do not press on random url links."},
-]
 // const titles = [
 //     { id: 1, content: "Pasikeiskite slaptažodį" },
 //     { id: 2, content: "Aktyvuokite dviejų faktorių autentifikaciją" },
@@ -45,6 +26,22 @@ const descriptions = [
 // ]
 
 function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
+    const { t } = useTranslation('emails');
+    const titles = [
+        { id: 1, content: t('title1') },
+        { id: 2, content: t('title2') },
+        { id: 3, content: t('title3') },
+        { id: 4, content: t('title4') },
+        { id: 5, content: t('title5') },
+    ]
+    
+    const descriptions = [
+        {id: 1, content: t('desc1')},
+        {id: 2, content: t('desc2')},
+        {id: 3, content: t('desc3')},
+        {id: 4, content: t('desc4')},
+        {id: 5, content: t('desc5')},
+    ]
 
     const [currentIndex, setCurrentIndex] = useState(0);
     
@@ -74,7 +71,7 @@ function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
                     {/* Top content section */}
                     <div>
                         {/* Title */}
-                        <h2 className="panel-title">Data leak tips</h2>
+                        <h2 className="panel-title">{t('dataTips')}</h2>
 
                         {/* Status container */}
                         <div className="security-status" style={{ 
@@ -145,7 +142,7 @@ function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
                             marginTop: "1rem"
                         }}>                              
                             <button className="btn btn-secondary" onClick={prevSlide}>❮</button>
-                            <button className="btn btn-primary" onClick={switchPage}>Return</button>
+                            <button className="btn btn-primary" onClick={switchPage}>{t('return')}</button>
                             <button className="btn btn-secondary" onClick={nextSlide}>❯</button>
                         </div>  
                     </div>

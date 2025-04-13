@@ -1,0 +1,22 @@
+{
+    "failRead": "Failed to read file.",
+    "noPrevScan" : "No file was scanned previously",
+    "notCompleted": "Error: Scan has not completed yet",
+    "errorCheck": "Error: File check failed",
+    "threats": "Threats found: {{detected}} out of {{total}} antivirus engines.",
+    "noThreats": "Checked with {{total}} antivirus engines. No threats were found.",
+    "failSafety": "Failed to determine file safety.",
+    "analyzing": "Analyzing file...",
+    "scan": "Scan file",
+    "pageName": "File Safety Scanner",
+    "newScan": "New Scan",
+    "prevScan": "Previous Scan",
+    "select": "Select or drag & drop file to scan",
+    "completedTime": "Scan completed in {{seconds}} seconds",
+    "safe": "File is Safe",
+    "detected": "Threats Detected",
+    "results": "Scan Results",
+    "fileName": "File Name:",
+    "noScans": "No previous scan records found",
+    "lastChecked": "Last Scanned File"
+}

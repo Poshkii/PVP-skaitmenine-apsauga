@@ -1,5 +1,6 @@
 import { AlignCenter } from "lucide-react";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface BreachData {
     BreachMetrics: {
@@ -24,8 +25,9 @@ interface BreachData {
 }
 
 const EmailBreachDetails = ({ data }: { data: BreachData }) => {
+    const { t } = useTranslation('emails');
     if (!data || !data.ExposedBreaches.breaches_details.length) {
-        return <h3 style={{ color: "green", textAlign: "center" }}>Your email is safe!</h3>;
+        return <h3 style={{ color: "green", textAlign: "center" }}>{t('emailSafe')}</h3>;
     }
 
     return (       
@@ -34,7 +36,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
 
             {/* Breach List */}
             <div style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.5rem" }}>
-                <h2 className="security-status" style={{ textAlign: "center" }}>Breaches</h2>
+                <h2 className="security-status" style={{ textAlign: "center" }}>{t('breaches')}</h2>
             </div>             
             {data.ExposedBreaches.breaches_details.map((breach, index) => (
                 <div key={index} style={{
@@ -62,7 +64,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
                     <p style={{ fontSize: "14px", color: "#ADADAD" }}>{breach.details}</p>
                 
                     {/* Nutekinta informacija - Xposed Data */}
-                    <p><strong>Leaked information:</strong></p>
+                    <p><strong>{t('info')}</strong></p>
                     <ul style={{ listStyleType: "disc", textAlign: "left", paddingLeft: "20px" }}>
                         {breach.xposed_data.split(";").map((item, idx) => (
                             <li style={{ padding: "0.05rem" }} key={idx}>{item.trim()}</li>  
@@ -70,7 +72,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
                     </ul>
 
                     {/* Password Risk */}
-                    <p><strong>Password risk: </strong> 
+                    <p><strong>{t('pswdRisk')}</strong> 
                         <span style={{ color: breach.password_risk === "plaintext" ? "red" : "orange" }}>
                             {breach.password_risk}
                         </span>

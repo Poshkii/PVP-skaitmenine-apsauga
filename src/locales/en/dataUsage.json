@@ -1,0 +1,38 @@
+{
+    "back": "Go back",
+    "policy": "Privacy Policy",
+    "email":{
+        "title": "Email Data Usage",
+        "infoBanner": "When scanning for data breaches, your email address is checked against known breach databases. \nClick the service for details:",
+        "serviceName": "XposedOrNot ",
+        "content": "Your email address is sent to XposedOrNot to check against their database of known data breaches. The service does not store your email for purposes beyond the immediate check.",
+        "notice": "By using this feature, you consent to your email address being shared for breach verification."
+    },
+    "file":{
+        "title": "File Data Usage",
+        "infoBanner": "When scanning files, attachments are sent to third-party security services. No personal data content is shared or saved. Click the service for details:",
+        "serviceName": "MetaDefender ",
+        "content": "Files are submitted to MetaDefender Cloud for multi-scanning malware detection. Results may be stored in their database for improved threat intelligence.",
+        "notice": "By using this feature, you consent to file sharing for security verification."
+    },
+    "pswd":{
+        "title": "Password Data Usage",
+        "infoBanner": "When checking password strength, your password is processed locally in your browser. No password data is transmitted or stored. Click the service for details:",
+        "serviceName": "zxcvbn ",
+        "content": "The zxcvbn library runs entirely in your browser to evaluate password strength. Your password is never sent to any server and all processing happens locally on your device.",
+        "notice": "This feature is designed with privacy in mind and keeps your password data secure.",
+        "page": "Project Page"
+    },
+    "url":{
+        "title": "URL Data Usage",
+        "infoBanner": "When scanning URLs, suspicious links are sent to third-party security services. No personal data content is shared or saved. Click each service for details:",
+        "serviceName": "VirusTotal ",
+        "content": "URLs are submitted to VirusTotal's database and become part of their public repository.",
+        "serviceName1": "DFPI Crypto Scam Database ",
+        "content1": "URLs are only checked through crypto scam database, no data is being sent or shared.",
+        "serviceName2": "URLscan.io ",
+        "content2": "URLs are analyzed and screenshots of the websites may be captured. Results may be publicly accessible in their database.",
+        "notice": "By using this feature, you consent to URL sharing for security verification.",
+        "page": "Database"
+    }
+}

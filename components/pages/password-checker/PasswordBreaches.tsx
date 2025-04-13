@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
     interface Result {
@@ -11,6 +12,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
 
     const [result, setResult] = useState<Result | null>(null);
     const [isChecking, setIsChecking] = useState(false);
+    const { t } = useTranslation('passwords');
 
     useEffect(() => {
         setResult(null);
@@ -31,7 +33,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
             const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
             
             if (!response.ok) {
-                throw new Error('Failed to check password');
+                throw new Error(t('fail'));
             }
             
             const data = await response.text();
@@ -50,14 +52,16 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                 setResult({
                     breached: true,
                     count: breachCount,
-                    message: `This password has been found in ${breachCount.toLocaleString()} data breaches.`
+                    //message: `This password has been found in ${breachCount.toLocaleString()} data breaches.`
+                    message:t('found', {count: breachCount})
                 });
             } 
             else {
                 setResult({
                     breached: false,
                     count: 0,
-                    message: 'This password has not been found in any known data breaches.'
+                    //message: 'This password has not been found in any known data breaches.'
+                    message: t('notFound')
                 });
             }
         } 
@@ -67,7 +71,8 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                 breached: false,
                 count: 0,
                 error: true,
-                message: 'Unable to check if password has been breached. Please try again later.'
+                //message: 'Unable to check if password has been breached. Please try again later.'
+                message: t('unable')
             });
         } 
         finally {
@@ -109,11 +114,11 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                         {isChecking ? (
                             <>
                                 <div className="loading-spinner"></div>
-                                Checking...
+                                {t('check')}
                             </>
                         ) : (
                             <>
-                                Check for Breaches
+                                {t('find')}
                             </>
                         )}
                     </div>
@@ -131,7 +136,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                         </div>
                         <div className="status-text">
                             <h3 className="status-title">
-                                {result.breached ? 'Password Compromised' : 'Password Not Found in Breaches'}
+                                {result.breached ? t('compromised') : t('pswdNotFound')}
                             </h3>
                             <p className="status-description">{result.message}</p>
                         </div>
