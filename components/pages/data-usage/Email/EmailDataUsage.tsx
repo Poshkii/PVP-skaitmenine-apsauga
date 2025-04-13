@@ -1,5 +1,6 @@
 import "../info.css";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function InfoPage(){
     const handleButtonClick = (url: string | URL | undefined) => {
@@ -10,6 +11,7 @@ function InfoPage(){
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
     };
+    const { t } = useTranslation('dataUsage');
 
     return (
         <div className="info-page"
@@ -18,12 +20,11 @@ function InfoPage(){
             overflowY: "auto",
             paddingBottom: "30px",
         }}>
-            <h2 className="info-title"><b>Email Data Usage</b></h2>
+            <h2 className="info-title"><b>{t('email.title')}</b></h2>
 
             <div style={{width: "90%", margin: "0 auto", textAlign: "left"}}>
                 <p>
-                    When scanning for data breaches, your email address is checked against known breach databases.
-                    Click the service for details:
+                    {t('email.infoBanner')}
                 </p>
 
                 <div className="dropdown-section">
@@ -31,26 +32,24 @@ function InfoPage(){
                         className="dropdown-button"
                         onClick={() => toggleSection('xposedornot')}
                     >
-                        XposedOrNot {openSection === 'xposedornot' ? '▲' : '▼'}
+                        {t('email.serviceName')}{openSection === 'xposedornot' ? '▲' : '▼'}
                     </button>
                     {openSection === 'xposedornot' && (
                         <div className="dropdown-content">
-                            <p>Your email address is sent to XposedOrNot to check against their database of 
-                            known data breaches. The service does not store your email for purposes 
-                            beyond the immediate check.</p>
-                            <a style={{color:"white"}} href="https://xposedornot.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                            <p>{t('email.content')}</p>
+                            <a style={{color:"white"}} href="https://xposedornot.com/privacy" target="_blank" rel="noopener noreferrer">{t('policy')}</a>
                         </div>
                     )}
                 </div>
                 
                 <p className="consent-notice">
-                    By using this feature, you consent to your email address being shared for breach verification.
+                    {t('email.notice')}
                 </p>
                 
                 <button className="custom-button"
                     onClick={() => window.history.back()}
                 >
-                    Go back
+                    {t('back')}
                 </button>
             </div>
         </div>

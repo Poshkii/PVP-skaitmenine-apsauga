@@ -1,5 +1,6 @@
 import "../info.css";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function InfoPage(){
     const handleButtonClick = (url: string | URL | undefined) => {
@@ -10,6 +11,7 @@ function InfoPage(){
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
     };
+    const { t } = useTranslation('dataUsage');
 
     return (
         <div className="info-page"
@@ -18,12 +20,11 @@ function InfoPage(){
             overflowY: "auto",
             paddingBottom: "30px",
         }}>
-            <h2 className="info-title"><b>File Data Usage</b></h2>
+            <h2 className="info-title"><b>{t('file.title')}</b></h2>
 
             <div style={{width: "90%", margin: "0 auto", textAlign: "left"}}>
                 <p>
-                    When scanning files, attachments are sent to third-party security services.
-                    No personal data content is shared or saved. Click the service for details:
+                    {t('file.infoBanner')}
                 </p>
 
                 <div className="dropdown-section">
@@ -31,25 +32,24 @@ function InfoPage(){
                         className="dropdown-button"
                         onClick={() => toggleSection('metadefender')}
                     >
-                        MetaDefender {openSection === 'metadefender' ? '▲' : '▼'}
+                        {t('file.serviceName')}{openSection === 'metadefender' ? '▲' : '▼'}
                     </button>
                     {openSection === 'metadefender' && (
                         <div className="dropdown-content">
-                            <p>Files are submitted to MetaDefender Cloud for multi-scanning malware detection.
-                            Results may be stored in their database for improved threat intelligence.</p>
-                            <a style={{color:"white"}} href="https://www.opswat.com/docs/mdcloud/compliance/confidentiality" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                            <p>{t('file.content')}</p>
+                            <a style={{color:"white"}} href="https://www.opswat.com/docs/mdcloud/compliance/confidentiality" target="_blank" rel="noopener noreferrer">{t('policy')}</a>
                         </div>
                     )}
                 </div>
                 
                 <p className="consent-notice">
-                    By using this feature, you consent to file sharing for security verification.
+                    {t('file.notice')}
                 </p>
                 
                 <button className="custom-button"
                     onClick={() => window.history.back()}
                 >
-                    Go back
+                    {t('back')}
                 </button>
             </div>
         </div>

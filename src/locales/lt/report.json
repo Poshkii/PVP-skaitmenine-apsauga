@@ -1,0 +1,20 @@
+{
+    "overview": "Apžvalga",
+    "score": "Saugumo įvertinimas",
+    "excelent": "Puikus apsaugos lygis",
+    "good": "Gera apsauga, kai kurioms sritims reikia dėmesio",
+    "poor": "Prasta apsauga, daugeliui sričių reikia dėmesio",
+    "critical": "Jūsų saugumui reikia neatidėliotino dėmesio",
+    "summary": "Veiklos suvestinė",
+    "emails": "El. pašto patikrinimai",
+    "urls": "URL nuskaitymai",
+    "files": "Failų nuskaitymai",
+    "recent": "Neseniai aptikti pažeidžiamumai: ",
+    "nothing": "Kol kas grėsmių nerasta...",
+    "date": "Nuskenuota {{date, YYYY-MM-DD}}",
+    "breaches": "{{count}} nutekėjimai",
+    "secure": "Saugu",
+    "recentEmail": "Naujausi el. pašto patikrinimai:",
+    "noEmails": "Kol kas el. paštai nebuvo skenuoti...",
+    "clear": "Išvalyti visus duomenis"
+}

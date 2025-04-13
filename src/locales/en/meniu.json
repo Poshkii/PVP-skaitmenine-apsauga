@@ -26,5 +26,9 @@
     "trackerCheck": {
         "name": "Tracker Check",
         "hint": "Tracker analysis"
+    },
+    "info": {
+        "name": "Info",
+        "hint": "Useful websites for a better browsing"
     }
 }

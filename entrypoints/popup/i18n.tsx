@@ -9,6 +9,20 @@ import ltMeniu from '../../src/locales/lt/meniu.json';
 import enMeniu from '../../src/locales/en/meniu.json';
 import ltUrls from '../../src/locales/lt/urls.json';
 import enUrls from '../../src/locales/en/urls.json';
+import ltPasswords from '../../src/locales/lt/passwords.json';
+import enPasswords from '../../src/locales/en/passwords.json';
+import ltCookies from '../../src/locales/lt/cookies.json';
+import enCookies from '../../src/locales/en/cookies.json';
+import ltEmails from '../../src/locales/lt/emails.json';
+import enEmails from '../../src/locales/en/emails.json';
+import ltLogin from '../../src/locales/lt/login.json';
+import enLogin from '../../src/locales/en/login.json';
+import ltReport from '../../src/locales/lt/report.json';
+import enReport from '../../src/locales/en/report.json';
+import ltDataUsage from '../../src/locales/lt/dataUsage.json';
+import enDataUsage from '../../src/locales/en/dataUsage.json';
+import ltInfo from '../../src/locales/lt/info.json';
+import enInfo from '../../src/locales/en/info.json';
 
 i18next
     .use(initReactI18next)
@@ -19,17 +33,31 @@ i18next
               files: enFiles,
               settings: enSettings,
               meniu: enMeniu,
-              urls: enUrls
+              urls: enUrls,
+              passwords: enPasswords,
+              cookies: enCookies,
+              emails: enEmails,
+              login: enLogin,
+              report: enReport,
+              dataUsage: enDataUsage,
+              info: enInfo
              },
             lt: { 
               files: ltFiles,
               settings: ltSettings,
               meniu: ltMeniu,
-              urls: ltUrls
+              urls: ltUrls,
+              passwords: ltPasswords,
+              cookies: ltCookies,
+              emails: ltEmails,
+              login: ltLogin,
+              report: ltReport,
+              dataUsage: ltDataUsage,
+              info: ltInfo
              }
           },
         fallbackLng: 'en',
-        ns: ['files', 'settings', 'meniu', 'urls'],
+        ns: ['files', 'settings', 'meniu', 'urls', 'passwords', 'cookies', 'emails', 'login', 'report', 'dataUsage', 'info'],
         defaultNS: 'settings'
 })
 

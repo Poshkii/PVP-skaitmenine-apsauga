@@ -26,5 +26,9 @@
     "trackerCheck": {
         "name": "Sekikliai",
         "hint": "Sekiklių analizė ir trynimas"
+    },
+    "info": {
+        "name": "Informacija",
+        "hint": "Naudingos svetainės geresniam naršymui internete"
     }
 }

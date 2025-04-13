@@ -1,0 +1,18 @@
+{
+    "login": "Prisijungti",
+    "user": "Naudotojo vardas",
+    "pswd": "Slaptažodis",
+    "confirm": "Patvirtinkite slaptažodį",
+    "loading": "Jungiamasi...",
+    "register": "Registruotis",
+    "registering": "Registruojama...",
+    "welcome": "Sveiki, {{user}}!",
+    "paid": "Mokantis naudotojas: ",
+    "yes": "Taip",
+    "no": "Ne",
+    "cannotLoad": "Nepavyko užkrauti profilio informacijos.",
+    "logout": "Atsijungti",
+    "Loading": "Kraunama...",
+    "profile": "Profilis",
+    "noMatch": "Slaptažodžiai nesutampa"
+}

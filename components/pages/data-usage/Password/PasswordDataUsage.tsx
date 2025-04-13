@@ -1,5 +1,6 @@
 import "../info.css";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function InfoPage(){
     const handleButtonClick = (url: string | URL | undefined) => {
@@ -10,6 +11,7 @@ function InfoPage(){
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
     };
+    const { t } = useTranslation('dataUsage');
 
     return (
         <div className="info-page"
@@ -18,12 +20,11 @@ function InfoPage(){
             overflowY: "auto",
             paddingBottom: "30px",
         }}>
-            <h2 className="info-title"><b>Password Data Usage</b></h2>
+            <h2 className="info-title"><b>{t('pswd.title')}</b></h2>
 
             <div style={{width: "90%", margin: "0 auto", textAlign: "left"}}>
                 <p>
-                    When checking password strength, your password is processed locally in your browser.
-                    No password data is transmitted or stored. Click the service for details:
+                    {t('pswd.infoBanner')}
                 </p>
 
                 <div className="dropdown-section">
@@ -31,25 +32,24 @@ function InfoPage(){
                         className="dropdown-button"
                         onClick={() => toggleSection('zxcvbn')}
                     >
-                        zxcvbn {openSection === 'zxcvbn' ? '▲' : '▼'}
+                        {t('pswd.serviceName')}{openSection === 'zxcvbn' ? '▲' : '▼'}
                     </button>
                     {openSection === 'zxcvbn' && (
                         <div className="dropdown-content">
-                            <p>The zxcvbn library runs entirely in your browser to evaluate password strength.
-                            Your password is never sent to any server and all processing happens locally on your device.</p>
-                            <a style={{color:"white"}} href="https://github.com/dropbox/zxcvbn" target="_blank" rel="noopener noreferrer">Project Page</a>
+                            <p>{t('pswd.content')}</p>
+                            <a style={{color:"white"}} href="https://github.com/dropbox/zxcvbn" target="_blank" rel="noopener noreferrer">{t('pswd.page')}</a>
                         </div>
                     )}
                 </div>
                 
                 <p className="consent-notice">
-                    This feature is designed with privacy in mind and keeps your password data secure.
+                    {t('pswd.notice')}
                 </p>
                 
                 <button className="custom-button"
                     onClick={() => window.history.back()}
                 >
-                    Go back
+                    {t('back')}
                 </button>
             </div>
         </div>

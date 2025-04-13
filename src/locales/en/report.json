@@ -1,0 +1,20 @@
+{
+    "overview": "Overview",
+    "score": "Security Score",
+    "excelent": "Excellent protection level",
+    "good": "Good protection, some areas need attention",
+    "poor": "Poor protection, many areas need attention",
+    "critical": "Your security needs immediate attention",
+    "summary": "Activity Summary",
+    "emails": "Email Checks",
+    "urls": "URL Scans",
+    "files": "File Scans",
+    "recent": "Recent Detected Vulnerabilities: ",
+    "nothing": "No threats have been found yet...",
+    "date": "Scanned on {{date, YYYY-MM-DD}}",
+    "breaches": "{{count}} Breaches",
+    "secure": "Secure",
+    "recentEmail": "Recent Email Checks:",
+    "noEmails": "No emails have been scanned so far...",
+    "clear": "Clear All Data"
+}

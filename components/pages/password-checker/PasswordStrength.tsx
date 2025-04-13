@@ -1,11 +1,13 @@
 import {useState, useEffect, useRef } from 'react';
 import zxcvbn from 'zxcvbn';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 function PasswordStrength({ inputPassword } : {inputPassword: string }) {
     const [score, setScore] = useState(0);
     const [feedback, setFeedback] = useState<string[]>([]);
     const initialized = useRef(false);
+    const { t } = useTranslation('passwords');
 
     useEffect(() => {
         if (inputPassword) {
@@ -20,15 +22,15 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
     const getLabel = (score: number) => {
         switch (score) {
             case 0:
-                return "Very weak";
+                return t('veryWeak');
             case 1:
-                return "Weak";
+                return t('weak');
             case 2:
-                return "Average";
+                return t('average');
             case 3:
-                return "Strong";
+                return t('strong');
             case 4:
-                return "Very strong";
+                return t('veryStrong');
             default:
                 return "";
         }
@@ -64,7 +66,7 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
                         </div>
                         <div className="status-text">
                             <h3 className="status-title">
-                                Password Strength: <br></br>
+                                {t('pswdStrength')}<br></br>
                                 {getLabel(score)}
                             </h3>
                             {feedback.length > 0 && (

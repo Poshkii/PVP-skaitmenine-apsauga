@@ -1,0 +1,18 @@
+{
+    "login": "Login",
+    "user": "Username",
+    "pswd": "Password",
+    "confirm": "Confirm Password",
+    "loading": "Logging in...",
+    "register": "Register",
+    "registering": "Registering...",
+    "welcome": "Welcome, {{user}}!",
+    "paid": "Paid user: ",
+    "yes": "Yes",
+    "no": "No",
+    "cannotLoad": "Unable to load profile information.",
+    "logout": "Logout",
+    "Loading": "Loading...",
+    "profile": "Profile",
+    "noMatch": "Passwords do not match"
+}

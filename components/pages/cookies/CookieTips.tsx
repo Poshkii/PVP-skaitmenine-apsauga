@@ -1,21 +1,24 @@
 import {useState} from "react";
+import { useTranslation } from "react-i18next";
 
-const titles = [
-    { id: 1, content: "What are cookies?" },
-    { id: 2, content: "What is their purpose?" },
-    { id: 3, content: "What should I be aware of?" },
-    { id: 4, content: "Should I accept cookies?" },
-]
 
-const descriptions = [
-    {id: 1, content: "Cookies are small text files websites store on your device."},
-    {id: 2, content: "Cookies store your login data, shopping cart details or other preferences. That way you don't have to redo everything on each visit."},
-    {id: 3, content: "Cookies may be used to store information about your activity online, raising privacy concerns. Such data is commonly used for advertisement purposes."},
-    {id: 4, content: "Be cautious when accepting cookies. It is recommended to accept cookies that are required for website functionality because it enchances browsing experience. "+
-                     "However, you should decline any marketing, statistics cookies if you are concerned about privacy."},
-]
 
 function CookiesTips() {
+    const { t } = useTranslation('cookies');
+
+    const titles = [
+        { id: 1, content: t('title1') },
+        { id: 2, content: t('title2') },
+        { id: 3, content: t('title3') },
+        { id: 4, content: t('title4') },
+    ]
+    
+    const descriptions = [
+        {id: 1, content: t('desc1')},
+        {id: 2, content: t('desc2')},
+        {id: 3, content: t('desc3')},
+        {id: 4, content: t('desc4')},
+    ]
 
     const [currentIndex, setCurrentIndex] = useState(0);
     
@@ -29,7 +32,7 @@ function CookiesTips() {
     return (
         <>            
                 <div style={{ marginTop: "1rem", color: "white" }}>
-                    <h2>Internet Cookies Tips</h2>
+                    <h2>{t('tips')}</h2>
                 
                     {titles.map((title, index) => (
                         <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
