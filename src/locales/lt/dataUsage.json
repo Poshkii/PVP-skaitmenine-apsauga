@@ -20,6 +20,8 @@
         "infoBanner": "Tikrinant slaptažodžio stiprumą, jūsų slaptažodis apdorojamas lokaliai jūsų naršyklėje. Jokie slaptažodžio duomenys nėra perduodami ar saugomi. Spustelėkite paslaugą, kad gautumėte daugiau informacijos:",
         "serviceName": "zxcvbn ",
         "content": "zxcvbn biblioteka veikia tik jūsų naršyklėje, kad įvertintų slaptažodžio stiprumą. Jūsų slaptažodis niekada nėra siunčiamas į jokį serverį, o visas apdorojimas vyksta lokaliai jūsų įrenginyje.",
+        "serviceName1": "Have I Been Pwned ",
+        "content1": "Saugus slaptažodžio maišos rezultatas naudojamas norint pateikti užklausą į Have I Been Pwned API naudojant metodą, vadinamą k-Anonymity . Tai reiškia, kad visas slaptažodis niekada nebus išsiųstas, o jūsų privatumas išsaugomas.",
         "notice": "Ši funkcija sukurta atsižvelgiant į privatumą ir užtikrina jūsų slaptažodžio duomenų saugumą.",
         "page": "Projekto puslapis"
     },
