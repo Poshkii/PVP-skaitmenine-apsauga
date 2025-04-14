@@ -11,7 +11,6 @@ import { useTranslation } from "react-i18next";
 const API_URL = String(useAppConfig().metaDefenderApiUrl);
 const HASH_ENDPOINT = "/hash";
 const FILE_ENDPOINT = "/file";
-const { addScannedFile } = useReport();
 
 async function calculateSHA256(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -48,7 +47,7 @@ async function calculateSHA256(file: File): Promise<string> {
 };
 
 async function checkFileByHash(file: File): Promise<any | null> {
-    let sha256Hash: string;
+    let sha256Hash: string;    
 
     try {
         sha256Hash = await calculateSHA256(file);
@@ -284,6 +283,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
     const processApiResponse = (data: any) => {
         const scanResults = data.scan_results;
         const scanDetails = data.scan_results.scan_details;
+        const { addScannedFile } = useReport();
         
         if (scanResults) {
             updateReport("FileScans", report.FileScans + 1);

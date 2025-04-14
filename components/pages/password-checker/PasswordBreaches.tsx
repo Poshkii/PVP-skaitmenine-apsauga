@@ -3,8 +3,6 @@ import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 import { useReport } from '../report-page/ReportContext';
 
-const { addScannedPaswd } = useReport();
-
 function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
     interface Result {
         breached: boolean;
@@ -16,6 +14,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
     const [result, setResult] = useState<Result | null>(null);
     const [isChecking, setIsChecking] = useState(false);
     const { t } = useTranslation('passwords');
+    const { addScannedPaswd } = useReport();
 
     useEffect(() => {
         setResult(null);
