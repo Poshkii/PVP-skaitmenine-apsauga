@@ -15,12 +15,11 @@ const FILE_ENDPOINT = "/file";
 async function calculateSHA256(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        const { t } = useTranslation('files');
 
         reader.onload = async (event) => {
             try {
                 if (!event.target?.result) {
-                    throw new Error(t('failRead'));
+                    throw new Error("Failed to read file");
                 }
 
                 const arrayBuffer = event.target.result as ArrayBuffer;
@@ -39,12 +38,12 @@ async function calculateSHA256(file: File): Promise<string> {
         };
 
         reader.onerror = () => {
-            reject(new Error(t('failRead')));
+            reject(new Error("Failed to read file"));
         };
 
         reader.readAsArrayBuffer(file);
     });
-};
+}
 
 async function checkFileByHash(file: File): Promise<any | null> {
     let sha256Hash: string;

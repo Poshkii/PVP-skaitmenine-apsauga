@@ -1,5 +1,4 @@
 {
-    "failRead": "Failed to read file.",
     "noPrevScan" : "No file was scanned previously",
     "notCompleted": "Error: Scan has not completed yet",
     "errorCheck": "Error: File check failed",
