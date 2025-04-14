@@ -42,11 +42,11 @@ function ReportPage() {
                             <p style={{marginBottom: "0", textAlign: "center"}}><strong>{t('emails')}</strong></p>
                         </div>
                         <div style={{width:"33%"}}>
-                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto"}}>{report.UrlScans}</p>
+                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto"}}>{report.ScannedUrls.length}</p>
                             <p style={{marginBottom: "0", textAlign: "center"}}><strong>{t('urls')}</strong></p>
                         </div>
                         <div style={{width:"33%"}}>
-                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto"}}>{report.FileScans}</p>
+                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto"}}>{report.ScannedFiles.length}</p>
                             <p style={{marginBottom: "0", textAlign: "center"}}><strong>{t('files')}</strong></p>
                         </div>
                     </div>
@@ -97,7 +97,49 @@ function ReportPage() {
                                         <p className="status-description">{t('date', {date: format(new Date(), 'yyyy-MM-dd')})}</p>
                                     </div>
                                     <span className={`status-badge ${email.BreachCount > 0 ? 'suspicious' : 'safe'}`}>
-                                        {email.BreachCount > 0 ? t('breaches', {count: email.BreachCount}) : t('secure')}
+                                        {email.BreachCount > 0 ? t('breaches', {count: email.BreachCount}) : t('safe')}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+
+                <div className="security-check-container glassmorphism">
+                    <h3 className="recent-list-title">Recent URL checks</h3>
+                    {report.ScannedUrls.length === 0 ? (
+                        <p>{t('noEmails')}</p>
+                    ) : (
+                        <ul className="recent-items" style={{paddingLeft: "0"}}>
+                            {report.ScannedUrls.slice(-5).reverse().map((url, index) => (
+                                <li className="recent-item" key={index}>
+                                    <div>
+                                        <span className="item-url overflow-text">{url.url}</span>
+                                        <p className="status-description">{t('date', {date: format(new Date(), 'yyyy-MM-dd')})}</p>
+                                    </div>
+                                    <span className={`status-badge ${url.Result !== "Safe" ? 'suspicious' : 'safe'}`}>
+                                        {url.Result !== "Safe" ? url.Result : url.Result}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+
+                <div className="security-check-container glassmorphism">
+                    <h3 className="recent-list-title">Recent File Checks</h3>
+                    {report.ScannedFiles.length === 0 ? (
+                        <p>{t('noEmails')}</p>
+                    ) : (
+                        <ul className="recent-items" style={{paddingLeft: "0"}}>
+                            {report.ScannedFiles.slice(-5).reverse().map((name, index) => (
+                                <li className="recent-item" key={index}>
+                                    <div>
+                                        <span className="item-url overflow-text">{name.name}</span>
+                                        <p className="status-description">{t('date', {date: format(new Date(), 'yyyy-MM-dd')})}</p>
+                                    </div>
+                                    <span className={`status-badge ${name.Result === "unsafe" ? 'suspicious' : 'safe'}`}>
+                                        {name.Result === "unsafe" ? name.Result : t('safe')}
                                     </span>
                                 </li>
                             ))}

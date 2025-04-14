@@ -7,6 +7,7 @@ import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {useNavigate} from "react-router";
 import { useTranslation } from "react-i18next";
+import { is } from "date-fns/locale";
 
 const API_URL = String(useAppConfig().metaDefenderApiUrl);
 const HASH_ENDPOINT = "/hash";
@@ -123,6 +124,8 @@ function FileStatus({inputFile }: { inputFile: string }) {
     const [scanType, setScanType] = useState("");
 
     const { sendToModule } = useModuleMessaging();
+
+    const { addScannedFile } = useReport();
 
     const viewPreviousScan = async () => {
         const prevResult = await browser.storage.local.get(["previousFileScanUrl"]);
@@ -252,7 +255,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
     const FileChecker = async () => {
         if (!selectedFile) return;
         setIsChecking(true);
-        
 
         try {
             const results = await checkFileByHash(selectedFile);
@@ -266,12 +268,16 @@ function FileStatus({inputFile }: { inputFile: string }) {
                 }
                 else
                     setIsChecking(false);
+
+                addScannedFile(fileName, safety);
             } else {
                 FileUpload(selectedFile);
+                addScannedFile(fileName, safety);
             }
         } catch (error) {
             setResult(t('errorCheck'));
             setSafety("unknown");
+            setIsChecking(false);
         }
     };
 
@@ -283,7 +289,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
     const processApiResponse = (data: any) => {
         const scanResults = data.scan_results;
         const scanDetails = data.scan_results.scan_details;
-        const { addScannedFile } = useReport();
         
         if (scanResults) {
             updateReport("FileScans", report.FileScans + 1);
@@ -317,18 +322,15 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     setSafety("unsafe");
                     //setResult(`Threats found: ${detectedCount} out of ${totalEngines} antivirus engines.`);
                     setResult(t('threats', {detected: detectedCount, total: totalEngines}));
-                    addScannedFile(fileName, safety);
                 } else {
                     setSafety("safe");
                     //setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
                     setResult(t('noThreats', {total: totalEngines}));
-                    addScannedFile(fileName, safety);
                 }
             }
         } else {
             setSafety("unknown");
             setResult(t('failSafety'));
-            addScannedFile(fileName, safety);
         }
     };
 
@@ -388,6 +390,38 @@ function FileStatus({inputFile }: { inputFile: string }) {
             setFileName(inputFile);
         }
     }, [inputFile]);
+
+    useEffect(() => {
+        // Function to load scanned files from storage
+        const loadScannedFiles = async () => {
+            const result = await browser.storage.local.get(["scannedFiles"]);
+            const filesArray = result.scannedFiles || [];
+            
+            // Use these files with your report context
+            filesArray.forEach((file: { name: string; safety: string; }) => {
+                addScannedFile(file.name, file.safety);
+            });
+            
+            // Optional: Clear the storage array to avoid duplicate processing
+            await browser.storage.local.set({ "scannedFiles": [] });
+        };
+        
+        // Initial load
+        loadScannedFiles();
+        
+        // Optional: Set up a listener for storage changes
+        const storageListener = (changes: any, areaName: string) => {
+            if (areaName === "local" && changes.scannedFiles) {
+                loadScannedFiles();
+            }
+        };
+        
+        browser.storage.onChanged.addListener(storageListener);
+        
+        return () => {
+            browser.storage.onChanged.removeListener(storageListener);
+        };
+    }, [addScannedFile]);
 
     const navigate = useNavigate();
 
@@ -459,6 +493,9 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         )}
                     </button>
                 </div>
+                {scanType}
+                <br></br>
+                {isChecking === true ? "tikrina" : "netikrina"}
         
                 {!isChecking && result && (
                     <div style={{marginTop:"24px"}} className="security-check-container glassmorphism">

@@ -49,7 +49,7 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
                     ScannedEmails: result.ScannedEmails ?? [],
                     ScannedUrls: result.ScannedUrls ?? [],
                     ScannedPasswords: result.ScannedPasswords ?? [],
-                    ScannedFiles: result.SannedFiles ?? []
+                    ScannedFiles: result.ScannedFiles ?? []
                 });
             } catch (error) {
                 console.error("Error loading data from browser.storage.local:", error);
