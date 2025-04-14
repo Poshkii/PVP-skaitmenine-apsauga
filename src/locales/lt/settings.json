@@ -7,5 +7,7 @@
     "pswd": "Slaptažodžio tikrinimo mygtukas",
     "pswdDsc": "Mygtukas šalia slaptažodžio įvedimo lauko",
     "scan": "Automatinis atsisiųstų failų skenavimas",
-    "scanDsc": "Automatinis atsisiuntimų skenavimas dėl kenkėjiškų programų"
+    "scanDsc": "Automatinis atsisiuntimų skenavimas dėl kenkėjiškų programų",
+    "anims": "Animacijos ir efektai",
+    "animsDsc": "Valdyti animacijas ir efektus užvedus pelės žymeklį"
 }

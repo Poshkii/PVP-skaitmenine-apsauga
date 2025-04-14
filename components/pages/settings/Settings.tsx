@@ -57,8 +57,8 @@ function Settings() {
                 />
                 <ModuleToggle
                     moduleId={ModuleId.HoverAnimations}
-                    title={"Toggle Hover Animations"}
-                    description={"On-hover effect animations and transitions"}
+                    title={t('settings:anims')}
+                    description={t('settings:animsDsc')}
                     onChangeState={changeContentModuleState}
                 />
             </div>

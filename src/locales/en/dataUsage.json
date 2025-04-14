@@ -21,7 +21,7 @@
         "serviceName": "zxcvbn ",
         "content": "The zxcvbn library runs entirely in your browser to evaluate password strength. Your password is never sent to any server and all processing happens locally on your device.",
         "serviceName1": "Have I Been Pwned ",
-        "content1": "A secure hash of your password is used to query the Have I Been Pwned API using a method called k-Anonymity . This means your full password is never sent, and your privacy is preserved.",
+        "content1": "A secure hash of your password is used to query the Have I Been Pwned API using a method called k-Anonymity. This means your full password is never sent, and your privacy is preserved.",
         "notice": "This feature is designed with privacy in mind and keeps your password data secure.",
         "page": "Project Page"
     },

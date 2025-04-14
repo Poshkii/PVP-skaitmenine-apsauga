@@ -7,5 +7,7 @@
     "pswd": "Password Checker Button",
     "pswdDsc": "Button near password input boxes",
     "scan": "Automatic Downloads Scanning",
-    "scanDsc": "Automatic download scanning for malware"
+    "scanDsc": "Automatic download scanning for malware",
+    "anims": "Animations and effects",
+    "animsDsc": "Control on-hover effects and animations"
 }
