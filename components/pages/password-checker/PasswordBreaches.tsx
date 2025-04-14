@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { useTranslation } from "react-i18next";
+import { useReport } from '../report-page/ReportContext';
+
+const { addScannedPaswd } = useReport();
 
 function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
     interface Result {
@@ -55,6 +58,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                     //message: `This password has been found in ${breachCount.toLocaleString()} data breaches.`
                     message:t('found', {count: breachCount})
                 });
+                addScannedPaswd(sha1Password, breachCount);
             } 
             else {
                 setResult({
@@ -63,6 +67,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                     //message: 'This password has not been found in any known data breaches.'
                     message: t('notFound')
                 });
+                addScannedPaswd(sha1Password, 0);
             }
         } 
         catch (error) {

@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 const API_URL = String(useAppConfig().metaDefenderApiUrl);
 const HASH_ENDPOINT = "/hash";
 const FILE_ENDPOINT = "/file";
+const { addScannedFile } = useReport();
 
 async function calculateSHA256(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -316,15 +317,18 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     setSafety("unsafe");
                     //setResult(`Threats found: ${detectedCount} out of ${totalEngines} antivirus engines.`);
                     setResult(t('threats', {detected: detectedCount, total: totalEngines}));
+                    addScannedFile(fileName, safety);
                 } else {
                     setSafety("safe");
                     //setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
                     setResult(t('noThreats', {total: totalEngines}));
+                    addScannedFile(fileName, safety);
                 }
             }
         } else {
             setSafety("unknown");
             setResult(t('failSafety'));
+            addScannedFile(fileName, safety);
         }
     };
 
