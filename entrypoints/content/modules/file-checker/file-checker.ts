@@ -169,7 +169,6 @@ export class FileChecker extends Module {
                 "lastScanResults": data
             });
 
-            this.sendToRuntime({id: UiMessageId.ScanFinished});
             showNotification(notificationTitle, resultMessage);
         }
     }
@@ -252,7 +251,8 @@ export class FileChecker extends Module {
         switch (message.id){
             case ModuleMessageId.PollFileScan: {
                 const { url } = message.data;
-                this.pollFileScan(url);
+                this.pollFileScan(url).then(
+                    () => this.sendToRuntime({id: UiMessageId.ScanFinished}));
                 break;
             }
         }
