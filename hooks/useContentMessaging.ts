@@ -1,5 +1,6 @@
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {ContentMessage, ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
+import {ModuleMessage} from "@/entrypoints/content/types/module-message.ts";
 
 function sendMessage(message: ContentMessage) {
     // Send message to content script
@@ -21,5 +22,17 @@ export function useContentMessaging() {
         });
     }, []);
 
-    return { changeContentModuleState };
+    const sendToModule = useCallback((moduleId: ModuleId, message: ModuleMessage) => {
+        const moduleMessage: ContentMessage = {
+            id: ContentMessageId.SendModuleMessage,
+            data: {
+                moduleId: moduleId,
+                moduleMessage: message,
+            }
+        }
+
+        return sendMessage(moduleMessage);
+    }, []);
+
+    return { changeContentModuleState, sendToModule };
 }

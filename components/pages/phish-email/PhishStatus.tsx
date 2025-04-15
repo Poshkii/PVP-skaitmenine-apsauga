@@ -1,12 +1,15 @@
-import { useTranslation } from "react-i18next";
+import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router";
-import { Info, Book } from 'lucide-react';
-import { BgMessageId } from "@/entrypoints/content/types/bg-message";
-import { UiMessageId } from "@/entrypoints/content/types/ui-message";
+import {Book, Info} from 'lucide-react';
+import {UiMessageId} from "@/entrypoints/content/types/ui-message";
+import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
+import {ModuleId} from "@/entrypoints/content/types/module.ts";
+import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 
 function PhishStatus() {
     const { t } = useTranslation('phishEmail');
     const navigate = useNavigate();
+    const { sendToModule } = useContentMessaging();
     const [sender, setSender] = useState("");
     const [subject, setSubject] = useState("");
     const [body, setBody] = useState("");
@@ -30,10 +33,8 @@ function PhishStatus() {
             }
         };
 
-        // Add the message listener
         browser.runtime.onMessage.addListener(messageListener);
 
-        // Clean up when component unmounts
         return () => {
             browser.runtime.onMessage.removeListener(messageListener);
         };
@@ -50,12 +51,13 @@ function PhishStatus() {
             setLoading(true);
             setError("");
             console.log("Sending ReadDOM message to content script");
-            
-            browser.runtime.sendMessage({
-                id: BgMessageId.ReadDOM
+
+            sendToModule(ModuleId.PhishChecker, {
+                id: ModuleMessageId.ReadDom
             });
             
             // Set a timeout to handle cases where no response is received
+            // FIXME: better to just get a message back if we're not on those pages
             setTimeout(() => {
                 if (loading) {
                     setLoading(false);
@@ -76,7 +78,7 @@ function PhishStatus() {
         setError("");
         
         // Call sendMessage again to refresh the data
-        await sendMessage();
+        sendMessage();
         
         // Phishing detection logic will be handled after we receive the response
     };

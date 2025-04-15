@@ -67,30 +67,6 @@ export default defineBackground(async () => {
                 }
                 break;
             }
-            case BgMessageId.ReadDOM: {
-                // Just forward the message to content scripts
-                // The content script will handle the response directly
-                try {
-                    // Get the active tab
-                    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-                    if (!tabs || tabs.length === 0) {
-                        throw new Error("No active tab found");
-                    }
-                    
-                    // Forward the message to the content script in the active tab
-                    await browser.tabs.sendMessage(tabs[0].id, {
-                        id: BgMessageId.ReadDOM
-                    });
-                } catch (error) {
-                    console.error("Failed to forward ReadDOM message:", error);
-                    // Send error back to UI
-                    browser.runtime.sendMessage({ 
-                        id: UiMessageId.DOMError, 
-                        data: { message: (error as any).message } 
-                    });
-                }
-                break;
-            }
             case BgMessageId.StoreEmailData: {
                 console.log("Received StoreEmailData message:", message);
                 // Then continue with the existing code...

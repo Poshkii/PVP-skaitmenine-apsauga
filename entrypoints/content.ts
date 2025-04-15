@@ -1,11 +1,9 @@
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {PasswordChecker} from "@/entrypoints/content/modules/password-checker/password-checker.ts";
 import {EmailChecker} from "@/entrypoints/content/modules/email-checker/email-checker.ts";
-import {FileChecker} from "@/entrypoints/content/modules/file-checker/file-checker.ts";
 import {Configuration} from "@/utils/config.ts";
 import {ContentMessage, ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
 import {PhishChecker} from "@/entrypoints/content/modules/emailPhish-checker/emailPhish-checker.ts";
-//import EmailChecker from "@/components/pages/email-checker/EmailChecker";
 
 export default defineContentScript({
     matches: ['*://*/*'],
@@ -34,6 +32,12 @@ export default defineContentScript({
                     } else {
                         moduleManager.unloadModule(moduleId);
                     }
+                    break;
+                }
+                case ContentMessageId.SendModuleMessage: {
+                    const { moduleId, moduleMessage } = message.data;
+                    moduleManager.sendMessage(moduleId, moduleMessage);
+                    break;
                 }
             }
         });

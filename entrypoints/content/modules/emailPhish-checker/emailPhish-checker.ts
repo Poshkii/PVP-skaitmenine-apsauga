@@ -1,46 +1,29 @@
 import {Module, ModuleId} from "../../types/module.ts";
-import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
+import {ModuleMessage, ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 
 export class PhishChecker extends Module { 
     readonly id = ModuleId.PhishChecker;
 
     load(): void {
-        browser.runtime.onMessage.addListener(this.onMessage);
-        console.log("EmailParser module loaded");
     }
 
     unload(): void {
-        browser.runtime.onMessage.removeListener(this.onMessage);
-        console.log("EmailParser module unloaded");
     }
 
-    // Use arrow function to maintain 'this' context
-    private onMessage = (message: any, sender: any, sendResponse: any) => {
-        if (message.id === BgMessageId.ReadDOM) {
-            console.log("Content script received ReadDOM message");
-            
-            // Parse email data from the current page
-            const emailData = this.parseEmailData();
-            
-            // Send response with DOMIsRead message ID back to the extension
-            browser.runtime.sendMessage({
-                id: UiMessageId.DOMIsRead,
-                data: emailData
-            }).catch(error => {
-                console.error("Error sending DOMIsRead message:", error);
-            });
-            
-            // Let Chrome know we're handling it
-            sendResponse({ received: true });
-            return true;
-        }
+    private readDom() {
+        const emailData = this.parseEmailData();
+
+        this.sendToRuntime({
+            id: UiMessageId.DOMIsRead,
+            data: emailData
+        })
     }
     
     private parseEmailData() {
         // Detect if we're on Gmail or Outlook
         const isGmail = window.location.hostname.includes('mail.google.com');
-        const isOutlook = window.location.hostname.includes('outlook.office.com');
+        const isOutlook = window.location.hostname.includes('outlook.office365.com');
         
         if (isGmail) {
             return this.parseGmailEmail();
@@ -80,6 +63,16 @@ export class PhishChecker extends Module {
         } catch (error) {
             console.error("Error parsing Outlook:", error);
             return { sender: "Error", subject: "Error", body: "Failed to parse Outlook content" };
+        }
+    }
+
+    handleMessage(message: ModuleMessage): any {
+        super.handleMessage(message);
+
+        switch (message.id){
+            case ModuleMessageId.ReadDom: {
+                this.readDom();
+            }
         }
     }
 }
