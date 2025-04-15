@@ -12,6 +12,7 @@ import Login from "@/components/pages/profile/Login.tsx";
 import Register from "@/components/pages/profile/Register.tsx";
 import Cookies from "@/components/pages/cookies/Cookies";
 import ReportPage from "@/components/pages/report-page/ReportPage.tsx";
+import PhishEmail from "@/components/pages/phish-email/PhishChecker";
 
 import URLData from "../data-usage/URL/URLDataUsage";
 import FileData from "../data-usage/File/FileDataUsage";
@@ -34,6 +35,7 @@ function HomeRoutes(){
             <Route path="/login" element={<Login />}/>
             <Route path="/register" element={<Register />}/>
             <Route path="/cookies" element={<Cookies />}/>
+            <Route path="/phish-email" element={<PhishEmail />}/>
 
             <Route path="/url-data" element={<URLData />}></Route>
             <Route path="/file-data" element={<FileData />}></Route>
