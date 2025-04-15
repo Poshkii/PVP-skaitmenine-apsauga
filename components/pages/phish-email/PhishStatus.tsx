@@ -45,6 +45,7 @@ function PhishStatus() {
         setBody("");
         setEmail("");
         setResult("");
+        setSubject("");
     };
     const sendMessage = () => {
         try {
@@ -63,7 +64,7 @@ function PhishStatus() {
                     setLoading(false);
                     setError("Timeout: No response received from the page. Make sure you're on a Gmail or Outlook page.");
                 }
-            }, 5000);
+            }, 20);
             
         } catch (error) {
             console.error("Error sending message:", error);
