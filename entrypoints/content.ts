@@ -4,6 +4,7 @@ import {EmailChecker} from "@/entrypoints/content/modules/email-checker/email-ch
 import {FileChecker} from "@/entrypoints/content/modules/file-checker/file-checker.ts";
 import {Configuration} from "@/utils/config.ts";
 import {ContentMessage, ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
+import {AccountDeleter} from "@/entrypoints/content/modules/account-deleter/account-deleter.ts";
 //import EmailChecker from "@/components/pages/email-checker/EmailChecker";
 
 export default defineContentScript({
@@ -19,6 +20,9 @@ export default defineContentScript({
 
         const emailChecker = new EmailChecker();
         moduleManager.registerModule(emailChecker, config.isModuleEnabled(emailChecker.id));
+
+        const accountDeleter = new AccountDeleter();
+        moduleManager.registerModule(accountDeleter, config.isModuleEnabled(accountDeleter.id));
 
         browser.runtime.onMessage.addListener((message: ContentMessage) => {
             switch (message.id) {

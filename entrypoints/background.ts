@@ -3,6 +3,7 @@ import {BgMessage, BgMessageId} from "@/entrypoints/content/types/bg-message.ts"
 import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {Configuration} from "@/utils/config.ts";
+import {DeletionProvider} from "@/entrypoints/background/deletion-provider.ts";
 
 interface BreachInfo {
     [email: string]: any;  // Stores breach data by email
@@ -18,6 +19,8 @@ export default defineBackground(async () => {
     const fileChecker = new FileChecker();
     const moduleManager = new ModuleManager();
     moduleManager.registerModule(fileChecker, config.isModuleEnabled(fileChecker.id));
+
+    const deletionProvider = new DeletionProvider();
 
     browser.runtime.onMessage.addListener(async (
         message: BgMessage,
@@ -114,6 +117,14 @@ export default defineBackground(async () => {
                 openPopupAndScan();
                 break;
               }
+            case BgMessageId.DeletionUrl: {
+                const { domain } = message.data;
+                console.log("Deletion domain:", domain);
+                const url = deletionProvider.getDeletionUrl(domain);
+                console.log(" Deletion url:", url);
+                sendResponse({deletionUrl : url });
+                break;
+            }
         }
     });
 });

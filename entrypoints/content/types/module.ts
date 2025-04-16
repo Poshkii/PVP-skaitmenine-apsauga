@@ -8,6 +8,7 @@ export enum ModuleId {
     EmailChecker,
     FileChecker,
     HoverAnimations,
+    AccountDeleter,
 }
 
 export abstract class Module extends EventEmitter {
@@ -17,12 +18,12 @@ export abstract class Module extends EventEmitter {
 
     abstract unload(): void;
 
-    protected sendToRuntime(message: BgMessage | UiMessage): any {
+    protected sendToRuntime(message: BgMessage | UiMessage, responseCallback?: (response: any) => void): any {
         browser.runtime.sendMessage(message, (response) => {
             if (browser.runtime.lastError) {
                 console.error("Error sending message:", browser.runtime.lastError);
-            } else {
-                return response;
+            } else if (responseCallback) {
+                responseCallback(response);
             }
         });
     }
