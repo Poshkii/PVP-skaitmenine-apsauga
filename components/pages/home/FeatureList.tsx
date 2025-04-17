@@ -1,6 +1,6 @@
 import {useLocation, useNavigate} from "react-router";
 import { useState, useEffect } from "react"; // Don't forget to import these
-import { Search, Shield, FileText, Key, Cookie, Mail, Radar, Info } from "lucide-react";
+import { Shield, FileText, Key, Cookie, Mail, Radar, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 function FeatureList() {
@@ -38,7 +38,7 @@ function FeatureList() {
     { 
       nameKey: "trackerCheck.name", 
       hintKey: "trackerCheck.hint", 
-      route: "",
+      route: "/trackers",
       icon: <Radar size={18} />
     },
     { 

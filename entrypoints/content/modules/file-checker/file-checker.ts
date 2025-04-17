@@ -143,13 +143,25 @@ export class FileChecker extends Module {
         if (scanResults) {
             //Report update
             try {
-                // Get current FileScans count
-                const result = await chrome.storage.local.get(["FileScans"]);
-                const currentCount = result.FileScans || 0;
+                // Get the filename from the data or use a default
+                let filename = data.file_info?.display_name || "Unknown file";
+                filename = filename.split(/[/\\]/).pop() || filename;
                 
-                // Increment the count by 1
-                await chrome.storage.local.set({ 
-                    "FileScans": currentCount + 1 
+                // Determine safety status
+                const detectedCount = scanResults.total_detected_avs || 0;
+                const safety = detectedCount > 0 ? "unsafe" : "safe";
+
+                const scannedFiles = await chrome.storage.local.get(["scannedFiles"]);
+                const filesArray = scannedFiles.scannedFiles || [];
+
+                filesArray.push({
+                    name: filename,
+                    safety: safety,
+                    timestamp: Date.now()
+                });
+
+                await chrome.storage.local.set({
+                    "scannedFiles": filesArray
                 });
             } catch (error) {
                 console.error("Error updating file scan report:", error);

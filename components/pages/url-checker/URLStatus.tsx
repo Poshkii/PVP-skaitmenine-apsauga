@@ -13,6 +13,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [url, setUrl] = useState(inputURL);
     const [submittedUrl, setSubmittedUrl] = useState('');
     const [resultVT, setResultVT] = useState("");
+    const { addScannedUrl } = useReport();
     const [resultUIO, setResultUIO] = useState("");
     const [loading, setLoading] = useState(false);
     const [debug, setDebug] = useState("");
@@ -168,7 +169,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             setResultVT(t('errorScan'));
             setUnknownUIO(true);
             setUnknownVT(true);
-        } finally {
+        } finally {            
             updateReport("UrlScans", report.UrlScans + 1);
             setLoading(false);
             setSubmittedUrl(url);
@@ -381,6 +382,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
             if (malicious) {
                 setUnsafeUIO(true);
+                addScannedUrl(url, "Malicious");
                 //result = `URLScan.io: Website is malicious! Risk score: ${score}/100\n`;
                 result = t('ScanIO.malicious', {score: score}) + '\n';
                 if (categories.length > 0) {
@@ -389,10 +391,12 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 }
             } else if (score > 0) {
                 setSuspiciousUIO(true);
+                addScannedUrl(url, "Suspicious");
                 //result = `URLScan.io: Website might be suspicious. Risk score: ${score}/100\n`;
                 result = t('ScanIO.suspicious', {score: score}) + '\n';
             } else {
                 setSafeUIO(true);
+                addScannedUrl(url, "Safe");
                 //result = `URLScan.io: Website appears safe. Risk score: ${score}/100\n`;
                 result = t('ScanIO.safe', {score: score}) + '\n';
             }
@@ -412,6 +416,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             console.error("Error processing URLScan.io response:", error);
             if (resultData && resultData.task && resultData.task.uuid) {
                 setUnknownUIO(true);
+                addScannedUrl(url, "Unknown");
                 //return `URLScan.io: Results available but failed to process. View full results at: https://urlscan.io/result/${resultData.task.uuid}`;
                 return t('ScanIO.processingFailed', { 
                     uuid: resultData.task.uuid,
@@ -419,6 +424,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                   });
             } else {
                 setUnknownUIO(true);
+                addScannedUrl(url, "Unknown");
                 //return "URLScan.io: Results available but failed to process.";
                 return t('ScanIO.processingFailedNoScan')
             }
