@@ -267,11 +267,8 @@ function FileStatus({inputFile }: { inputFile: string }) {
                 }
                 else
                     setIsChecking(false);
-
-                addScannedFile(fileName, safety);
             } else {
                 FileUpload(selectedFile);
-                addScannedFile(fileName, safety);
             }
         } catch (error) {
             setResult(t('errorCheck'));
@@ -326,6 +323,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     //setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
                     setResult(t('noThreats', {total: totalEngines}));
                 }
+                addScannedFile(fileName, safety);
             }
         } else {
             setSafety("unknown");
@@ -401,8 +399,8 @@ function FileStatus({inputFile }: { inputFile: string }) {
                 addScannedFile(file.name, file.safety);
             });
             
-            // Optional: Clear the storage array to avoid duplicate processing
-            await browser.storage.local.set({ "scannedFiles": [] });
+            // sitas galimai sulauzo programa su upload skenavimu
+            //await browser.storage.local.set({ "scannedFiles": [] });
         };
         
         // Initial load

@@ -2,13 +2,59 @@ import { useReport } from "../report-page/ReportContext";
 import { useTranslation } from "react-i18next";
 import { format } from 'date-fns';
 import { useState } from 'react';
+import { Mail, Link, File } from "lucide-react";
 
 function ReportPage() {
     const { report, clearReport } = useReport();
     const { t } = useTranslation('report');
     const [activeTab, setActiveTab] = useState('emails');
 
-    const securityScore = Math.min(100, Math.max(0, 100 - (report.ScannedEmails.reduce((sum, email) => sum + email.BreachCount, 0) * 5)));
+    const calculateSecurityScore = () => {
+        const totalEmails = report.ScannedEmails.length;
+        const breachedEmails = report.ScannedEmails.filter(email => email.BreachCount > 0).length;
+        
+        const totalUrls = report.ScannedUrls.length;
+        const unsafeUrls = report.ScannedUrls.filter(url => url.Result !== "Safe").length;
+        
+        const totalFiles = report.ScannedFiles.length;
+        const unsafeFiles = report.ScannedFiles.filter(file => file.Result === "unsafe").length;
+        
+        const totalScans = totalEmails + totalUrls + totalFiles;
+        
+        if (totalScans === 0) return 100;
+        
+        const EMAIL_WEIGHT = 0.35;
+        const URL_WEIGHT = 0.35;
+        const FILE_WEIGHT = 0.30;
+        
+        const emailSafety = totalEmails > 0 ? 100 * (1 - breachedEmails / totalEmails) : 100;
+        const urlSafety = totalUrls > 0 ? 100 * (1 - unsafeUrls / totalUrls) : 100;
+        const fileSafety = totalFiles > 0 ? 100 * (1 - unsafeFiles / totalFiles) : 100;
+        
+        let weightSum = 0;
+        let scoreSum = 0;
+        
+        if (totalEmails > 0) {
+            scoreSum += emailSafety * EMAIL_WEIGHT;
+            weightSum += EMAIL_WEIGHT;
+        }
+        
+        if (totalUrls > 0) {
+            scoreSum += urlSafety * URL_WEIGHT;
+            weightSum += URL_WEIGHT;
+        }
+        
+        if (totalFiles > 0) {
+            scoreSum += fileSafety * FILE_WEIGHT;
+            weightSum += FILE_WEIGHT;
+        }
+        
+        const finalScore = weightSum > 0 ? scoreSum / weightSum : 100;
+        
+        return Math.min(100, Math.max(0, Math.round(finalScore)));
+    };
+    
+    const securityScore = calculateSecurityScore();
 
     const vulnerableItems = [
         ...report.ScannedEmails
@@ -92,8 +138,8 @@ function ReportPage() {
                                     <div>
                                         <span className="item-url overflow-text">
                                             <span style={{marginRight: "8px", opacity: 0.7}}>
-                                                {item.type === 'email' ? '✉️' : 
-                                                 item.type === 'url' ? '🔗' : '📄'}
+                                                {item.type === 'email' ? <Mail size={15}/>: 
+                                                 item.type === 'url' ? <Link size={15}/> : <File size={15}/>}
                                             </span>
                                             {item.name}
                                         </span>
@@ -116,7 +162,7 @@ function ReportPage() {
                                 className={`tab-button btn ${activeTab === 'emails' ? 'btn-primary' : 'btn-secondary'}`}
                                 onClick={() => setActiveTab('emails')}
                             >
-                                {t('tabEmails')}
+                                <span><Mail size={15}/> {t('tabEmails')}</span>
                             </button>
                         </div>
                         <div className="tab-button">
@@ -125,7 +171,7 @@ function ReportPage() {
                                 className={`tab-button btn ${activeTab === 'urls' ? 'btn-primary' : 'btn-secondary'}`}
                                 onClick={() => setActiveTab('urls')}
                             >
-                                {t('tabUrls')}
+                                <span><Link size={15}/> {t('tabUrls')}</span>
                             </button>
                         </div>
                         <div className="tab-button">
@@ -134,7 +180,7 @@ function ReportPage() {
                                 className={`tab-button btn ${activeTab === 'files' ? 'btn-primary' : 'btn-secondary'}`}
                                 onClick={() => setActiveTab('files')}
                             >
-                                {t('tabFiles')}
+                                <span><File size={15}/> {t('tabFiles')}</span>
                             </button>
                         </div>
                     </div>
