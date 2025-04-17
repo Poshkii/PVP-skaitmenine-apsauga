@@ -61,6 +61,12 @@ function Settings() {
                     description={t('settings:animsDsc')}
                     onChangeState={changeContentModuleState}
                 />
+                <ModuleToggle
+                    moduleId={ModuleId.AccountDeleter}
+                    title={t('settings:deleter')}
+                    description={t('settings:deleterDsc')}
+                    onChangeState={changeContentModuleState}
+                />
             </div>
         </>
     );

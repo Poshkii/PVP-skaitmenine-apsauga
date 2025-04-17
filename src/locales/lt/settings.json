@@ -9,5 +9,7 @@
     "scan": "Automatinis atsisiųstų failų skenavimas",
     "scanDsc": "Automatinis atsisiuntimų skenavimas dėl kenkėjiškų programų",
     "anims": "Animacijos ir efektai",
-    "animsDsc": "Valdyti animacijas ir efektus užvedus pelės žymeklį"
+    "animsDsc": "Valdyti animacijas ir efektus užvedus pelės žymeklį",
+    "deleter": "Greitas paskyros ištrinimo mygtukas",
+    "deleterDsc": "Sklandantis mygtukas puslapiuose, kuris nukreipia į paskyros ištrinimą"
 }

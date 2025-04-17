@@ -9,5 +9,7 @@
     "scan": "Automatic Downloads Scanning",
     "scanDsc": "Automatic download scanning for malware",
     "anims": "Animations and effects",
-    "animsDsc": "Control on-hover effects and animations"
+    "animsDsc": "Control on-hover effects and animations",
+    "deleter": "Quick Account Deletion Button",
+    "deleterDsc": "Hover button in pages that will link to account deletion"
 }
