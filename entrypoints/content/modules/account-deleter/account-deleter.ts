@@ -10,7 +10,7 @@ export class AccountDeleter extends Module {
         // send message to background to get deletion url
         this.sendToRuntime({
                 id: BgMessageId.DeletionUrl,
-                data: {domain: window.location.hostname.split("www.")[1]}
+                data: {domain: window.location.hostname.replace("www.", "")}
             },
             (res) => {
                 if (res && res.deletionUrl) {
