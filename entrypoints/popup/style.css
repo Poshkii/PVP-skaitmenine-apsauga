@@ -349,20 +349,6 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-md);
 }
 
-.security-check-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100px;
-  height: 100px;
-  background: var(--accent-gradient);
-  opacity: 0.1;
-  filter: blur(40px);
-  border-radius: 50%;
-  z-index: 0;
-}
-
 .input-box
 {
   padding: 12px;

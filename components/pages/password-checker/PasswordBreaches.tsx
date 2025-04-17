@@ -14,7 +14,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
     const [result, setResult] = useState<Result | null>(null);
     const [isChecking, setIsChecking] = useState(false);
     const { t } = useTranslation('passwords');
-    const { addScannedPaswd } = useReport();
+    //const { addScannedPaswd } = useReport();
 
     useEffect(() => {
         setResult(null);
@@ -57,7 +57,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                     //message: `This password has been found in ${breachCount.toLocaleString()} data breaches.`
                     message:t('found', {count: breachCount})
                 });
-                addScannedPaswd(sha1Password, breachCount);
+                //addScannedPaswd(sha1Password, breachCount);
             } 
             else {
                 setResult({
@@ -66,7 +66,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                     //message: 'This password has not been found in any known data breaches.'
                     message: t('notFound')
                 });
-                addScannedPaswd(sha1Password, 0);
+                //addScannedPaswd(sha1Password, 0);
             }
         } 
         catch (error) {

@@ -1,5 +1,4 @@
 import {Route, Routes} from "react-router";
-import { Cookie } from "lucide-react";
 import PasswordChecker from "@/components/pages/password-checker/PasswordChecker.tsx";
 import FeatureList from "@/components/pages/home/FeatureList.tsx";
 import Settings from "@/components/pages/settings/Settings.tsx";
@@ -11,6 +10,7 @@ import Profile from "@/components/pages/profile/Profile.tsx";
 import Login from "@/components/pages/profile/Login.tsx";
 import Register from "@/components/pages/profile/Register.tsx";
 import Cookies from "@/components/pages/cookies/Cookies";
+import Trackers from "@/components/pages/trackers/Trackers";
 import ReportPage from "@/components/pages/report-page/ReportPage.tsx";
 
 import URLData from "../data-usage/URL/URLDataUsage";
@@ -34,6 +34,7 @@ function HomeRoutes(){
             <Route path="/login" element={<Login />}/>
             <Route path="/register" element={<Register />}/>
             <Route path="/cookies" element={<Cookies />}/>
+            <Route path="/trackers" element={<Trackers />}/>
 
             <Route path="/url-data" element={<URLData />}></Route>
             <Route path="/file-data" element={<FileData />}></Route>
