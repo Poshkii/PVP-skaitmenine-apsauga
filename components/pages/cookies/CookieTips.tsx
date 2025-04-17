@@ -30,7 +30,7 @@ function CookiesTips() {
         <div style={{ 
             display: "flex", 
             flexDirection: "column", 
-            minHeight: "87vh",  // Ensures full height
+            minHeight: "80vh",  // Ensures full height
             height: "100%" // Prevents any scrolling on the container
         }}>
             {/* Content area */}
