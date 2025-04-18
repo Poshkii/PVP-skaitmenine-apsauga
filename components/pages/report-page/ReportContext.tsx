@@ -4,10 +4,17 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 interface Report {
     UrlScans: number; // Reikia pasalinti
     FileScans: number; // Reikia pasalinti
-    ScannedEmails: { email: string; BreachCount: number }[];
-    ScannedUrls: { url: string, Result: string }[];
+    ScannedEmails: { email: string; BreachCount: number, timestamp: number }[];
+    ScannedUrls: { url: string, Result: string, timestamp: number }[];
     ScannedPasswords: { hash: string, BreachCount: number }[];
-    ScannedFiles: { name: string, Result: string }[];
+    ScannedFiles: { name: string, Result: string, timestamp: number }[];
+}
+
+// Scanned file interface to maintain consistency
+interface ScannedFile {
+    name: string;
+    safety: string;
+    timestamp: number;
 }
 
 // Create the context with an initial undefined value
@@ -41,7 +48,17 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
         const loadInitialData = async () => {
             try {
                 const result = await browser.storage.local.get(["UrlScans", "FileScans", "ScannedEmails",
-                                                                "ScannedUrls", "ScannedPasswords", "ScannedFiles"]);
+                                                                "ScannedUrls", "ScannedPasswords", "scannedFiles"]);
+                
+                // Load data from shared scannedFiles array
+                const scannedFiles = result.scannedFiles || [];
+                
+                // Convert to the required format for ScannedFiles
+                const formattedFiles = scannedFiles.map((file: ScannedFile) => ({
+                    name: file.name,
+                    Result: file.safety,
+                    timestamp: file.timestamp
+                }));
                 
                 setReport({
                     UrlScans: result.UrlScans ?? 0,
@@ -49,7 +66,7 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
                     ScannedEmails: result.ScannedEmails ?? [],
                     ScannedUrls: result.ScannedUrls ?? [],
                     ScannedPasswords: result.ScannedPasswords ?? [],
-                    ScannedFiles: result.ScannedFiles ?? []
+                    ScannedFiles: formattedFiles
                 });
             } catch (error) {
                 console.error("Error loading data from browser.storage.local:", error);
@@ -82,20 +99,17 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
             let updatedEmails;
             
             const existingIndex = report.ScannedEmails.findIndex((e) => e.email === email);
+
+            const timestamp = Date.now();
             
             if (existingIndex !== -1) {
                 // Update existing email's breach count
                 updatedEmails = report.ScannedEmails.map((e, i) =>
-                    i === existingIndex ? { ...e, BreachCount: breachCount } : e
+                    i === existingIndex ? { ...e, BreachCount: breachCount, timestamp } : e
                 );
             } else {
                 // Add new scanned email
-                updatedEmails = [...report.ScannedEmails, { email, BreachCount: breachCount }];
-            }
-            
-            // Ensure that the array does not exceed 5 emails
-            if (updatedEmails.length > 5) {
-                updatedEmails = updatedEmails.slice(1); // Remove the first email (oldest)
+                updatedEmails = [...report.ScannedEmails, { email, BreachCount: breachCount, timestamp }];
             }
             
             // Update browser.storage.local
@@ -116,18 +130,15 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
             let updatedUrls;
             
             const existingIndex = report.ScannedUrls.findIndex((e) => e.url === url);
+
+            const timestamp = Date.now();
             
             if (existingIndex !== -1) {
                 updatedUrls = report.ScannedUrls.map((e, i) =>
-                    i === existingIndex ? { ...e, Result: result } : e
+                    i === existingIndex ? { ...e, Result: result, timestamp } : e
                 );
             } else {
-                updatedUrls = [...report.ScannedUrls, { url, Result: result }];
-            }
-            
-            // Ensure that the array does not exceed 5 entries
-            if (updatedUrls.length > 5) {
-                updatedUrls = updatedUrls.slice(1); // Remove the first (oldest)
+                updatedUrls = [...report.ScannedUrls, { url, Result: result, timestamp }];
             }
             
             // Update browser.storage.local
@@ -179,35 +190,35 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
 
     const addScannedFile = async (name: string, result: string) => {
         try {
-            let updatedFiles;
+            // Get existing scanned files
+            const storage = await browser.storage.local.get(["scannedFiles"]);
+            const filesArray = storage.scannedFiles || [];
             
-            const existingIndex = report.ScannedFiles.findIndex((e) => e.name === name);
-            
-            if (existingIndex !== -1) {
-                // Update existing email's breach count
-                updatedFiles = report.ScannedFiles.map((e, i) =>
-                    i === existingIndex ? { ...e, Result: result } : e
-                );
-            } else {
-                // Add new scanned email
-                updatedFiles = [...report.ScannedFiles, { name, Result: result }];
+            // Always add the new file (allowing duplicates)
+            if (name !== "" && result !== "unknown"){
+                filesArray.push({
+                    name: name,
+                    safety: result,
+                    timestamp: Date.now()
+                });
             }
             
-            // Ensure that the array does not exceed 5 emails
-            if (updatedFiles.length > 5) {
-                updatedFiles = updatedFiles.slice(1); // Remove the first email (oldest)
-            }
+            // Update browser.storage.local with the shared array
+            await browser.storage.local.set({ scannedFiles: filesArray });
             
-            // Update browser.storage.local
-            await browser.storage.local.set({ ScannedFiles: updatedFiles });
+            // Update local state for the report context
+            const formattedFiles = filesArray.map((file: ScannedFile) => ({
+                name: file.name, 
+                Result: file.safety,
+                timestamp: file.timestamp
+            }));
             
-            // Update state
             setReport((prevReport) => ({
                 ...prevReport,
-                ScannedFiles: updatedFiles
+                ScannedFiles: formattedFiles
             }));
         } catch (error) {
-            console.error("Error adding scanned email to browser.storage.local:", error);
+            console.error("Error adding scanned file to browser.storage.local:", error);
         }
     };
 
@@ -215,7 +226,7 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
     const clearReport = async () => {
         try {
             await browser.storage.local.remove(["UrlScans", "FileScans", "ScannedEmails",
-                                                "ScannedUrls", "ScannedPasswords", "ScannedFiles"]);
+                                                "ScannedUrls", "ScannedPasswords", "scannedFiles"]);
             setReport(defaultReport);
         } catch (error) {
             console.error("Error clearing data from browser.storage.local:", error);

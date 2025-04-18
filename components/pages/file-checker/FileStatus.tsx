@@ -119,12 +119,27 @@ function FileStatus({inputFile }: { inputFile: string }) {
     
     const [activeTab, setActiveTab] = useState<"file" | "history">("file");
     const { report, updateReport } = useReport();
+    const [showResults, setShowResults] = useState(false);
 
     const [scanType, setScanType] = useState("");
 
     const { sendToModule } = useModuleMessaging();
 
     const { addScannedFile } = useReport();
+
+    const resetFileUpload = () => {
+        setSelectedFile(null);
+        setFileName(inputFile || "");
+        setShowResults(false);
+        setSafety("unknown");
+        setResult("");
+        setParams({
+            name: "",
+            time: 0,
+            scan_results_all: "",
+        });
+        setAvThreats({});
+    };
 
     const viewPreviousScan = async () => {
         const prevResult = await browser.storage.local.get(["previousFileScanUrl"]);
@@ -243,7 +258,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
             const uploadData = await uploadResponse.json();
             const pollUrl = API_URL + FILE_ENDPOINT + '/' + uploadData.data_id;
             pollForResults(pollUrl);
-            //processApiResponse(results);
         } else {
             const errorData = await uploadResponse.json();
             setResult(t('errorCheck'));
@@ -265,8 +279,10 @@ function FileStatus({inputFile }: { inputFile: string }) {
                     FileUpload(selectedFile);
                     setHashError(false);
                 }
-                else
+                else {
                     setIsChecking(false);
+                    setShowResults(true);
+                }
             } else {
                 FileUpload(selectedFile);
             }
@@ -283,8 +299,8 @@ function FileStatus({inputFile }: { inputFile: string }) {
     }
 
     const processApiResponse = (data: any) => {
-        const scanResults = data.scan_results;
-        const scanDetails = data.scan_results.scan_details;
+        const scanResults = data?.scan_results;
+        const scanDetails = data?.scan_results?.scan_details;
         
         if (scanResults) {
             updateReport("FileScans", report.FileScans + 1);
@@ -295,7 +311,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
             const detectedCount = scanResults.total_detected_avs || 0;
             const totalEngines = scanResults.total_avs || 1;
 
-            if (data.file_info) {
+            if (data?.file_info) {
                 setParams ({
                     name: data.file_info.display_name || "",
                     time: scanResults.total_time || 0,
@@ -316,14 +332,14 @@ function FileStatus({inputFile }: { inputFile: string }) {
             if (!hashError) {
                 if (detectedCount > 0) {
                     setSafety("unsafe");
-                    //setResult(`Threats found: ${detectedCount} out of ${totalEngines} antivirus engines.`);
                     setResult(t('threats', {detected: detectedCount, total: totalEngines}));
+                    addScannedFile(fileName, "unsafe");
                 } else {
                     setSafety("safe");
-                    //setResult(`Checked with ${totalEngines} antivirus engines. No threats were found.`);
                     setResult(t('noThreats', {total: totalEngines}));
+                    addScannedFile(fileName, "safe");
                 }
-                addScannedFile(fileName, safety);
+                setShowResults(true);
             }
         } else {
             setSafety("unknown");
@@ -332,15 +348,15 @@ function FileStatus({inputFile }: { inputFile: string }) {
     };
 
     const processPreviousApiResponse = (data: any) => {
-        const scanResults = data.scan_results;
-        const scanDetails = data.scan_results.scan_details;
+        const scanResults = data?.scan_results;
+        const scanDetails = data?.scan_results?.scan_details;
 
         if (scanResults) {
             // skenavimo "varikliu" kiekis gaunamas
             const detectedCount = scanResults.total_detected_avs || 0;
             const totalEngines = scanResults.total_avs || 1;
 
-            if (data.file_info) {
+            if (data?.file_info) {
                 setPrevParams ({
                     name: data.file_info.display_name || "",
                     time: scanResults.total_time || 0,
@@ -388,38 +404,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
         }
     }, [inputFile]);
 
-    useEffect(() => {
-        // Function to load scanned files from storage
-        const loadScannedFiles = async () => {
-            const result = await browser.storage.local.get(["scannedFiles"]);
-            const filesArray = result.scannedFiles || [];
-            
-            // Use these files with your report context
-            filesArray.forEach((file: { name: string; safety: string; }) => {
-                addScannedFile(file.name, file.safety);
-            });
-            
-            // sitas galimai sulauzo programa su upload skenavimu
-            //await browser.storage.local.set({ "scannedFiles": [] });
-        };
-        
-        // Initial load
-        loadScannedFiles();
-        
-        // Optional: Set up a listener for storage changes
-        const storageListener = (changes: any, areaName: string) => {
-            if (areaName === "local" && changes.scannedFiles) {
-                loadScannedFiles();
-            }
-        };
-        
-        browser.storage.onChanged.addListener(storageListener);
-        
-        return () => {
-            browser.storage.onChanged.removeListener(storageListener);
-        };
-    }, [addScannedFile]);
-
     const navigate = useNavigate();
 
     return (
@@ -441,154 +425,99 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         {t('prevScan')}
                     </button>
                 </div>
+                {scanType? scanType : "unknown"}<br></br>{safety}
         
             {activeTab === "file" && (
                 <>
-                <div className="security-check-container glassmorphism">
-                    <label
-                    className="file-upload-zone"
-                    htmlFor="file-upload"
-                    onDragOver={preventDefaults}
-                    onDragEnter={preventDefaults}
-                    onDragLeave={preventDefaults}
-                    onDrop={dropZoneUpload}
-                    >
-                    <Upload size={40} color="var(--accent-primary)" />
-                    <div className="status-text">
-                        {t('select')}
-                    </div>
-                    {fileName && (
-                        <div className="file-name-display" title={fileName}>
-                        {fileName}
-                        </div>
-                    )}
-                    </label>
-                    <input
-                    id="file-upload"
-                    type="file"
-                    onChange={fileUpload}
-                    className="hidden-input"
-                    />
-                </div>
-        
-                <div className="action-buttons">
-                    <button
-                        style={{margin: "0 auto"}}
-                        onClick={FileChecker}
-                        disabled={!selectedFile || isChecking}
-                        className={`btn btn-primary ${(!selectedFile || isChecking) ? 'disabled-button' : ''}`}>
-                        {isChecking ? (
-                            <div className="button-content">
-                            <div className="loading-spinner"></div>
-                                {t('analyzing')}
-                            </div>
-                        ) : (
-                            <div className="button-content">
-                            <Shield size={20} />
-                                {t('scan')}
-                            </div>
-                        )}
-                    </button>
-                </div>
-                {scanType}
-                <br></br>
-                {isChecking === true ? "tikrina" : "netikrina"}
-        
-                {!isChecking && result && (
-                    <div style={{marginTop:"24px"}} className="security-check-container glassmorphism">
-                    <div className="security-status">
-                        <div className="status-icon">
-                            {safety === "safe" ? (
-                                <Check size={32}/>
-                            ) : safety === "unsafe" ? (
-                                <AlertTriangle size={32} style={{color:"var(--error)"}}/>
-                            ) : (
-                                <Info size={32} />
-                            )}
-                        </div>
-                        <div className="status-text">
-                            <h3 className="status-title">
-                                {safety === "safe" 
-                                ? t('safe')
-                                : safety === "unsafe" 
-                                    ? t('detected')
-                                    : t('results')}
-                            </h3>
-                            <p className="status-description">{result}</p>
-                            {params.time > 0 && (
-                                <p className="status-description">
-                                {t('completedTime', {seconds: (params.time / 1000).toFixed(2)})}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-        
-                    {(params.scan_results_all && Object.entries(avThreats).length > 0) && (
-                        <div style={{marginTop: "24px"}}>
-                        <h3 className="recent-list-title">Threat Details</h3>
-                        <div className="recent-items">
-                            {Object.entries(avThreats).map(([engine, threat], index) => (
-                            <div key={index} className="status-badge suspicious">
-                                <div className="recent-item-text">
-                                <div className="item-url">{engine}</div>
-                                <div className="">
-                                    {typeof threat === "string" ? threat : JSON.stringify(threat)}
-                                </div>
-                                </div>
-                            </div>
-                            ))}
-                        </div>
-                        </div>
-                    )}
-                    </div>
-                )}
-                </>
-            )}
-        
-            {activeTab === "history" && (
-                <div className="security-check-container glassmorphism">
-                <h3 className="recent-list-title">{t('lastChecked')}</h3>
-        
-                {prevResult ? (
+                {!showResults ? (
                     <>
-                    {prevParams.name && (
+                    <div className="security-check-container glassmorphism">
+                        <label
+                        className="file-upload-zone"
+                        htmlFor="file-upload"
+                        onDragOver={preventDefaults}
+                        onDragEnter={preventDefaults}
+                        onDragLeave={preventDefaults}
+                        onDrop={dropZoneUpload}
+                        >
+                        <Upload size={40} color="var(--accent-primary)" />
                         <div className="status-text">
-                        {t('fileName')} <strong>{prevParams.name.split(/[/\\]/).pop()}</strong>
+                            {t('select')}
                         </div>
-                    )}
-
-                    <div className="security-status" style={{marginTop: "24px"}}>
-                        <div className="status-icon">
-                        {prevSafety === "safe" ? (
-                            <Check size={32}/>
-                        ) : prevSafety === "unsafe" ? (
-                            <AlertTriangle size={32} style={{color:"var(--error)"}}/>
-                        ) : (
-                            <Info size={32} />
+                        {fileName && (
+                            <div className="file-name-display" title={fileName}>
+                            {fileName}
+                            </div>
                         )}
-                        </div>
-                        <div className="status-text">
-                            <h3 className="status-title">
-                                {prevSafety === "safe" 
-                                ? t('safe')
-                                : prevSafety === "unsafe" 
-                                    ? t('detected')
-                                    : t('results')}
-                            </h3>
-                            <p className="status-description">{prevResult}</p>
-                            {prevParams.time > 0 && (
-                                <p className="status-description">
-                                {t('completedTime', {seconds: (params.time / 1000).toFixed(2)})}
-                                </p>
-                            )}
-                        </div>
+                        </label>
+                        <input
+                        id="file-upload"
+                        type="file"
+                        onChange={fileUpload}
+                        className="hidden-input"
+                        />
                     </div>
-        
-                    {(prevParams.scan_results_all && Object.entries(prevAvThreats).length > 0) && (
-                        <div style={{marginTop: "24px"}}>
+            
+                    <div className="action-buttons">
+                        <button
+                            style={{margin: "0 auto"}}
+                            onClick={FileChecker}
+                            disabled={!selectedFile || isChecking}
+                            className={`btn btn-primary ${(!selectedFile || isChecking) ? 'disabled-button' : ''}`}>
+                            {isChecking ? (
+                                <div className="button-content">
+                                <div className="loading-spinner"></div>
+                                    {t('analyzing')}
+                                </div>
+                            ) : (
+                                <div className="button-content">
+                                <Shield size={20} />
+                                    {t('scan')}
+                                </div>
+                            )}
+                        </button>
+                    </div>
+                    </>
+                ) : (
+                    <div className="security-check-container glassmorphism">
+                        <h3 className="recent-list-title">{t('newChecked')}</h3>
+                        <div>
+                            <div className="status-text overflow-text" style={{maxWidth:"95%"}}>
+                                {t('fileName')} <span ><strong>{params.name.split(/[/\\]/).pop()}</strong></span>
+                            </div>
+                        </div>
+                        <div className="security-status" style={{marginTop: "24px"}}>
+                            <div className="status-icon">
+                                {safety === "safe" ? (
+                                    <Check size={32}/>
+                                ) : safety === "unsafe" ? (
+                                    <AlertTriangle size={32} style={{color:"var(--error)"}}/>
+                                ) : (
+                                    <Info size={32} />
+                                )}
+                            </div>
+                            <div className="status-text">
+                                <h3 className="status-title">
+                                    {safety === "safe" 
+                                    ? t('safe')
+                                    : safety === "unsafe" 
+                                        ? t('detected')
+                                        : t('results')}
+                                </h3>
+                                <p className="status-description">{result}</p>
+                                {params.time > 0 && (
+                                    <p className="status-description">
+                                    {t('completedTime', {seconds: (params.time / 1000).toFixed(2)})}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+            
+                        {(params.scan_results_all && Object.entries(avThreats).length > 0) && (
+                            <div style={{marginTop: "24px"}}>
                             <h3 className="recent-list-title">Threat Details</h3>
                             <div className="recent-items">
-                                {Object.entries(prevAvThreats).map(([engine, threat], index) => (
+                                {Object.entries(avThreats).map(([engine, threat], index) => (
                                 <div key={index} className="status-badge suspicious">
                                     <div className="recent-item-text">
                                     <div className="item-url">{engine}</div>
@@ -599,14 +528,89 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 </div>
                                 ))}
                             </div>
+                            </div>
+                        )}
+                        
+                        <div className="action-buttons" style={{marginTop: "24px"}}>
+                            <button
+                                style={{margin: "0 auto"}}
+                                onClick={resetFileUpload}
+                                className="btn btn-primary">
+                                <div className="button-content">
+                                    <Upload size={20} />
+                                    {t('newScan')}
+                                </div>
+                            </button>
                         </div>
-                    )}
-                    </>
-                ) : (
-                    <div style={{marginTop: "16px", color: "var(--text-muted)"}}>
-                        {t('noScans')}
                     </div>
                 )}
+                </>
+            )}
+        
+            {activeTab === "history" && (
+                <div className="security-check-container glassmorphism">
+                    <h3 className="recent-list-title">{t('lastChecked')}</h3>
+            
+                    {prevResult ? (
+                        <>
+                        {prevParams.name && (
+                            <div>
+                                <div className="status-text overflow-text" style={{maxWidth:"95%"}}>
+                                    {t('fileName')} <span ><strong>{prevParams.name.split(/[/\\]/).pop()}</strong></span>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="security-status" style={{marginTop: "24px"}}>
+                            <div className="status-icon">
+                            {prevSafety === "safe" ? (
+                                <Check size={32}/>
+                            ) : prevSafety === "unsafe" ? (
+                                <AlertTriangle size={32} style={{color:"var(--error)"}}/>
+                            ) : (
+                                <Info size={32} />
+                            )}
+                            </div>
+                            <div className="status-text">
+                                <h3 className="status-title">
+                                    {prevSafety === "safe" 
+                                    ? t('safe')
+                                    : prevSafety === "unsafe" 
+                                        ? t('detected')
+                                        : t('results')}
+                                </h3>
+                                <p className="status-description">{prevResult}</p>
+                                {prevParams.time > 0 && (
+                                    <p className="status-description">
+                                    {t('completedTime', {seconds: (prevParams.time / 1000).toFixed(2)})}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+            
+                        {(prevParams.scan_results_all && Object.entries(prevAvThreats).length > 0) && (
+                            <div style={{marginTop: "24px"}}>
+                                <h3 className="recent-list-title">Threat Details</h3>
+                                <div className="recent-items">
+                                    {Object.entries(prevAvThreats).map(([engine, threat], index) => (
+                                    <div key={index} className="status-badge suspicious">
+                                        <div className="recent-item-text">
+                                        <div className="item-url">{engine}</div>
+                                        <div className="">
+                                            {typeof threat === "string" ? threat : JSON.stringify(threat)}
+                                        </div>
+                                        </div>
+                                    </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        </>
+                    ) : (
+                        <div style={{marginTop: "16px", color: "var(--text-muted)"}}>
+                            {t('noScans')}
+                        </div>
+                    )}
                 </div>
             )}
             </div>

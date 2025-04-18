@@ -11,7 +11,7 @@
     "files": "Failų nuskaitymai",
     "recentVulns": "Neseniai aptikti pažeidžiamumai: ",
     "nothing": "Kol kas grėsmių nerasta...",
-    "date": "Nuskenuota {{date, YYYY-MM-DD}}",
+    "date": "Nuskenuota ",
     "breaches": "{{count}} nutekėjimai",
     "secure": "Saugu",
     "recent": "Naujausi saugos tikrinimai",

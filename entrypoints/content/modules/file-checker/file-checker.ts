@@ -141,24 +141,23 @@ export class FileChecker extends Module {
         const scanResults = data.scan_results;
         
         if (scanResults) {
-            //Report update
             try {
-                // Get the filename from the data or use a default
                 let filename = data.file_info?.display_name || "Unknown file";
                 filename = filename.split(/[/\\]/).pop() || filename;
                 
-                // Determine safety status
                 const detectedCount = scanResults.total_detected_avs || 0;
-                const safety = detectedCount > 0 ? "unsafe" : "safe";
+                const safety = detectedCount > 0 ? "unsafe" : detectedCount == 0? "safe" : "unknown";
 
-                const scannedFiles = await chrome.storage.local.get(["scannedFiles"]);
-                const filesArray = scannedFiles.scannedFiles || [];
+                const storage = await chrome.storage.local.get(["scannedFiles"]);
+                const filesArray = storage.scannedFiles || [];
 
-                filesArray.push({
-                    name: filename,
-                    safety: safety,
-                    timestamp: Date.now()
-                });
+                if (filename !== "" && safety !== "unknown") {
+                    filesArray.push({
+                        name: filename,
+                        safety: safety,
+                        timestamp: Date.now()
+                    });
+                }
 
                 await chrome.storage.local.set({
                     "scannedFiles": filesArray
@@ -238,23 +237,7 @@ export class FileChecker extends Module {
 
         await this.processScanResults(results);
 
-        //this.sendToRuntime({id: UiMessageId.ScanFinished});
-
-        //showNotification("File Checker", 'Scan finished. Check "Previous Scan" in the extension.')
-
-        // FIXME: opening popup doesn't work because "the browser is unfocused". Not sure if fixable.
-        // const notifListener = (notificationId: string) => {
-        //     if (notifId !== notificationId){
-        //         return;
-        //     }
-        //     waitForPopup(() => {
-        //         browser.runtime.sendMessage({id: UiMessageId.NavigateTo, data: "/file-checker"});
-        //     });
-        //
-        //     browser.notifications.onClicked.removeListener(notifListener);
-        // }
-        //
-        // browser.notifications.onClicked.addListener(notifListener);
+        this.sendToRuntime({id: UiMessageId.ScanFinished});
     }
 
     handleMessage(message: ModuleMessage): any {

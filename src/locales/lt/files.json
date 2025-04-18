@@ -17,5 +17,6 @@
     "results": "Skenavimo rezultatai",
     "fileName": "Failo pavadinimas:",
     "noScans": "Nerasta ankstesnių skenavimo įrašų",
-    "lastChecked": "Paskutinis skenuotas failas"
+    "lastChecked": "Paskutinis skenuotas failas",
+    "newChecked": "Skenavimo rezultatai"
 }

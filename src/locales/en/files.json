@@ -17,5 +17,6 @@
     "results": "Scan Results",
     "fileName": "File Name:",
     "noScans": "No previous scan records found",
-    "lastChecked": "Last Scanned File"
+    "lastChecked": "Last Scanned File",
+    "newChecked": "Scan Results"
 }

@@ -62,24 +62,27 @@ function ReportPage() {
             .map(email => ({
                 type: 'email',
                 name: email.email,
-                status: t('breaches', {count: email.BreachCount})
+                status: t('breaches', {count: email.BreachCount}),
+                timestamp: email.timestamp
             })),
         ...report.ScannedUrls
             .filter(url => url.Result !== "Safe")
             .map(url => ({
                 type: 'url',
                 name: url.url,
-                status: url.Result
+                status: url.Result,
+                timestamp: url.timestamp
             })),
         ...report.ScannedFiles
             .filter(file => file.Result === "unsafe")
             .map(file => ({
                 type: 'file',
                 name: file.name,
-                status: file.Result
+                status: file.Result,
+                timestamp: file.timestamp
             }))
     ];
-    const recentVulnerableItems = vulnerableItems.slice(-5).reverse();
+    const recentVulnerableItems = vulnerableItems.sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
 
     return (
         <div className="middle-menu">
@@ -143,7 +146,8 @@ function ReportPage() {
                                             </span>
                                             {item.name}
                                         </span>
-                                        <p className="status-description">{t('date', {date: format(new Date(), 'yyyy-MM-dd')})}</p>
+                                        <p className="status-description">{t('date')}</p>
+                                        <p className="status-description">{new Date(item.timestamp).toLocaleString()}</p>
                                     </div>
                                     <span className="status-badge suspicious">
                                         {item.status}
@@ -198,7 +202,8 @@ function ReportPage() {
                                             <li className="recent-item" key={index}>
                                                 <div>
                                                     <span className="item-url overflow-text">{email.email}</span>
-                                                    <p className="status-description">{t('date', {date: format(new Date(), 'yyyy-MM-dd')})}</p>
+                                                    <p className="status-description">{t('date')}</p>
+                                                    <p className="status-description">{new Date(email.timestamp).toLocaleString()}</p>
                                                 </div>
                                                 <span className={`status-badge ${email.BreachCount > 0 ? 'suspicious' : 'safe'}`}>
                                                     {email.BreachCount > 0 ? t('breaches', {count: email.BreachCount}) : t('safe')}
@@ -222,7 +227,8 @@ function ReportPage() {
                                             <li className="recent-item" key={index}>
                                                 <div>
                                                     <span className="item-url overflow-text">{url.url}</span>
-                                                    <p className="status-description">{t('date', {date: format(new Date(), 'yyyy-MM-dd')})}</p>
+                                                    <p className="status-description">{t('date')}</p>
+                                                    <p className="status-description">{new Date(url.timestamp).toLocaleString()}</p>
                                                 </div>
                                                 <span className={`status-badge ${url.Result !== "Safe" ? 'suspicious' : 'safe'}`}>
                                                     {url.Result !== "Safe" ? url.Result : url.Result}
@@ -246,7 +252,8 @@ function ReportPage() {
                                             <li className="recent-item" key={index}>
                                                 <div>
                                                     <span className="item-url overflow-text">{name.name}</span>
-                                                    <p className="status-description">{t('date', {date: format(new Date(), 'yyyy-MM-dd')})}</p>
+                                                    <p className="status-description">{t('date')}</p>
+                                                    <p className="status-description">{new Date(name.timestamp).toLocaleString()}</p>
                                                 </div>
                                                 <span className={`status-badge ${name.Result === "unsafe" ? 'suspicious' : 'safe'}`}>
                                                     {name.Result === "unsafe" ? name.Result : t('safe')}

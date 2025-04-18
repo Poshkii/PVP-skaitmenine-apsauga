@@ -11,7 +11,7 @@
     "files": "File Scans",
     "recentVulns": "Recent Detected Vulnerabilities: ",
     "nothing": "No threats have been found yet...",
-    "date": "Scanned on {{date, YYYY-MM-DD}}",
+    "date": "Scanned on ",
     "breaches": "{{count}} Breaches",
     "secure": "Secure",
     "recent": "Latest Safety Checks",
