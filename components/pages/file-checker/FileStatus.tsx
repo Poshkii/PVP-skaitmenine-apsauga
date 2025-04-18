@@ -7,7 +7,6 @@ import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {useNavigate} from "react-router";
 import { useTranslation } from "react-i18next";
-import { is } from "date-fns/locale";
 
 const API_URL = String(useAppConfig().metaDefenderApiUrl);
 const HASH_ENDPOINT = "/hash";

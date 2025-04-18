@@ -103,10 +103,13 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
             const timestamp = Date.now();
             
             if (existingIndex !== -1) {
-                // Update existing email's breach count
+                // Update the existing email if the breach count is different from the prior value
                 updatedEmails = report.ScannedEmails.map((e, i) =>
-                    i === existingIndex ? { ...e, BreachCount: breachCount, timestamp } : e
+                    i === existingIndex && (e.BreachCount !== breachCount)
+                        ? { ...e, BreachCount: breachCount, timestamp }
+                        : e
                 );
+
             } else {
                 // Add new scanned email
                 updatedEmails = [...report.ScannedEmails, { email, BreachCount: breachCount, timestamp }];
@@ -132,12 +135,19 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
             const existingIndex = report.ScannedUrls.findIndex((e) => e.url === url);
 
             const timestamp = Date.now();
+
+            
             
             if (existingIndex !== -1) {
+                // Update the existing URL if the result is different from the prior value or if it's the first time there was a result
                 updatedUrls = report.ScannedUrls.map((e, i) =>
-                    i === existingIndex ? { ...e, Result: result, timestamp } : e
+                    i === existingIndex && (e.Result !== result)
+                        ? { ...e, Result: result, timestamp }
+                        : e
                 );
+                await browser.storage.local.set({ urlrestult: "duplicate" });
             } else {
+                // Add new scanned URL
                 updatedUrls = [...report.ScannedUrls, { url, Result: result, timestamp }];
             }
             
