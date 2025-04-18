@@ -1,6 +1,6 @@
 import {Module, ModuleId} from "@/entrypoints/content/types/module.ts";
-import extIcon from "@/assets/icon.png";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
+import {createElement, Trash} from "lucide";
 
 export class AccountDeleter extends Module {
     readonly id = ModuleId.AccountDeleter;
@@ -51,11 +51,9 @@ export class AccountDeleter extends Module {
         });
 
         // add icon
-        const icon = document.createElement('img');
-        icon.src = extIcon;
-        icon.width = 32;
-        icon.height = 32;
-        icon.style.objectFit = 'contain';
+        const icon = createElement(Trash);
+        icon.setAttribute('width', '32');
+        icon.setAttribute('height', '32');
 
         button.appendChild(icon);
 
