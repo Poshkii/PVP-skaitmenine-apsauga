@@ -2,7 +2,7 @@
     "pageName": "Phishing Checker in Email",
     "check": "Check",
     "clear": "Clear",
-    "scanAgain": "Scan Again",
-    "checkNow": "Scan now",
+    "scan": "Scan Email",
+    "checkNow": "New Scan",
     "prevScan": "Previous scan"
 }

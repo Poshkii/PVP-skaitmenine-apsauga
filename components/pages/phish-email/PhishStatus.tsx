@@ -6,6 +6,15 @@ import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 
+interface EmailData {
+    sender: string;
+    senderMail: string;
+    date: string;
+    subject: string;
+    body: string;
+    timestamp: number; // When the scan was performed
+  }
+
 function PhishStatus() {
     const { t } = useTranslation('phishEmail');
     const navigate = useNavigate();
@@ -15,11 +24,29 @@ function PhishStatus() {
     const [date, setDate] = useState("");
     const [subject, setSubject] = useState("");
     const [body, setBody] = useState("");
-    const [email, setEmail] = useState("");
     const [result, setResult] = useState("");
     const [activeTab, setActiveTab] = useState<"checkNow" | "prevScan">("checkNow");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [previousScan, setPreviousScan] = useState<EmailData | null>(null);
+    const [showBody, setShowBody] = useState(false);
+    const [showPrevBody, setShowPrevBody] = useState(false);
+
+    // Load previous scan when component mounts
+    useEffect(() => {
+        const loadPreviousScan = async () => {
+            try {
+                const result = await browser.storage.local.get('lastScan');
+                if (result.lastScan) {
+                    setPreviousScan(result.lastScan);
+                }
+            } catch (error) {
+                console.error("Error loading previous scan:", error);
+            }
+        };
+        
+        loadPreviousScan();
+    }, []);
 
     useEffect(() => {
         const messageListener = (message : any) => {
@@ -34,6 +61,18 @@ function PhishStatus() {
                 setBody(message.data.body || "");
                 setResult("Email data successfully retrieved");
                 setLoading(false);
+
+                // Save as previous scan
+                const scanData = {
+                    sender: message.data.sender || "",
+                    senderMail: message.data.senderMail || "",
+                    date: message.data.date || "",
+                    subject: message.data.subject || "",
+                    body: message.data.body || "",
+                    timestamp: Date.now()
+                };
+                
+                saveScan(scanData);
             }
         };
 
@@ -44,11 +83,26 @@ function PhishStatus() {
         };
     }, []);
 
+    const saveScan = async (scanData: EmailData) => {
+        if (!scanData.sender && !scanData.body) return; // Don't save empty scans
+        
+        try {
+            // Update state
+            setPreviousScan(scanData);
+            
+            // Save to browser storage
+            await browser.storage.local.set({ lastScan: scanData });
+        } catch (error) {
+            console.error("Error saving scan:", error);
+        }
+    };
+
     const handleClear = () => {
         setSender("");
+        setDate("");
         setBody("");
-        setEmail("");
         setResult("");
+        setSenderMail("");
         setSubject("");
     };
     const sendMessage = () => {
@@ -68,7 +122,7 @@ function PhishStatus() {
                     setLoading(false);
                     setError("Timeout: No response received from the page. Make sure you're on a Gmail or Outlook page.");
                 }
-            }, 20);
+            }, 5000);
             
         } catch (error) {
             console.error("Error sending message:", error);
@@ -77,15 +131,28 @@ function PhishStatus() {
         }
     };
 
-    const PhishChecker = async () => {
+
+    const PhishChecker = () => {
         // Reset states
         setResult("");
         setError("");
         
-        // Call sendMessage again to refresh the data
+        // Call sendMessage to get new data
         sendMessage();
+    };
+
+    const formatDate = (timestamp: number) => {
+        const date = new Date(timestamp);
         
-        // Phishing detection logic will be handled after we receive the response
+        // Get components
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        // Format as YYYY-MM-DD HH:MM
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
     };
 
     return (
@@ -95,7 +162,7 @@ function PhishStatus() {
 
                 <div className="tab-buttons">
                     <button 
-                        onClick={() => { setActiveTab("checkNow"); sendMessage();} }
+                        onClick={() => { setActiveTab("checkNow");} }
                         className={`btn ${activeTab === "checkNow" ? "btn-primary" : "btn-secondary"} tab-button`}>
                         {t('checkNow')}
                     </button>
@@ -114,73 +181,172 @@ function PhishStatus() {
                     {error && <div className="error-message">{error}</div>}
                     
                     {activeTab === "checkNow" && (
-                        <div className="email-data">
-                            {sender && (
-                                <div className="status-description">
-                                    <strong>Sender:</strong> {sender}
+                        <div>
+                            {!sender && !senderMail && !subject && !date && !body ? (
+                                // Empty state placeholder
+                                <div className="empty-container-placeholder">
+                                    <div className="placeholder-icon">
+                                        <Info size={40} color="var(--accent-primary)" />
+                                    </div>
+                                    <div className="placeholder-text">
+                                        Your email will be displayed here after scanning
+                                    </div>
+                                    <div className="placeholder-subtext">
+                                        Click the "Scan Email" button to analyze the current email
+                                    </div>
                                 </div>
-                            )}
+                            ) : (
+                            // Email data display
+                            <>
+                                {sender && (
+                                    <div className="status-description">
+                                        <strong>Sender:</strong> {sender}
+                                    </div>
+                                )}
 
-                            {senderMail && (
-                                <div className="status-description">
-                                    <strong>Sender email:</strong> {senderMail}
-                                </div>
-                            )}
-                            
-                            {subject && (
-                                <div className="status-description">
-                                    <strong>Subject:</strong> {subject}
-                                </div>
-                            )}
+                                {senderMail && (
+                                    <div className="status-description">
+                                        <strong>Sender email:</strong> {senderMail}
+                                    </div>
+                                )}
+                                
+                                {subject && (
+                                    <div className="status-description">
+                                        <strong>Subject:</strong> {subject}
+                                    </div>
+                                )}
 
-                            {date && (
-                                <div className="status-description">
-                                    <strong>Sender:</strong> {date}
-                                </div>
-                            )}
-                            
-                            {body && (
-                                <div className="status-description">
-                                    <strong>Body:</strong>
-                                    <div 
-                                        className="email-body" 
-                                        dangerouslySetInnerHTML={{ __html: body }}
-                                        style={{
-                                            maxHeight: "150px", /* Limit the body height */
-                                            overflowY: "auto",  /* Add scrollbar to body specifically */
-                                            padding: "8px",
-                                            border: "1px solid #eee",
-                                            borderRadius: "4px",
-                                            marginTop: "5px"
-                                        }}
-                                    ></div>
-                                </div>
-                            )}
-                            
+                                {date && (
+                                    <div className="status-description">
+                                        <strong>Date:</strong> {date}
+                                    </div>
+                                )}
+                                
+                                {body && (
+                                    <div className="status-description">
+                                        <strong>Body:</strong>
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            style={{ marginLeft: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
+                                            onClick={() => setShowBody(!showBody)}
+                                        >
+                                            {showBody ? "Hide body" : "Reveal body"}
+                                        </button>
+                                        {showBody && (
+                                            <div 
+                                                className="email-body" 
+                                                dangerouslySetInnerHTML={{ __html: body }}
+                                                style={{
+                                                    maxHeight: "150px", /* Limit the body height */
+                                                    overflowY: "auto",  /* Add scrollbar to body specifically */
+                                                    padding: "8px",
+                                                    border: "1px solid #eee",
+                                                    borderRadius: "4px",
+                                                    marginTop: "5px"
+                                                }}
+                                            ></div>
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        )}
                         </div>
                     )}
                     
                     {activeTab === "prevScan" && (
-                        <div className="previous-scans">
-                            {/* Display previous scan history here */}
-                            <p>No previous scans found.</p>
+                        <div>
+                            {!previousScan ? (
+                                <div className="no-scans-message">No previous scan available</div>
+                            ) : (
+                                <div>
+                                    
+                                    {previousScan.sender && (
+                                        <div className="status-description">
+                                            <strong>Sender:</strong> {previousScan.sender}
+                                        </div>
+                                    )}
+                                    
+                                    {previousScan.senderMail && (
+                                        <div className="status-description">
+                                            <strong>Sender email:</strong> {previousScan.senderMail}
+                                        </div>
+                                    )}
+                                    
+                                    {previousScan.subject && (
+                                        <div className="status-description">
+                                            <strong>Subject:</strong> {previousScan.subject}
+                                        </div>
+                                    )}
+                                    
+                                    {previousScan.date && (
+                                        <div className="status-description">
+                                            <strong>Date:</strong> {previousScan.date}
+                                        </div>
+                                    )}
+                                    
+                                    {previousScan.body && (
+                                        <div className="status-description">
+                                            <strong>Body:</strong>
+                                            <button 
+                                                className="btn btn-secondary" 
+                                                style={{ marginLeft: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
+                                                onClick={() => setShowPrevBody(!showPrevBody)}
+                                            >
+                                                {showPrevBody ? "Hide body" : "Reveal body"}
+                                            </button>
+                                            {showPrevBody && (
+                                                <div 
+                                                    className="email-body" 
+                                                    dangerouslySetInnerHTML={{ __html: previousScan.body }}
+                                                    style={{
+                                                        maxHeight: "150px",
+                                                        overflowY: "auto",
+                                                        padding: "8px",
+                                                        border: "1px solid #eee",
+                                                        borderRadius: "4px",
+                                                        marginTop: "5px"
+                                                    }}
+                                                ></div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="status-description">
+                                        <strong>Time of the scan:</strong> ({formatDate(previousScan.timestamp)})
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
 
                 <div className="action-buttons">
+                    {activeTab === "checkNow" && (
                     <button 
                         className="btn btn-secondary" 
                         onClick={handleClear}
                         disabled={loading}>
                         {t('clear')}
                     </button>
-                    <button 
-                        className="btn btn-primary" 
-                        onClick={PhishChecker}
-                        disabled={loading}>
-                        {loading ? "Processing..." : t('scanAgain')}
-                    </button>
+                    )}
+                    {activeTab === "checkNow" && (
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={PhishChecker}
+                            disabled={loading}>
+                            {loading ? "Processing..." : t('scan')}
+                        </button>
+                    )}
+                    {activeTab === "prevScan" && previousScan && (
+                        <button 
+                            className="btn btn-danger" 
+                            onClick={async () => {
+                                await browser.storage.local.remove('lastScan');
+                                setPreviousScan(null);
+                            }}>
+                            Clear Previous Scan
+                        </button>
+                    )}
                 </div>
             </div>
         </>
