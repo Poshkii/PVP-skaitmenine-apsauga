@@ -11,6 +11,8 @@ function PhishStatus() {
     const navigate = useNavigate();
     const { sendToModule } = useContentMessaging();
     const [sender, setSender] = useState("");
+    const [senderMail, setSenderMail] = useState("");
+    const [date, setDate] = useState("");
     const [subject, setSubject] = useState("");
     const [body, setBody] = useState("");
     const [email, setEmail] = useState("");
@@ -26,6 +28,8 @@ function PhishStatus() {
                 
                 // Update state with the received data
                 setSender(message.data.sender || "");
+                setSenderMail(message.data.senderMail || "");
+                setDate(message.data.date || "");
                 setSubject(message.data.subject || "");
                 setBody(message.data.body || "");
                 setResult("Email data successfully retrieved");
@@ -112,27 +116,47 @@ function PhishStatus() {
                     {activeTab === "checkNow" && (
                         <div className="email-data">
                             {sender && (
-                                <div className="data-item">
+                                <div className="status-description">
                                     <strong>Sender:</strong> {sender}
+                                </div>
+                            )}
+
+                            {senderMail && (
+                                <div className="status-description">
+                                    <strong>Sender email:</strong> {senderMail}
                                 </div>
                             )}
                             
                             {subject && (
-                                <div className="data-item">
+                                <div className="status-description">
                                     <strong>Subject:</strong> {subject}
+                                </div>
+                            )}
+
+                            {date && (
+                                <div className="status-description">
+                                    <strong>Sender:</strong> {date}
                                 </div>
                             )}
                             
                             {body && (
-                                <div className="data-item">
+                                <div className="status-description">
                                     <strong>Body:</strong>
-                                    <div className="email-body" dangerouslySetInnerHTML={{ __html: body }}></div>
+                                    <div 
+                                        className="email-body" 
+                                        dangerouslySetInnerHTML={{ __html: body }}
+                                        style={{
+                                            maxHeight: "150px", /* Limit the body height */
+                                            overflowY: "auto",  /* Add scrollbar to body specifically */
+                                            padding: "8px",
+                                            border: "1px solid #eee",
+                                            borderRadius: "4px",
+                                            marginTop: "5px"
+                                        }}
+                                    ></div>
                                 </div>
                             )}
                             
-                            {result && (
-                                <div className="result-message">{result}</div>
-                            )}
                         </div>
                     )}
                     

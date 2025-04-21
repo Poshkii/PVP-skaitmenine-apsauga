@@ -44,11 +44,13 @@ export class PhishChecker extends Module {
     private parseGmailEmail() {
         try {
             // Basic Gmail selectors - you may need to adjust these
-            const sender = document.querySelector('.gD')?.getAttribute('email') || 'Unknown sender';
+            const senderMail = document.querySelector('.gD')?.getAttribute('email') || 'Unknown sender email';
+            const sender = document.querySelector('.gD')?.getAttribute('name') || 'Unknown sender';
+            const date = document.querySelector('.g3')?.getAttribute('title') || 'No date';
             const subject = document.querySelector('.hP')?.textContent || 'No subject';
             const body = document.querySelector('.a3s.aiL')?.innerHTML || 'No body content found';
             
-            return { sender, subject, body };
+            return { senderMail, sender, date, subject, body };
         } catch (error) {
             console.error("Error parsing Gmail:", error);
             return { sender: "Error", subject: "Error", body: "Failed to parse Gmail content" };
@@ -58,129 +60,97 @@ export class PhishChecker extends Module {
         try {
             console.log("Parsing ProtonMail email");
             
-            // 1. Sender - Using data-testid attributes
-            let sender = '';
-            const senderSelectors = [
-                '[data-testid="message-header:from-value"]',
-                '[data-testid="message-header:sender-address"]',
-                '[data-testid="message-header:sender"]',
-                '[data-testid="message-header:from"]',
-                // Fallbacks
-                '.message-header-sender-address',
-                '.message-sender-address'
-            ];
-            
-            for (const selector of senderSelectors) {
-                const element = document.querySelector(selector);
-                if (element && element.textContent) {
-                    sender = element.textContent.trim();
-                    console.log(`Found sender using selector ${selector}:`, sender);
-                    break;
-                }
-            }
-            
-            // 2. Subject - Using the data-testid you found
-            let subject = '';
-            const subjectSelectors = [
-                '[data-testid="conversation-header:subject"]',
-                '[data-testid="message-header:subject"]',
-                '[data-testid="subject"]',
-                // Fallbacks
-                'h1.message-conversation-summary-header',
-                '.message-subject'
-            ];
-            
-            for (const selector of subjectSelectors) {
-                const element = document.querySelector(selector);
-                if (element && element.textContent) {
-                    subject = element.textContent.trim();
-                    console.log(`Found subject using selector ${selector}:`, subject);
-                    break;
-                }
-            }
-            
-            // 3. Body - Using data-testid attributes
-            let body = '';
-            const bodySelectors = [
-                '[data-testid="message-content:body"]',
-                '[data-testid="message-content"]',
-                '[data-testid="message:body"]',
-                // Fallbacks
-                '.message-content',
-                'iframe.proton-message-content'
-            ];
-            
-            for (const selector of bodySelectors) {
-                const element = document.querySelector(selector);
-                if (element) {
-                    // Handle iframe case
-                    if (element.tagName === 'IFRAME') {
-                        try {
-                            const iframe = element as HTMLIFrameElement;
-                            if (iframe.contentDocument && iframe.contentDocument.body) {
-                                body = iframe.contentDocument.body.innerHTML;
-                                console.log(`Found body in iframe using selector ${selector}`);
-                                break;
-                            }
-                        } catch (e) {
-                            console.warn("Could not access iframe content due to security restrictions");
-                        }
-                    } else {
-                        body = element.innerHTML || element.textContent || '';
-                        console.log(`Found body using selector ${selector}`);
-                        break;
-                    }
-                }
-            }
-            
-            // If we still don't have the body, try a more general approach
-            if (!body) {
-                // Try to find the main content container
-                const contentContainer = document.querySelector('[data-testid="conversation"]') || 
-                                        document.querySelector('[data-testid="message-container"]');
-                
-                if (contentContainer) {
-                    // Find all div elements that might contain the message body
-                    const contentDivs = contentContainer.querySelectorAll('div');
-                    let largestDiv = null;
-                    let maxLength = 0;
-                    
-                    for (const div of contentDivs) {
-                        // Skip if this contains the sender or subject
-                        if (div.textContent && 
-                            div.textContent.length > maxLength && 
-                            !div.textContent.includes(sender) && 
-                            !div.textContent.includes(subject)) {
-                            largestDiv = div;
-                            maxLength = div.textContent.length;
-                        }
-                    }
-                    
-                    if (largestDiv) {
-                        body = largestDiv.innerHTML || largestDiv.textContent || '';
-                        console.log("Found body using largest div approach");
-                    }
-                }
-            }
-            
-            // 4. Debug information
-            console.log("ProtonMail parsing results:", { 
-                sender, 
-                subject, 
-                body: body.substring(0, 100) + "..." 
-            });
-            
-            return { 
-                sender: sender || 'Unknown sender', 
-                subject: subject || 'No subject', 
-                body: body || 'No body content found' 
-            };
+            const senderMail = document.querySelector('[data-testid="recipient-address"]')?.textContent || 'Unknown sender email';
+            const sender = document.querySelector('[data-testid="recipient-label"]')?.textContent || 'Unknown sender';
+            const date = document.querySelector('[data-testid="item-date-simple"]')?.getAttribute('datetime') || 'No date';
+            const subject = document.querySelector('[data-testid="conversation-header:subject"]')?.getAttribute('title') || 'No subject';
+            const body = this.getProtonMailBody();
+            return { senderMail, sender, date, subject, body };
         } catch (error) {
             console.error("Error parsing ProtonMail:", error);
             return { sender: "Error", subject: "Error", body: "Failed to parse ProtonMail content" };
         }
     }
+
+    private getProtonMailBody(): string {
+        const iframe = document.querySelector('[data-testid="content-iframe"]') as HTMLIFrameElement;
+        
+        if (!iframe || !iframe.contentDocument || !iframe.contentWindow) {
+            return 'No body content found or unable to access iframe content';
+        }
+        
+        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+        const bodyClone = iframeDocument.body.cloneNode(true) as HTMLElement;
+        
+        // Remove the hidden SVG definitions
+        const hiddenSvgs = bodyClone.querySelectorAll('.proton-hidden');
+        hiddenSvgs.forEach(svg => svg.remove());
     
+        // Scale down the content by adding a wrapper with scaling styles
+        const wrapper = document.createElement('div');
+        wrapper.className = 'proton-mail-scaled-content';
+        
+        // Apply scaling styles
+        wrapper.style.cssText = `
+            font-size: 0.85em; /* Reduce font size */
+            transform-origin: top left;
+            line-height: 1.4;
+        `;
+        
+        // Move all body content into the wrapper
+        while (bodyClone.firstChild) {
+            wrapper.appendChild(bodyClone.firstChild);
+        }
+        
+        // Reset image sizes to prevent oversized images
+        const images = wrapper.querySelectorAll('img');
+        images.forEach(img => {
+            // Remove height/width attributes that might make images too large
+            img.removeAttribute('height');
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+        });
+        
+        // Scale down large tables
+        const tables = wrapper.querySelectorAll('table');
+        tables.forEach(table => {
+            table.style.width = 'auto';
+            table.style.maxWidth = '100%';
+            table.style.fontSize = '0.9em';
+        });
+        
+        // Add the wrapper back to the body
+        bodyClone.appendChild(wrapper);
+        
+        /*
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            .proton-mail-scaled-content {
+                max-width: 100%;
+            }
+            .proton-mail-scaled-content * {
+                max-width: 100%;
+            }
+            .proton-mail-scaled-content h1 {
+                font-size: 1.4em;
+            }
+            .proton-mail-scaled-content h2 {
+                font-size: 1.3em;
+            }
+            .proton-mail-scaled-content h3 {
+                font-size: 1.2em;
+            }
+            .proton-mail-scaled-content pre, 
+            .proton-mail-scaled-content code {
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+        `;
+        bodyClone.appendChild(styleElement);
+        */
+        
+        return bodyClone.innerHTML;
+    }
     private parseOutlookEmail() {
         try {
             // Basic Outlook selectors - you may need to adjust these
