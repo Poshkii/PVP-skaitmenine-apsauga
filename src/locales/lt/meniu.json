@@ -27,6 +27,10 @@
         "name": "Sekikliai",
         "hint": "Sekiklių analizė ir trynimas"
     },
+    "phishEmail": {
+        "name": "Fišingo tikrinimas",
+        "hint": "Patikrinkite laišką nuo sukčiavimo"
+    },
     "info": {
         "name": "Informacija",
         "hint": "Naudingos svetainės geresniam naršymui internete"

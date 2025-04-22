@@ -30,6 +30,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [inprogressUIO, setInprogressUIO] = useState(false);
     const [inprogressVT, setInprogressVT] = useState(false);
     const [doCheck, setDoCheck] = useState(false);
+    const [scanDone, setScanDone] = useState(false);
     const { t } = useTranslation('urls');
     
     useEffect(() => {
@@ -119,6 +120,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
         setShowURLScam(false);
         setDebug("");  // Clear debug messages if needed
+        setScanDone(false);
     };
 
     const UrlChecker = async (e: FormEvent) => {
@@ -172,6 +174,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         } finally {            
             updateReport("UrlScans", report.UrlScans + 1);
             setLoading(false);
+            setScanDone(true);
             setSubmittedUrl(url);
             setShowURLScam(true);
         }
@@ -551,6 +554,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     </form>
                 </div>
 
+                {scanDone && (               
                 <div className="security-check-container" style={{ maxHeight: "300px", overflowY: "auto" }}>
 
                     {!loading && (
@@ -603,12 +607,14 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                         {showURLScam && <URLScam scamURL={submittedUrl} />}
                     </div>
 
-                </div>
+                </div> )}
 
                 <div className="action-buttons">
+                {scanDone && (    
                     <button className="btn btn-secondary" onClick={handleClear}>
                     {t('clear')}
                     </button>
+                )}
                     <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
                     {t('scanAgain')}
                     </button>

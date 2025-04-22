@@ -7,7 +7,9 @@ export enum BgMessageId {
     GetCookies = "GET_COOKIES",
     GetEmailData = "GET_EMAIL_DATA",
     StoreEmailData = "STORE_EMAIL_DATA",
-    ScanEmail = "SCAN_EMAIL"
+    ScanEmail = "SCAN_EMAIL",
+    ReadEmail = "READ_EMAIL",
+    ReadDOM = "READ_DOM",
 }
 
 export interface BgMessage {

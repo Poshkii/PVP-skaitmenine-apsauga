@@ -3,6 +3,7 @@ import {BgMessage, BgMessageId} from "@/entrypoints/content/types/bg-message.ts"
 import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {Configuration} from "@/utils/config.ts";
+import {PhishChecker} from "@/entrypoints/content/modules/emailPhish-checker/emailPhish-checker.ts";
 
 interface BreachInfo {
     [email: string]: any;  // Stores breach data by email
@@ -18,6 +19,9 @@ export default defineBackground(async () => {
     const fileChecker = new FileChecker();
     const moduleManager = new ModuleManager();
     moduleManager.registerModule(fileChecker, config.isModuleEnabled(fileChecker.id));
+
+    const phishChecker = new PhishChecker();
+    moduleManager.registerModule(phishChecker, config.isModuleEnabled(phishChecker.id));
 
     browser.runtime.onMessage.addListener(async (
         message: BgMessage,
@@ -117,6 +121,7 @@ export default defineBackground(async () => {
         }
     });
 });
+
 
 async function getCookiesForCurrentTab() {
     return new Promise((resolve, reject) => {

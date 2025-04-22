@@ -27,6 +27,10 @@
         "name": "Tracker Check",
         "hint": "Tracker analysis"
     },
+    "phishEmail": {
+        "name": "Phishing Check",
+        "hint": "Check your emails for phishing"
+    },
     "info": {
         "name": "Info",
         "hint": "Useful websites for a better browsing"

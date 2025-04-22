@@ -1,6 +1,6 @@
 import {useLocation, useNavigate} from "react-router";
 import { useState, useEffect } from "react"; // Don't forget to import these
-import { Shield, FileText, Key, Cookie, Mail, Radar, Info } from "lucide-react";
+import { Search, Shield, FileText, Key, Cookie, Mail, Radar, Info, Fish } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 function FeatureList() {
@@ -40,6 +40,12 @@ function FeatureList() {
       hintKey: "trackerCheck.hint", 
       route: "/trackers",
       icon: <Radar size={18} />
+    },
+    { 
+      nameKey: "phishEmail.name", 
+      hintKey: "phishEmail.hint", 
+      route: "/phish-email",
+      icon: <Fish size={18} />
     },
     { 
       nameKey: "info.name", 

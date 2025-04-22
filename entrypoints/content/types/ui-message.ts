@@ -5,7 +5,10 @@ export enum UiMessageId {
     CookiesError = "COOKIES_ERROR",
     EmailBreachData = "EMAIL_BREACH_DATA",
     ScanEmail = "SCAN_EMAIL",
-    PopupReady = "POPUP_READY"
+    PopupReady = "POPUP_READY",
+    DOMIsRead = "DOM_Is_Read",
+    DOMError = "DOM_ERROR"
+
 }
 
 export interface UiMessage {
