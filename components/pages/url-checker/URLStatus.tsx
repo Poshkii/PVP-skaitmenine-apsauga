@@ -582,7 +582,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
                     </form>
                 </div>
-
+                {loading && (
+                <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
+                        <div className="loading-spinner"></div>
+                </div>)}
                 {scanDone && (               
                 <div className="security-check-container" style={{ maxHeight: "300px", overflowY: "auto" }}>
 
