@@ -110,6 +110,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const handleClear = () => {
         setVtDone(false);
         setUioDone(false);
+        setVtFinal("Unknown");
+        setUioFinal("Unknown");
 
         setResultVT('');
         setResultUIO('');
