@@ -232,7 +232,6 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const checkURLScanIO = async (urlToCheck: string) => {
         try {
             const normalizedUrl = normalizeURL(urlToCheck);
-            
             // First, check if the URL has already been scanned recently
             const searchResponse = await fetch(`${US_API_URL}/search/?q=page.url:"${encodeURIComponent(normalizedUrl)}"&size=1`, {
                 method: "GET"
@@ -250,8 +249,37 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     
                     // If scan is less than 24 hours old, use it
                     if (hoursDifference < 24) {
-                        //setDebug(`Found recent scan from ${scanTime.toLocaleString()}`);
-                        return processURLScanResponse(recentScan);
+                        try {
+                            // Extract the result URL from the recentScan object
+                            const resultUrl = recentScan.result;
+                            
+                            if (!resultUrl) {
+                                console.error("No result URL found in the recent scan data");
+                                return t('ScanIO.errorScan');
+                            }
+                            
+                            // Fetch the detailed scan results from the result URL
+                            const detailedResultResponse = await fetch(resultUrl, {
+                                method: "GET"
+                            });
+                            
+                            if (!detailedResultResponse.ok) {
+                                console.error("Failed to fetch detailed scan results:", detailedResultResponse.status);
+                                return t('ScanIO.errorScan');
+                            }
+                            
+                            // Parse the detailed scan results
+                            const detailedResults = await detailedResultResponse.json();
+                            
+                            // Now process the detailed results
+                            return processURLScanResponse(detailedResults);
+                        } catch (error) {
+                            console.error("Error processing URLScan response:", error);
+                            setUnknownUIO(true);
+                            return t('ScanIO.errorScan');
+                        }
+                        
+                        //return processURLScanResponse(recentScan);
                     }
                 }
             }
@@ -307,10 +335,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const pollURLScanResults = async (uuid: string, resultUrl: string) => {
         let attempts = 0;
         const maxAttempts = 15;  // Increased from 10 to 15
-        const initialDelay = 8000;  // Increased initial delay to 8 seconds
-        
+        const initialDelay = 3000;  // Increased initial delay to 3 seconds
         // Return initial message that scan is in progress
-        //setDebug(`URLScan.io scan submitted. UUID: ${uuid}. Waiting for results...`);
+        console.log(`URLScan.io scan submitted. UUID: ${uuid}. Waiting for results...`);
         
         while (attempts < maxAttempts) {
             try {
@@ -318,19 +345,20 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 const resultResponse = await fetch(resultUrl, {
                     method: "GET"
                 });
-                
+                console.log(`Result response status is:  ${resultResponse.status}`);
+                console.log(`Attempt ${attempts + 1}/${maxAttempts}`);
                 if (resultResponse.ok) {
                     const resultData = await resultResponse.json();
                     
-                    // Check scan status
-                    if (resultData.task && resultData.task.status === "complete") {
-                        //setDebug(`Scan complete after ${attempts + 1} attempts`);
-                        return processURLScanResponse(resultData);
-                    }
+                    console.log(`Got here with attempt ${attempts + 1}`);
+
+                    //if (resultData.task && resultData.task.status === "complete")
+                    return processURLScanResponse(resultData);
                     
                     // Provide status updates in debug
                     //setDebug(`Attempt ${attempts + 1}/${maxAttempts}: Scan status: ${resultData.task?.status || "unknown"}`);
                 }
+
             } catch (error) {
                 console.error("URLScan.io result retrieving error:", error);
                 //setDebug(`Error checking scan status: ${error}`);
@@ -367,17 +395,18 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     
     const processURLScanResponse = (resultData: any) => {
         try {
+            console.log(resultData);
             // Extract security related information
             const verdicts = resultData.verdicts || {};
-            const malicious = verdicts.overall && verdicts.overall.malicious;
-            const score = verdicts.overall && verdicts.overall.score || 0;
-            const categories = verdicts.overall && verdicts.overall.categories || [];
+            const malicious = verdicts.overall.malicious;
+            const score = verdicts.overall.score || 0;
+            const categories = verdicts.overall.categories || [];
             
             // Extract page information
-            const pageTitle = resultData.page && resultData.page.title || "Unknown";
-            const server = resultData.page && resultData.page.server || "Unknown";
-            const ipAddress = resultData.page && resultData.page.ip || "Unknown";
-            const uuid = resultData.task && resultData.task.uuid;
+            const pageTitle = resultData.page.title || "Unknown";
+            const server = resultData.page.server || "Unknown";
+            const ipAddress = resultData.page.ip || "Unknown";
+            const uuid = resultData.task.uuid;
             const reportUrl = `https://urlscan.io/result/${uuid}`;
             
             // Build the result message
