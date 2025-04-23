@@ -32,6 +32,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [doCheck, setDoCheck] = useState(false);
     const [scanDone, setScanDone] = useState(false);
     const { t } = useTranslation('urls');
+
+    const [vtDone, setVtDone] = useState(false);
+    const [uioDone, setUioDone] = useState(false);
+    const [vtFinal, setVtFinal] = useState<"Safe" | "Suspicious" | "Malicious" | "Unknown">("Unknown");
+    const [uioFinal, setUioFinal] = useState<"Safe" | "Suspicious" | "Malicious" | "Unknown">("Unknown");
     
     useEffect(() => {
         if (url && doCheck) {
@@ -103,6 +108,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         }
     };
     const handleClear = () => {
+        setVtDone(false);
+        setUioDone(false);
+
         setResultVT('');
         setResultUIO('');
         setUnsafeVT(false);
@@ -122,6 +130,22 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         setDebug("");  // Clear debug messages if needed
         setScanDone(false);
     };
+
+    useEffect(() => {
+        if (vtDone && uioDone) {
+            browser.storage.local.set({["VT"] : vtFinal});
+            browser.storage.local.set({["UIO"] : uioFinal});
+            
+            if (vtFinal === "Malicious" || uioFinal === "Malicious")
+                addScannedUrl(url, "Malicious");
+            else if (vtFinal === "Suspicious" || uioFinal === "Suspicious")
+                addScannedUrl(url, "Suspicious");
+            else if (vtFinal === "Safe" && uioFinal === "Safe")
+                addScannedUrl(url, "Safe");
+            else
+                addScannedUrl(url, "Unknown");
+        }
+    }, [vtDone, uioDone, vtFinal, uioFinal]);
 
     const UrlChecker = async (e: FormEvent) => {
         handleClear();
@@ -152,6 +176,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             // Process VirusTotal result
             if (virusTotalResult.status === 'fulfilled' && virusTotalResult.value) {
                 setResultVT(virusTotalResult.value);
+                setVtDone(true);
             } else {
                 setResultVT(t('VirusTotal.failed'));
                 setUnknownVT(true);
@@ -160,6 +185,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             // Process UrlScanIo Analysis result
             if (urlScanIoResult.status === 'fulfilled' && urlScanIoResult.value) {
                 setResultUIO(urlScanIoResult.value);
+                setUioDone(true);
             } else {
                 setResultUIO(t('ScanIO.failed'));
                 setUnknownUIO(true);
@@ -414,23 +440,23 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             
             if (malicious) {
                 setUnsafeUIO(true);
-                addScannedUrl(url, "Malicious");
                 //result = `URLScan.io: Website is malicious! Risk score: ${score}/100\n`;
                 result = t('ScanIO.malicious', {score: score}) + '\n';
                 if (categories.length > 0) {
                     //result += `Categories: ${categories.join(", ")}\n`;
                     result += t('ScanIO.categories') + `${categories.join(", ")}\n`;
                 }
+                setUioFinal("Malicious");
             } else if (score > 0) {
                 setSuspiciousUIO(true);
-                addScannedUrl(url, "Suspicious");
                 //result = `URLScan.io: Website might be suspicious. Risk score: ${score}/100\n`;
                 result = t('ScanIO.suspicious', {score: score}) + '\n';
+                setUioFinal("Suspicious");
             } else {
                 setSafeUIO(true);
-                addScannedUrl(url, "Safe");
                 //result = `URLScan.io: Website appears safe. Risk score: ${score}/100\n`;
                 result = t('ScanIO.safe', {score: score}) + '\n';
+                setUioFinal("Safe");
             }
             
             /*
@@ -448,7 +474,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             console.error("Error processing URLScan.io response:", error);
             if (resultData && resultData.task && resultData.task.uuid) {
                 setUnknownUIO(true);
-                addScannedUrl(url, "Unknown");
+                setUioFinal("Unknown");
                 //return `URLScan.io: Results available but failed to process. View full results at: https://urlscan.io/result/${resultData.task.uuid}`;
                 return t('ScanIO.processingFailed', { 
                     uuid: resultData.task.uuid,
@@ -456,7 +482,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                   });
             } else {
                 setUnknownUIO(true);
-                addScannedUrl(url, "Unknown");
+                setUioFinal("Unknown");
                 //return "URLScan.io: Results available but failed to process.";
                 return t('ScanIO.processingFailedNoScan')
             }
@@ -508,17 +534,20 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             if (stats.malicious >= 5)
             {
                 setUnsafeVT(true);
+                setVtFinal("Malicious");
                 //return `VirusTotal: Website is malicious! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
                 return t('VirusTotal.malicious', {total: totalDetections, vendors: totalVendors});
             }
             else
             {
                 setSuspiciousVT(true);
+                setVtFinal("Suspicious");
                 //return `VirusTotal: Website could be dangerous! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
                 return t('VirusTotal.dangerous', {total: totalDetections, vendors: totalVendors});
             }
         } else {
             setSafeVT(true);
+            setVtFinal("Safe");
             //return `VirusTotal: Website is safe. No threats found out of ${totalVendors} vendors.`;
             return t('VirusTotal.safe', {vendors: totalVendors});
         }

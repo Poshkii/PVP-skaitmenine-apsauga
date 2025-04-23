@@ -66,7 +66,7 @@ function ReportPage() {
                 timestamp: email.timestamp
             })),
         ...report.ScannedUrls
-            .filter(url => url.Result !== "Safe")
+            .filter(url => ["Suspicious", "Malicious"].includes(url.Result))
             .map(url => ({
                 type: 'url',
                 name: url.url,
