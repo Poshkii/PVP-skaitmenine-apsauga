@@ -3,6 +3,8 @@ import { Lock, Book, Trash2 } from "lucide-react";
 import { BgMessageId } from "@/entrypoints/content/types/bg-message";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import CookieTips from "./CookieTips";
+import Select from 'react-select';
+import { StylesConfig } from 'react-select';
 
 function CookieReader() {
     const [activeTab, setActiveTab] = useState<"reader" | "tips">("reader");
@@ -23,9 +25,33 @@ function CookieReader() {
         }
 
         if (
-            domain.includes("doubleclick") || domain.includes("adnxs") || domain.includes("adservice")
+            domain.includes("doubleclick") || domain.includes("adnxs") ||
+            domain.includes("adservice") || domain.includes("adform") ||
+            domain.includes("googlesyndication") ||
+            domain.includes("imasdk.googleapis") ||
+            domain.includes("pubmatic") ||
+            domain.includes("criteo") ||
+            domain.includes("criteo") ||
+            domain.includes("outbrain") ||
+            domain.includes("amazon-adsystem") ||
+            domain.includes("ads-twitter") ||
+            domain.includes("adition.com") ||
+            domain.includes("moatads.com") ||
+            domain.includes("rubiconproject") ||
+            domain.includes("adnxs") ||
+            domain.includes("teads") ||
+            domain.includes("kameleoon") ||
+            domain.includes("3lift") ||
+            domain.includes("adpushup") ||
+            domain.includes("npttech") ||
+            domain.includes("trafficfactory.biz") ||
+            domain.includes("trafficjunky") ||
+            domain.includes("taboola") ||
+            domain.includes("ads") ||
+            domain.includes("addthis")
+
         ) {
-            return "advertisement";
+            return "advert";
         }
 
         if (
@@ -69,7 +95,7 @@ function CookieReader() {
 
     const handleClear = () => {
         setCookies([]);
-    };
+    };    
 
     // Get unique domains for the filter dropdown
     const uniqueDomains = Array.from(new Set(cookies.map(c => c.domain)));
@@ -97,6 +123,19 @@ function CookieReader() {
         }
         return acc;
     }, {});
+
+    const domainOptions = [
+        { value: 'all', label: 'All Domains' },
+        ...uniqueDomains.map(domain => ({ value: domain, label: domain }))
+    ];
+      
+    const categoryOptions = [
+        { value: 'all', label: 'All Categories' },
+        { value: 'essential', label: 'Essential' },
+        { value: 'tracking', label: 'Tracking' },
+        { value: 'advert', label: 'Advertisement' },
+        { value: 'unknown', label: 'Unknown' }
+    ];
 
     // Convert grouped cookies object to array
     const groupedCookiesArray = Object.values(groupedCookies);
@@ -137,6 +176,135 @@ function CookieReader() {
 
         setCookies(prev => prev.filter(c => !filtered.includes(c)));
     };
+
+    type OptionType = { value: string; label: string };
+
+    const customSelectStyles: StylesConfig<OptionType, false> = {
+    control: (base, state) => ({
+        ...base,
+        backgroundColor: "transparent",
+        color: "var(--text-primary)",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+        borderRadius: "var(--border-radius-md)",
+        minHeight: "44px", // instead of padding
+        fontSize: "14px",
+        fontWeight: 600,
+        cursor: "pointer",
+        boxShadow: "none",
+        transition: "all var(--transition-medium)",
+        display: "flex",
+        alignItems: "center",
+        "&:hover": {
+            borderColor: "var(--accent-primary)",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            color: "var(--accent-primary)",
+        },
+    }),
+    option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isFocused
+        ? "rgba(255, 255, 255, 0.05)"
+        : "transparent",
+        color: "var(--text-primary)",
+        cursor: "pointer",
+        padding: "12px 24px",
+        fontSize: "14px",
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        transition: "all var(--transition-medium)",
+        "&:hover": {
+        color: "var(--accent-primary)",
+        },
+    }),
+    singleValue: (base) => ({
+        ...base,
+        color: "var(--text-primary)",
+    }),
+    menu: (base) => ({
+        ...base,
+        backgroundColor: "rgba(15, 23, 42, 0.99)",
+        borderRadius: "var(--border-radius-md)",
+        marginTop: "4px",
+        overflow: "hidden",
+        zIndex: 10,
+    }),
+    indicatorSeparator: () => ({
+        display: "none",
+    }),
+    dropdownIndicator: (base) => ({
+        ...base,
+        color: "var(--text-primary)",
+        "&:hover": {
+        color: "var(--accent-primary)",
+        },
+    }),
+    menuPortal: (base) => ({
+        ...base,
+        zIndex: 9999
+    }),
+    menuList: (base) => ({
+        ...base,
+        // Firefox
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+        // Chrome, Edge, Safari
+        '&::-webkit-scrollbar': {
+          width: '8px',
+          height: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'transparent',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          borderRadius: '4px',
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        }
+    }),
+    };    
+    
+    const tableStyles: React.CSSProperties = {
+        width: "100%",
+        borderCollapse: "separate",
+        borderSpacing: "0",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+        marginTop: "15px",
+        overflow: "hidden",
+        borderRadius: "var(--border-radius-md)",
+        backgroundColor: "rgba(15, 23, 42, 0.4)",
+        backdropFilter: "blur(10px)",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+      };
+      
+      const headerCellStyle: React.CSSProperties = {
+        backgroundColor: "rgba(30, 41, 59, 0.8)",
+        color: "var(--text-primary)",
+        padding: "12px 16px",
+        fontWeight: "600",
+        fontSize: "14px",
+        textAlign: "center",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.1)"
+      };
+      
+      const cellStyle: React.CSSProperties = {
+        padding: "10px 16px",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        maxWidth: "200px",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        fontSize: "13px",
+        transition: "background-color 0.2s"
+      };
+      
+      const rowStyle = (idx: number): React.CSSProperties => ({
+        backgroundColor: idx % 2 === 0 ? "rgba(15, 23, 42, 0.2)" : "rgba(30, 41, 59, 0.2)",
+        transition: "background-color 0.3s"
+      });
 
     return (
         <>
@@ -203,76 +371,88 @@ function CookieReader() {
 
                         {cookies.length > 0 && (
                             <>
-                                <div style={{ margin: "10px 0", display: "flex", gap: "10px" }}>
+                                {/* <div className="security-check-container glassmorphism"> */}
                                     <div>
-                                        <label>Domain Filter: </label>
-                                        <select 
-                                            onChange={(e) => setDomainFilter(e.target.value)} 
-                                            value={domainFilter}
-                                        >
-                                            <option value="all">All Domains</option>
-                                            {uniqueDomains.map((domain, idx) => (
-                                                <option key={idx} value={domain}>
-                                                    {domain}
-                                                </option>
-                                            ))}
-                                        </select>
+                                    <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+                                        <div style={{ width: "50%" }}>
+                                            <Select
+                                                options={domainOptions}
+                                                value={domainOptions.find(opt => opt.value === domainFilter)}
+                                                onChange={(selectedOption) => {
+                                                    if (selectedOption) {
+                                                        setDomainFilter(selectedOption.value);
+                                                    }
+                                                }}
+                                                menuPortalTarget={document.body}
+                                                styles={ customSelectStyles }
+                                                />
+                                        </div>
+                                        <div style={{ width: "50%" }}>
+                                            <Select                                            
+                                                options={categoryOptions}
+                                                value={categoryOptions.find(opt => opt.value === categoryFilter)}
+                                                onChange={(selectedOption) => {
+                                                    if (selectedOption) {
+                                                        setCategoryFilter(selectedOption.value);
+                                                    }
+                                                }}
+                                                menuPortalTarget={document.body}
+                                                styles={ customSelectStyles }
+                                            />
+                                        </div>
                                     </div>
                                     
-                                    <div>
-                                        <label>Category Filter: </label>
-                                        <select 
-                                            onChange={(e) => setCategoryFilter(e.target.value)} 
-                                            value={categoryFilter}
-                                        >
-                                            <option value="all">All Categories</option>
-                                            <option value="essential">Essential</option>
-                                            <option value="tracking">Tracking</option>
-                                            <option value="advertisement">Advertisement</option>
-                                            <option value="unknown">Unknown</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
-                                    <thead>
-                                        <tr style={{ background: "#eee" }}>
-                                            <th style={cellStyle}>Domain</th>
-                                            <th style={cellStyle}>Category</th>
-                                            <th style={cellStyle}>Qty</th>
-                                            <th style={cellStyle}></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {groupedCookiesArray.map((group: any, idx) => (
-                                            <tr key={idx}>
-                                                <td style={cellStyle}>{group.domain}</td>
-                                                <td style={cellStyle}>{group.category}</td>
-                                                <td style={cellStyle}>{group.quantity}</td>
-                                                <td style={cellStyle}>
-                                                    <button
-                                                        onClick={() => deleteCookiesInGroup(group)}
-                                                        className="btn btn-danger"
-                                                        style={{ fontSize: "12px", padding: "4px 4px" }}
-                                                    >
-                                                        <div className="button-content">
-                                                            <Trash2 size={16} />
-                                                        </div>
-                                                    </button>
-                                                </td>
+                                    <div style={{ width: "100%" }}>
+                                    <table style={tableStyles}>
+                                        <thead>
+                                            <tr>
+                                                <th style={{...headerCellStyle, textAlign: "left"}}>Domain</th>
+                                                <th style={headerCellStyle}>Category</th>
+                                                <th style={headerCellStyle}>Qty</th>
+                                                <th style={headerCellStyle}></th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {groupedCookiesArray.map((group: any, idx) => (
+                                                <tr key={idx} style={rowStyle(idx)}>
+                                                    <td style={cellStyle}>{group.domain}</td>
+                                                    <td style={{
+                                                        ...cellStyle,
+                                                        color: group.category === "tracking" ? "var(--error-color, #ff4747)" : 
+                                                            group.category === "essential" ? "var(--success-color, #47cf73)" :
+                                                            group.category === "advert" ? "var(--warning-color, #ffbb47)" : 
+                                                            "var(--text-secondary, #a0aec0)",
+                                                        textAlign: "center"
+                                                    }}>
+                                                        {group.category}
+                                                    </td>
+                                                    <td style={{...cellStyle, textAlign: "center"}}>{group.quantity}</td>
+                                                    <td style={{ ...cellStyle, textAlign: "center", padding: "6px" }}>
+                                                        <button
+                                                            onClick={() => deleteCookiesInGroup(group)}
+                                                            className="btn btn-danger"
+                                                            style={{ fontSize: "12px", padding: "4px 8px", borderRadius: "4px" }}
+                                                        >
+                                                            <div className="button-content">
+                                                                <Trash2 size={16} />
+                                                            </div>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    </div>
 
-                                <div style={{ marginTop: "10px" }}>
-                                    <button
-                                        className="btn btn-danger"
-                                        onClick={deleteFilteredCookies}
-                                        style={{ width: "200px" }}
-                                    >
-                                        Delete All Filtered
-                                    </button>
+                                    <div style={{ marginTop: "10px" }}>
+                                        <button
+                                            className="btn btn-danger"
+                                            onClick={deleteFilteredCookies}
+                                            style={{ width: "200px" }}
+                                        >
+                                            Delete All Filtered
+                                        </button>
+                                    </div>
                                 </div>
                             </>
                         )}
