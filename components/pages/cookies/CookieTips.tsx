@@ -1,7 +1,6 @@
-import {useState} from "react";
+import { useState } from "react";
+import { Lightbulb } from 'lucide-react';
 import { useTranslation } from "react-i18next";
-
-
 
 function CookiesTips() {
     const { t } = useTranslation('cookies');
@@ -21,38 +20,100 @@ function CookiesTips() {
     ]
 
     const [currentIndex, setCurrentIndex] = useState(0);
-    
+
     const nextSlide = () => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % titles.length);
-    }
+    };
+
     const prevSlide = () => {
         setCurrentIndex((prevIndex) => (prevIndex - 1 + titles.length) % titles.length);
-    }
+    };
 
     return (
-        <>            
-                <div style={{ marginTop: "1rem", color: "white" }}>
-                    <h2>{t('tips')}</h2>
-                
-                    {titles.map((title, index) => (
-                        <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
-                            <div style={{ marginTop: "2rem", marginBottom: "1rem", textAlign: 'center', fontSize: "1.2rem"}}>{title.content}</div>
-                        </div>
-                    ))}
+        <div style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            minHeight: "80vh",  // Ensures full height
+            height: "100%" // Prevents any scrolling on the container
+        }}>
+            {/* Content area */}
+            <div style={{ 
+                flexGrow: 1, 
+                padding: "1rem 0",
+                display: "flex", 
+                flexDirection: "column",
+                justifyContent: "flex-start"  // Ensure content stays at top
+            }}>
+                <h2 className="panel-title">Data leak tips</h2>
 
-                    {descriptions.map((description, index) => (
-                        <div key={description.id} style={{ display: index === currentIndex ? "block" : "none" }}>
-                            <div style={{ margin: "1rem", color: "#ADADAD", textAlign: 'center', fontSize: "1rem"}}>{description.content}</div>                          
-                            <div>{currentIndex + 1} / {descriptions.length}</div>
-                        </div>
-                    ))}
-                </div>        
-                
-                <div className="bottom-slide-buttons-new" style={{ backgroundColor: "#1f2937" }}>                                     
-                    <button className="slide-button" onClick={prevSlide}>❮</button>                    
-                    <button className="slide-button" onClick={nextSlide}>❯</button>
-                </div>                
-        </>
+                <div style={{
+                    marginTop: "24px",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: "1rem"
+                }}>
+                    <div className="status-icon" style={{
+                        backgroundColor: "var(--error)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: "50%",
+                        padding: "0.5rem"
+                    }}>
+                        <Lightbulb color="white" size={30} />
+                    </div>
+
+                    <div className="status-text" style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-start",
+                        textAlign: "left",
+                        flexGrow: 1,
+                        overflow: "hidden",
+                        minWidth: 0
+                    }}>
+                        {/* Title */}
+                        {titles.map((title, index) => (
+                            <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+                                <h3 style={{ marginBottom: "0.5rem", fontSize: "1.4rem" }}>{title.content}</h3>
+                            </div>
+                        ))}
+
+                        {/* Description */}
+                        {descriptions.map((desc, index) => (
+                            <div key={desc.id} style={{
+                                display: index === currentIndex ? "block" : "none"
+                            }}>
+                                <div style={{ color: "#ADADAD", fontSize: "1rem" }}>
+                                    {desc.content}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Navigation */}
+            <div style={{
+                marginTop: "auto",  // Forces this section to stick to the bottom
+                paddingTop: "1rem",
+                paddingBottom: "1rem"
+            }}>
+                <div style={{ textAlign: "center", fontSize: "1.2rem", fontWeight: "bold" }}>
+                    {currentIndex + 1} / {descriptions.length}
+                </div>
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "1rem",
+                    marginTop: "1rem"
+                }}>
+                    <button className="btn btn-secondary" onClick={prevSlide}>❮</button>
+                    <button className="btn btn-secondary" onClick={nextSlide}>❯</button>
+                </div>
+            </div>
+        </div>
     );
 }
 
