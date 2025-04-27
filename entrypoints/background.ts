@@ -4,6 +4,16 @@ import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {Configuration} from "@/utils/config.ts";
 import {PhishChecker} from "@/entrypoints/content/modules/emailPhish-checker/emailPhish-checker.ts";
+import {fetchEasyList, parseEasyList, categorizeRules, createRulesets } from "@/utils/easyListParse.ts";
+
+const EASYLIST_URL = 'https://easylist.to/easylist/easylist.txt';
+const EASYPRIVACY_URL = 'https://easylist.to/easylist/easyprivacy.txt';
+const TRACKER_CATEGORIES = {
+    analytics: "Analytics",
+    advertising: "Advertising",
+    social: "Social Media",
+    other: "Other Trackers"
+};
 
 interface BreachInfo {
     [email: string]: any;  // Stores breach data by email
@@ -122,7 +132,6 @@ export default defineBackground(async () => {
     });
 });
 
-
 async function getCookiesForCurrentTab() {
     return new Promise((resolve, reject) => {
         chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -180,6 +189,302 @@ async function scanTrackingCookies(): Promise<chrome.cookies.Cookie[]> {
     }
 }
 
+browser.runtime.onInstalled.addListener(async () => {
+    console.log("Initializing tracker setup");
+    
+    browser.storage.local.set({
+        blockStats: {
+            total: 0,
+            analytics: 0,
+            advertising: 0,
+            social: 0,
+            other: 0
+        },
+        settings: {
+            blockAnalytics: true,
+            blockAdvertising: true,
+            blockSocial: true,
+            blockOther: true,
+            advancedProtection: true,
+            lastUpdated: null
+        }
+    });
+
+    // Set up alarm for periodic updates
+    browser.alarms.create('updateEasyList', { periodInMinutes: 60 * 24 }); // Once per day
+});
+
+browser.webNavigation.onCompleted.addListener((details) => {
+    // Only process main frame navigations (not iframes)
+    if (details.frameId === 0) {
+        console.log(`Page loaded: ${details.url}`);
+        checkTrackersOnPage(details.tabId, details.url);
+    }
+});
+
+function checkTrackersOnPage(tabId: number, url: string) {
+    // Give the page a moment to finish loading all resources
+    setTimeout(() => {
+        try {
+        // Make sure we're using the correct API
+        if (browser.declarativeNetRequest && chrome.declarativeNetRequest.getMatchedRules) {
+            chrome.declarativeNetRequest.getMatchedRules(
+            { tabId: tabId },
+            (results) => {
+                if (browser.runtime.lastError) {
+                    console.error("Error in getMatchedRules:", browser.runtime.lastError.message);
+                    return;
+                }
+                
+                // Access the matched rules info safely
+                const matchedRules = results?.rulesMatchedInfo || [];
+                console.log(`Detected ${matchedRules.length} tracker matches on ${url}`);
+                
+                if (matchedRules.length > 0) {
+                    updateStatsFromMatches(matchedRules);
+                    updateBadge(tabId, matchedRules.length);
+                }
+            }
+            );
+        } else {
+            console.warn("declarativeNetRequest.getMatchedRules is not available");
+        }
+        } catch (error) {
+            console.error("Exception checking for trackers:", error);
+        }
+    }, 1500);
+}  
+
+function updateStatsFromMatches(matchedRules: chrome.declarativeNetRequest.MatchedRuleInfo[]) {
+    browser.storage.local.get(['blockStats', 'ruleCategories'], (data) => {
+        if (browser.runtime.lastError) {
+            console.error("Error retrieving stats from storage:", browser.runtime.lastError.message);
+            return;
+        }
+        
+        const stats = data.blockStats || {
+            total: 0,
+            analytics: 0,
+            advertising: 0,
+            social: 0,
+            other: 0
+        };
+        
+        const ruleCategories = data.ruleCategories || {};
+        let newMatches = 0;
+        
+        matchedRules.forEach(info => {
+            // Get category for this rule ID, defaulting to 'other'
+            const category = ruleCategories[info.rule.ruleId] || 'other';
+            
+            // Since 'count' may not exist in the type definition, use a type assertion
+            // or check if it exists at runtime
+            const matchCount = 1; // Default to 1 if count isn't available
+            
+            stats[category] += matchCount;
+            stats.total += matchCount;
+            newMatches += matchCount;
+        });
+        
+        if (newMatches > 0) {
+            console.log(`Updated block stats with ${newMatches} new matches`);
+            browser.storage.local.set({ blockStats: stats }, () => {
+                if (browser.runtime.lastError) {
+                console.error("Error saving stats:", browser.runtime.lastError.message);
+                }
+            });
+        }
+    });
+}
+  
+  // Update the extension badge to show number of trackers blocked
+function updateBadge(tabId: number, count: number) {
+    try {
+        if (count > 0) {
+            browser.action.setBadgeText({
+                text: count.toString(),
+                tabId: tabId
+            });
+            browser.action.setBadgeBackgroundColor({
+                color: '#E53935', // Red color for badge
+                tabId: tabId
+            });
+        } else {
+            browser.action.setBadgeText({
+                text: '',
+                tabId: tabId
+            });
+        }
+    } catch (error) {
+        console.error("Error updating badge:", error);
+    }
+}
+
+async function fetchAndProcessEasyLists() {
+    console.log("Fetching EasyList rules");
+
+    try {
+        // Get user settings
+        const data = await browser.storage.local.get('settings');
+        const settings = data.settings || {
+            blockAnalytics: true,
+            blockAdvertising: true,
+            blockSocial: true,
+            blockOther: true,
+            advancedProtection: true
+        };
+        
+        const enabled = {
+            analytics: settings.blockAnalytics,
+            advertising: settings.blockAdvertising,
+            social: settings.blockSocial,
+            other: settings.blockOther
+        };
+        
+        // Fetch the lists
+        const [easyListContent, easyPrivacyContent] = await Promise.all([
+            fetchEasyList(EASYLIST_URL),
+            fetchEasyList(EASYPRIVACY_URL)
+        ]);
+        
+        // Parse lists into rules
+        const easyListRules = easyListContent ? parseEasyList(easyListContent) : [];
+        const easyPrivacyRules = easyPrivacyContent ? parseEasyList(easyPrivacyContent) : [];
+        
+        console.log(`Parsed ${easyListRules.length} EasyList rules and ${easyPrivacyRules.length} EasyPrivacy rules`);
+        
+        // Categorize and prepare rules
+        const categorizedEasyList = categorizeRules(easyListRules);
+        const categorizedEasyPrivacy = categorizeRules(easyPrivacyRules);
+        
+        // Combine categories from both lists
+        const combinedCategories = {
+            analytics: [...categorizedEasyList.analytics, ...categorizedEasyPrivacy.analytics],
+            advertising: [...categorizedEasyList.advertising, ...categorizedEasyPrivacy.advertising],
+            social: [...categorizedEasyList.social, ...categorizedEasyPrivacy.social],
+            other: [...categorizedEasyList.other, ...categorizedEasyPrivacy.other]
+        };
+        
+        // Create rulesets based on enabled categories
+        const rulesets = createRulesets(combinedCategories, enabled);
+        
+        // Apply rules
+        await applyRules(rulesets);
+        
+        // Update last updated timestamp
+        const newSettings = { ...settings, lastUpdated: new Date().toISOString() };
+        browser.storage.local.set({ settings: newSettings });
+        
+        console.log("EasyList rules updated successfully");
+    } catch (error) {
+        console.error("Error processing EasyList rules:", error);
+    }
+}
+
+async function applyRules(rulesets: Record<string, chrome.declarativeNetRequest.Rule[]>): Promise<void> {
+    try {
+        const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+        const existingRuleIds = existingRules.map(rule => rule.id);
+
+        if (existingRuleIds.length > 0) {
+            await chrome.declarativeNetRequest.updateDynamicRules({
+                removeRuleIds: existingRuleIds,
+            });
+        }
+
+        let allRules: chrome.declarativeNetRequest.Rule[] = [];
+        let ruleCategories: Record<number, string> = {};
+        
+        // Store which rule belongs to which category
+        Object.entries(rulesets).forEach(([category, rules]) => {
+            rules.forEach(rule => {
+                allRules.push(rule);
+                ruleCategories[rule.id] = category;
+            });
+        });
+
+        let ruleCounter = await getRuleCounter();
+        allRules = allRules.map((rule) => {
+            // Assign a unique rule ID based on the counter
+            rule.id = ruleCounter++;
+            // Update the category mapping with the new ID
+            ruleCategories[rule.id] = ruleCategories[rule.id] || 'other';
+            return rule;
+        });
+
+        await setRuleCounter(ruleCounter);
+
+        if (allRules.length > 30000) {
+            console.warn(`Rule count (${allRules.length}) exceeds Chrome limit of 30,000. Truncating.`);
+            allRules = allRules.slice(0, 30000);
+        }
+
+        if (allRules.length > 0) {
+            await chrome.declarativeNetRequest.updateDynamicRules({
+                addRules: allRules,
+            });
+            
+            // Store rule categories for later reference when counting matches
+            await browser.storage.local.set({ ruleCategories });
+            
+            console.log(`Applied ${allRules.length} blocking rules`);
+        }
+    } catch (error) {
+        console.error("Error applying rules:", error);
+    }
+}
+
+async function getRuleCounter(): Promise<number> {
+    // Retrieve the rule counter from storage, defaulting to 1 if not set
+    const data = await browser.storage.local.get('ruleCounter');
+    return data.ruleCounter || 1;
+}
+
+async function setRuleCounter(counter: number): Promise<void> {
+    // Store the updated rule counter
+    await browser.storage.local.set({ ruleCounter: counter });
+}
+
+if (browser.storage) {
+    browser.storage.onChanged.addListener(async (changes, area) => {
+        if (area === 'local' && changes.settings) {
+            const newSettings = changes.settings.newValue;
+            const oldSettings = changes.settings.oldValue || {};
+            
+            // Check if blocking settings have changed
+            if (
+                newSettings.blockAnalytics !== oldSettings.blockAnalytics ||
+                newSettings.blockAdvertising !== oldSettings.blockAdvertising ||
+                newSettings.blockSocial !== oldSettings.blockSocial ||
+                newSettings.blockOther !== oldSettings.blockOther
+            ) {
+                console.log("Blocking settings changed, updating rules...");
+                await fetchAndProcessEasyLists();
+            }
+        }
+    });
+} else {
+    console.error('browser.storage API is unavailable');
+}
+
+if (browser.alarms) {
+    browser.alarms.onAlarm.addListener((alarm) => {
+        if (alarm.name === 'updateEasyList') {
+            console.log("Alarm triggered: Updating EasyList rules...");
+            fetchAndProcessEasyLists();
+        }
+    });
+} else {
+    console.error('chrome.alarms API is unavailable');
+}
+
+if (browser.declarativeNetRequest) {
+    browser.alarms.create('checkRuleMatches', { periodInMinutes: 1 });
+    console.log("Set up tracker stats monitoring");
+} else {
+    console.error('declarativeNetRequest API is unavailable');
+}
+
 export function waitForPopup(callback: () => void) {
     const onMessage = (message: BgMessage) => {
         switch (message.id) {
@@ -194,3 +499,5 @@ export function waitForPopup(callback: () => void) {
 
     browser.action.openPopup();
 }
+
+

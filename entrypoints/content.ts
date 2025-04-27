@@ -4,6 +4,7 @@ import {EmailChecker} from "@/entrypoints/content/modules/email-checker/email-ch
 import {Configuration} from "@/utils/config.ts";
 import {ContentMessage, ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
 import {PhishChecker} from "@/entrypoints/content/modules/emailPhish-checker/emailPhish-checker.ts";
+import {TrackerManager} from "@/entrypoints/content/modules/tracker-manager/tracker-manager.ts";
 
 export default defineContentScript({
     matches: ['*://*/*'],
@@ -21,6 +22,9 @@ export default defineContentScript({
 
         const phishChecker = new PhishChecker();
         moduleManager.registerModule(phishChecker, config.isModuleEnabled(phishChecker.id));
+
+        const trackerManager = new TrackerManager();
+        moduleManager.registerModule(trackerManager, config.isModuleEnabled(trackerManager.id));
 
         browser.runtime.onMessage.addListener((message: ContentMessage) => {
             switch (message.id) {
