@@ -424,7 +424,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         {t('prevScan')}
                     </button>
                 </div>
-                {scanType? scanType : "unknown"}<br></br>{safety}
         
             {activeTab === "file" && (
                 <>

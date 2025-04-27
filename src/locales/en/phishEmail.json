@@ -4,5 +4,19 @@
     "clear": "Clear",
     "scan": "Scan Email",
     "checkNow": "New Scan",
-    "prevScan": "Previous scan"
+    "prevScan": "Previous scan",
+    "reading": "Reading email data...",
+    "placeholderText": "Your email will be displayed here after scanning",
+    "placeholderSubtext": "Click the \"Scan Email\" button to analyze the current email",
+    "sender": "Sender:",
+    "email": "Sender email:",
+    "subject": "Subject:",
+    "date": "Date:",
+    "body": "Body:",
+    "noPrev" : "No previous scan available",
+    "hide": "Hide body",
+    "show": "Reveal body",
+    "time": "Time of the scan:",
+    "process": "Processing...",
+    "clearPrev": "Clear Previous Scan"
 }

@@ -177,7 +177,7 @@ function PhishStatus() {
                 </div>
 
                 <div className="security-check-container glassmorphism" style={{ maxHeight: "300px", overflowY: "auto" }}>
-                    {loading && <div className="loading-message">Reading email data...</div>}
+                    {loading && <div className="loading-message">{t('reading')}</div>}
                     {error && <div className="error-message">{error}</div>}
                     
                     {activeTab === "checkNow" && (
@@ -189,10 +189,10 @@ function PhishStatus() {
                                         <Info size={40} color="var(--accent-primary)" />
                                     </div>
                                     <div className="placeholder-text">
-                                        Your email will be displayed here after scanning
+                                        {t('placeholderText')}
                                     </div>
                                     <div className="placeholder-subtext">
-                                        Click the "Scan Email" button to analyze the current email
+                                        {t('placeholderSubtext')}
                                     </div>
                                 </div>
                             ) : (
@@ -200,37 +200,37 @@ function PhishStatus() {
                             <>
                                 {sender && (
                                     <div className="status-description">
-                                        <strong>Sender:</strong> {sender}
+                                        <strong>{t('sender')}</strong> {sender}
                                     </div>
                                 )}
 
                                 {senderMail && (
                                     <div className="status-description">
-                                        <strong>Sender email:</strong> {senderMail}
+                                        <strong>{t('email')}</strong> {senderMail}
                                     </div>
                                 )}
                                 
                                 {subject && (
                                     <div className="status-description">
-                                        <strong>Subject:</strong> {subject}
+                                        <strong>{t('subject')}</strong> {subject}
                                     </div>
                                 )}
 
                                 {date && (
                                     <div className="status-description">
-                                        <strong>Date:</strong> {date}
+                                        <strong>{t('date')}</strong> {date}
                                     </div>
                                 )}
                                 
                                 {body && (
                                     <div className="status-description">
-                                        <strong>Body:</strong>
+                                        <strong>{t('body')}</strong>
                                         <button 
                                             className="btn btn-secondary" 
                                             style={{ marginLeft: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
                                             onClick={() => setShowBody(!showBody)}
                                         >
-                                            {showBody ? "Hide body" : "Reveal body"}
+                                            {showBody ? t('hide') : t('show')}
                                         </button>
                                         {showBody && (
                                             <div 
@@ -256,43 +256,43 @@ function PhishStatus() {
                     {activeTab === "prevScan" && (
                         <div>
                             {!previousScan ? (
-                                <div className="no-scans-message">No previous scan available</div>
+                                <div className="no-scans-message">{t('noPrev')}</div>
                             ) : (
                                 <div>
                                     
                                     {previousScan.sender && (
                                         <div className="status-description">
-                                            <strong>Sender:</strong> {previousScan.sender}
+                                            <strong>{t('sender')}</strong> {previousScan.sender}
                                         </div>
                                     )}
                                     
                                     {previousScan.senderMail && (
                                         <div className="status-description">
-                                            <strong>Sender email:</strong> {previousScan.senderMail}
+                                            <strong>{t('email')}</strong> {previousScan.senderMail}
                                         </div>
                                     )}
                                     
                                     {previousScan.subject && (
                                         <div className="status-description">
-                                            <strong>Subject:</strong> {previousScan.subject}
+                                            <strong>{t('subject')}</strong> {previousScan.subject}
                                         </div>
                                     )}
                                     
                                     {previousScan.date && (
                                         <div className="status-description">
-                                            <strong>Date:</strong> {previousScan.date}
+                                            <strong>{t('date')}</strong> {previousScan.date}
                                         </div>
                                     )}
                                     
                                     {previousScan.body && (
                                         <div className="status-description">
-                                            <strong>Body:</strong>
+                                            <strong>{t('body')}</strong>
                                             <button 
                                                 className="btn btn-secondary" 
                                                 style={{ marginLeft: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
                                                 onClick={() => setShowPrevBody(!showPrevBody)}
                                             >
-                                                {showPrevBody ? "Hide body" : "Reveal body"}
+                                                {showPrevBody ? t('hide') : t('show')}
                                             </button>
                                             {showPrevBody && (
                                                 <div 
@@ -312,7 +312,7 @@ function PhishStatus() {
                                     )}
 
                                     <div className="status-description">
-                                        <strong>Time of the scan:</strong> ({formatDate(previousScan.timestamp)})
+                                        <strong>{t('time')}</strong> ({formatDate(previousScan.timestamp)})
                                     </div>
                                 </div>
                             )}
@@ -334,7 +334,7 @@ function PhishStatus() {
                             className="btn btn-primary" 
                             onClick={PhishChecker}
                             disabled={loading}>
-                            {loading ? "Processing..." : t('scan')}
+                            {loading ? t('process') : t('scan')}
                         </button>
                     )}
                     {activeTab === "prevScan" && previousScan && (
@@ -344,7 +344,7 @@ function PhishStatus() {
                                 await browser.storage.local.remove('lastScan');
                                 setPreviousScan(null);
                             }}>
-                            Clear Previous Scan
+                            {t('clearPrev')}
                         </button>
                     )}
                 </div>

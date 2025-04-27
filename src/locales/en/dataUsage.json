@@ -36,5 +36,13 @@
         "content2": "URLs are analyzed and screenshots of the websites may be captured. Results may be publicly accessible in their database.",
         "notice": "By using this feature, you consent to URL sharing for security verification.",
         "page": "Database"
+    },
+    "phish":{
+        "title": "Email Scanning Data Usage",
+        "infoBanner": "When scanning emails whether in Gmail, Proton Mail, Outlook etc., a query selector is being initiated which extracts email objects such as subject, sender email from the DOM structure. However, no personal data content is shared or saved. The scanned data is purely being used just to classify whether email is phishing or not with a pre-trained AI model RoBERTa. More information about the AI model could be found:",
+        "serviceName": "RoBERTa ",
+        "content": "Emails are classified as phishing or safe, but no data is being saved.",
+        "notice": "By using this feature, you consent to scanning your private emails for Phishing detection.",
+        "page": "RoBERTa documentation"
     }
 }
