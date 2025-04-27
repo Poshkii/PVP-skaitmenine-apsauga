@@ -1,8 +1,22 @@
 {
-    "pageName": "Fišingo tikrinimas",
+    "pageName": "El. laiškų sukčiavimo tikrinimas",
     "check": "Tikrinti",
     "clear": "Išvalyti",
-    "scanAgain": "Skenuoti dar kartą",
-    "checkNow": "Skenuoti dabar",
-    "prevScan": "Praeitas skenavimas"
+    "scan": "Skenuoti el. laišką",
+    "checkNow": "Naujas skenavimas",
+    "prevScan": "Ankstesnis skenavimas",
+    "reading": "Nuskaitomi el. laiško duomenys...",
+    "placeholderText": "Po skenavimo jūsų el. laiškas bus rodomas čia",
+    "placeholderSubtext": "Paspauskite mygtuką „Skenuoti el. laišką“, kad analizuotumėte esamą laišką",
+    "sender": "Siuntėjas:",
+    "email": "Siuntėjo el. paštas:",
+    "subject": "Tema:",
+    "date": "Data:",
+    "body": "Turinys:",
+    "noPrev": "Nėra ankstesnių skenavimų",
+    "hide": "Slėpti turinį",
+    "show": "Rodyti turinį",
+    "time": "Skenavimo laikas:",
+    "process": "Apdorojama...",
+    "clearPrev": "Išvalyti ankstesnį skenavimą"
 }

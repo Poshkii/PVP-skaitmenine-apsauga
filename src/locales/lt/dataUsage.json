@@ -36,5 +36,13 @@
         "content2": "URL yra analizuojami ir gali būti užfiksuoti svetainių ekrano vaizdai. Rezultatai gali būti viešai prieinami jų duomenų bazėje.",
         "notice": "Naudodamiesi šia funkcija, sutinkate dalintis URL saugumo patikrinimui.",
         "page": "Duomenų bazė"
+    },
+    "phish": {
+    "title": "El. laiškų nuskaitymo duomenų naudojimas",
+    "infoBanner": "Nuskaitant el. laiškus, ar tai būtų Gmail, Proton Mail, Outlook ir kt., inicijuojamas užklausos selektorius, kuris iš DOM struktūros išgauna tokius el. laiško objektus kaip tema, siuntėjo el. pašto adresas. Jokie asmeniniai duomenys nėra bendrinami ar saugomi. Nuskaityti duomenys naudojami tik tam, kad būtų nustatyta, ar el. laiškas yra sukčiavimo (phishing) atvejis, pasitelkiant iš anksto apmokytą AI modelį RoBERTa. Daugiau informacijos apie AI modelį galite rasti čia:",
+    "serviceName": "RoBERTa",
+    "content": "El. laiškai yra klasifikuojami kaip sukčiavimo arba saugūs, tačiau duomenys nėra saugomi.",
+    "notice": "Naudodami šią funkciją, jūs sutinkate, kad jūsų privatūs el. laiškai būtų nuskaitomi sukčiavimo aptikimui.",
+    "page": "RoBERTa dokumentacija"
     }
 }
