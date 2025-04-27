@@ -25,7 +25,7 @@ export default defineBackground(async () => {
     browser.runtime.onMessage.addListener(async (
         message: BgMessage,
         sender: chrome.runtime.MessageSender,
-        sendResponse: (response?: any) => void ) => {
+        sendResponse: (response?: any) => void) => {
         switch (message.id) {
             case BgMessageId.OpenPopup: {
                 browser.action.openPopup()
@@ -38,7 +38,7 @@ export default defineBackground(async () => {
                 break;
             }
             case BgMessageId.ModuleChange: {
-                const { moduleId, enabled } = message.data;
+                const {moduleId, enabled} = message.data;
 
                 if (enabled) {
                     moduleManager.loadModule(moduleId);
@@ -48,7 +48,7 @@ export default defineBackground(async () => {
                 break;
             }
             case BgMessageId.SendModuleMessage: {
-                const { moduleId, moduleMessage } = message.data;
+                const {moduleId, moduleMessage} = message.data;
                 moduleManager.sendMessage(moduleId, moduleMessage);
                 break;
             }
@@ -57,72 +57,73 @@ export default defineBackground(async () => {
                     // Get cookies from the active tab
                     const cookies = await getAllCookies();
                     // Send cookies back to the frontend
-                    browser.runtime.sendMessage({ id: UiMessageId.CookiesRetrieved, data: cookies });
+                    browser.runtime.sendMessage({id: UiMessageId.CookiesRetrieved, data: cookies});
                     console.log("Cookies sent:", cookies);
                 } catch (error) {
                     console.error("Failed to retrieve cookies:", error);
                     // Type-cast error to any to access message directly
-                    browser.runtime.sendMessage({ id: UiMessageId.CookiesError, data: { message: (error as any).message } });
+                    browser.runtime.sendMessage({
+                        id: UiMessageId.CookiesError,
+                        data: {message: (error as any).message}
+                    });
                 }
                 break;
             }
             case BgMessageId.StoreEmailData: {
                 console.log("Received StoreEmailData message:", message);
                 // Then continue with the existing code...
-                const { email, breachData } = message.data;
+                const {email, breachData} = message.data;
                 breachInfo[email] = breachData;
                 console.log(`Stored breach data for email: ${email}`);
                 console.log(`Stored data: ${breachData}`);
                 break;
             }
             case BgMessageId.GetEmailData: {
-                const { email } = message.data;
+                const {email} = message.data;
                 // Retrieve breach data for the email
                 const data = breachInfo[email] || null;
                 sendResponse(data);
                 console.log(`Retrieved breach data for email: ${email}`);
-                console.log(`Data: ${data}`);              
+                console.log(`Data: ${data}`);
                 break; // Note: break is not needed after return
             }
             case BgMessageId.ScanEmail: {
                 const openPopupAndScan = async () => {
-                  try {
-                    waitForPopup(() => {
-                        browser.runtime.sendMessage({id: UiMessageId.NavigateTo, data: message.data.route});
-                    });                     
-              
-                    const waitForPopupReady = new Promise<void>((resolve) => {
-                      const listener = (message: any) => {
-                        if (message.id === UiMessageId.PopupReady) {
-                          console.log("Popup is ready");
-                          browser.runtime.onMessage.removeListener(listener);
-                          resolve();
-                        }
-                      };
-                      browser.runtime.onMessage.addListener(listener);
-                    });
-              
-                    await waitForPopupReady;            
-              
-                    browser.runtime.sendMessage({
-                      id: UiMessageId.ScanEmail,
-                      data: message.data.email
-                    });
-              
-                  } catch (error) {
-                    console.error("Error opening popup:", error);
-                  }
+                    try {
+                        waitForPopup(() => {
+                            browser.runtime.sendMessage({id: UiMessageId.NavigateTo, data: message.data.route});
+                        });
+
+                        const waitForPopupReady = new Promise<void>((resolve) => {
+                            const listener = (message: any) => {
+                                if (message.id === UiMessageId.PopupReady) {
+                                    console.log("Popup is ready");
+                                    browser.runtime.onMessage.removeListener(listener);
+                                    resolve();
+                                }
+                            };
+                            browser.runtime.onMessage.addListener(listener);
+                        });
+
+                        await waitForPopupReady;
+
+                        browser.runtime.sendMessage({
+                            id: UiMessageId.ScanEmail,
+                            data: message.data.email
+                        });
+
+                    } catch (error) {
+                        console.error("Error opening popup:", error);
+                    }
                 };
-              
+
                 openPopupAndScan();
                 break;
-              }
+            }
             case BgMessageId.DeletionUrl: {
-                const { domain } = message.data;
-                console.log("Deletion domain:", domain);
-                const url = deletionProvider.getDeletionUrl(domain);
-                console.log(" Deletion url:", url);
-                sendResponse({deletionUrl : url });
+                const {domain} = message.data;
+                const details = deletionProvider.getDeletionDetails(domain);
+                sendResponse(details);
                 break;
             }
         }
@@ -131,8 +132,8 @@ export default defineBackground(async () => {
 
 async function getCookiesForCurrentTab() {
     return new Promise((resolve, reject) => {
-        chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-            if (!tabs.length || !tabs[0].url) {                
+        chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
+            if (!tabs.length || !tabs[0].url) {
                 return reject("No active tab found.");
             }
 
@@ -141,7 +142,7 @@ async function getCookiesForCurrentTab() {
             const domain = url.hostname;
 
             if (chrome.cookies) {
-                const cookies = await chrome.cookies.getAll({ domain: domain });
+                const cookies = await chrome.cookies.getAll({domain: domain});
                 console.log("Cookies found")
                 resolve(cookies);
             } else {

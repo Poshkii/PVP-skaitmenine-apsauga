@@ -1,8 +1,14 @@
+export interface DeletionDetails {
+    url: string;
+    notes: string;
+    email?: string;
+}
+
 export class DeletionProvider {
-    private domainToUrlMap: Map<string, string>;
+    private domainToUrlMap: Map<string, DeletionDetails>;
 
     constructor() {
-        this.domainToUrlMap = new Map<string, string>();
+        this.domainToUrlMap = new Map<string, DeletionDetails>();
         this.loadSitesData();
     }
 
@@ -19,7 +25,11 @@ export class DeletionProvider {
             for (const site of sitesData) {
                 if (site.domains && Array.isArray(site.domains)) {
                     for (const domain of site.domains) {
-                        this.domainToUrlMap.set(domain, site.url);
+                        this.domainToUrlMap.set(domain, {
+                            url: site.url,
+                            notes: site.notes,
+                            email: site.email,
+                        });
                     }
                 }
             }
@@ -28,7 +38,7 @@ export class DeletionProvider {
         }
     }
 
-    public getDeletionUrl(domain: string): string | undefined {
+    public getDeletionDetails(domain: string): DeletionDetails | undefined {
         return this.domainToUrlMap.get(domain);
     }
 }
