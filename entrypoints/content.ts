@@ -3,6 +3,7 @@ import {PasswordChecker} from "@/entrypoints/content/modules/password-checker/pa
 import {EmailChecker} from "@/entrypoints/content/modules/email-checker/email-checker.ts";
 import {Configuration} from "@/utils/config.ts";
 import {ContentMessage, ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
+import {AccountDeleter} from "@/entrypoints/content/modules/account-deleter/account-deleter.ts";
 import {PhishChecker} from "@/entrypoints/content/modules/emailPhish-checker/emailPhish-checker.ts";
 
 export default defineContentScript({
@@ -21,6 +22,9 @@ export default defineContentScript({
 
         const phishChecker = new PhishChecker();
         moduleManager.registerModule(phishChecker, config.isModuleEnabled(phishChecker.id));
+
+        const accountDeleter = new AccountDeleter();
+        moduleManager.registerModule(accountDeleter, config.isModuleEnabled(accountDeleter.id));
 
         browser.runtime.onMessage.addListener((message: ContentMessage) => {
             switch (message.id) {

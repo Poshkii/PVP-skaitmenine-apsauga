@@ -19,6 +19,7 @@
     "date-fns": "^4.1.0",
     "i18next": "^24.2.3",
     "i18next-browser-languagedetector": "^8.0.4",
+    "lucide": "^0.501.0",
     "lucide-react": "^0.475.0",
     "papaparse": "^5.5.2",
     "puppeteer": "^24.4.0",

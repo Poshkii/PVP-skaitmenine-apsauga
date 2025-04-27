@@ -10,6 +10,7 @@ export enum BgMessageId {
     ScanEmail = "SCAN_EMAIL",
     ReadEmail = "READ_EMAIL",
     ReadDOM = "READ_DOM",
+    DeletionUrl = "DELETION_URL"
 }
 
 export interface BgMessage {
