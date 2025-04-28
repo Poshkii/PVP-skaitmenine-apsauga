@@ -12,7 +12,12 @@ function CookieReader() {
     const [error, setError] = useState<string | null>(null);
     const [domainFilter, setDomainFilter] = useState<string>("all");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
-    
+
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [skipConfirmation, setSkipConfirmation] = useState(
+    localStorage.getItem("skipClearConfirmation") === "true"
+    );
+
     const classifyCookie = (cookie: any): string => {
         const name = cookie.name.toLowerCase();
         const domain = cookie.domain.toLowerCase();
@@ -94,8 +99,14 @@ function CookieReader() {
     }, []);
 
     const handleClear = () => {
-        setCookies([]);
-    };    
+        if (skipConfirmation) {
+            setCookies([]);
+        } else {
+            setShowConfirmModal(true);
+        }
+    };
+    
+      
 
     // Get unique domains for the filter dropdown
     const uniqueDomains = Array.from(new Set(cookies.map(c => c.domain)));
@@ -460,6 +471,66 @@ function CookieReader() {
                 )}
 
                 {activeTab === "tips" && <CookieTips />}
+
+                {showConfirmModal && (
+                <div style={{
+                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: "rgba(0,0,0,0.7)", display: "flex",
+                    justifyContent: "center", alignItems: "center", zIndex: 9999
+                }}>
+                    <div style={{
+                    backgroundColor: "#1e293b", padding: "30px", borderRadius: "8px",
+                    width: "90%", maxWidth: "400px", textAlign: "center",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.5)"
+                    }}>
+                    <h2 style={{ color: "var(--text-primary)", marginBottom: "20px" }}>
+                        Confirm Clear
+                    </h2>
+                    <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
+                        Are you sure you want to clear all cookies?
+                    </p>
+                    <div style={{ marginBottom: "20px" }}>
+                        <label style={{ color: "var(--text-primary)", fontSize: "14px" }}>
+                        <input
+                            type="checkbox"
+                            onChange={(e) => {
+                            if (e.target.checked) {
+                                localStorage.setItem("skipClearConfirmation", "true");
+                                setSkipConfirmation(true);
+                            } else {
+                                localStorage.removeItem("skipClearConfirmation");
+                                setSkipConfirmation(false);
+                            }
+                            }}
+                            defaultChecked={skipConfirmation}
+                            style={{ marginRight: "8px" }}
+                        />
+                        Don't ask me again
+                        </label>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                        <button
+                        onClick={() => {
+                            setCookies([]);
+                            setShowConfirmModal(false);
+                        }}
+                        className="btn btn-danger"
+                        style={{ width: "120px" }}
+                        >
+                        Clear
+                        </button>
+                        <button
+                        onClick={() => setShowConfirmModal(false)}
+                        className="btn btn-secondary"
+                        style={{ width: "120px" }}
+                        >
+                        Cancel
+                        </button>
+                    </div>
+                    </div>
+                </div>
+                )}
+
             </div>
         </>
     );
