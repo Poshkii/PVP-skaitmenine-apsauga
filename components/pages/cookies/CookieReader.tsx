@@ -473,6 +473,8 @@ function CookieReader() {
                     </>
                 )}
 
+                {activeTab === "tips" && <CookieTips/>}
+
                 {showConfirmModal && (
                 <div 
                     
