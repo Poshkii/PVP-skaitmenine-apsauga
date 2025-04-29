@@ -2,6 +2,7 @@
     "pageName": "El. laiškų sukčiavimo tikrinimas",
     "check": "Tikrinti",
     "clear": "Išvalyti",
+    "cancel": "Atšaukti",
     "scan": "Skenuoti el. laišką",
     "checkNow": "Naujas skenavimas",
     "prevScan": "Ankstesnis skenavimas",
@@ -18,5 +19,8 @@
     "show": "Rodyti turinį",
     "time": "Skenavimo laikas:",
     "process": "Apdorojama...",
-    "clearPrev": "Išvalyti ankstesnį skenavimą"
+    "clearPrev": "Išvalyti ankstesnį skenavimą",
+    "confirmClear": "Patvirtinti išvalymą",
+    "areYouSure": "Ar tikrai norite išvalyti duomenis?",
+    "dontAsk": "Daugiau neklausti"
 }

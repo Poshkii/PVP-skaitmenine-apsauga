@@ -35,10 +35,14 @@
     "checkCurrent": "Check Current URL",
     "check": "Check",
     "clear": "Clear",
+    "cancel": "Cancel",
     "harmful": "Watchout: harmful website!",
     "safe": "Good to go!",
     "risky": "Warning: potenial risk",
     "error": "Uh oh! Something went wrong.",
     "inProgress": "Scan in progress.",
-    "scanAgain": "Scan Again"
+    "scanAgain": "Scan Again",
+    "confirmClear": "Confirm Clear",
+    "areYouSure": "Are you sure you want to clear data?",
+    "dontAsk": "Don't ask me again"
 }

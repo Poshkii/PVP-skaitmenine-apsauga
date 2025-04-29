@@ -5,6 +5,7 @@ import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import CookieTips from "./CookieTips";
 import Select from 'react-select';
 import { StylesConfig } from 'react-select';
+import { useTranslation } from "react-i18next";
 
 function CookieReader() {
     const [activeTab, setActiveTab] = useState<"reader" | "tips">("reader");
@@ -12,7 +13,7 @@ function CookieReader() {
     const [error, setError] = useState<string | null>(null);
     const [domainFilter, setDomainFilter] = useState<string>("all");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
-
+    const { t } = useTranslation('cookies');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [skipConfirmation, setSkipConfirmation] = useState(
     localStorage.getItem("skipClearConfirmation") === "true"
@@ -26,7 +27,7 @@ function CookieReader() {
             name.includes("ga") || name.includes("gid") || name.includes("utm") ||
             domain.includes("google-analytics") || domain.includes("analytics")
         ) {
-            return "tracking";
+            return t('tracking');
         }
 
         if (
@@ -56,16 +57,16 @@ function CookieReader() {
             domain.includes("addthis")
 
         ) {
-            return "advert";
+            return t('advert');
         }
 
         if (
             name.includes("session") || name.includes("auth") || name.includes("csrf")
         ) {
-            return "essential";
+            return t('essential');
         }
 
-        return "unknown";
+        return t('unknown');
     };
 
     const fetchCookies = () => {
@@ -98,15 +99,17 @@ function CookieReader() {
         };
     }, []);
 
-    const handleClear = () => {
+    const handleClear = () => {        
+        setCookies([]);        
+    };
+
+    const clearData = () => {
         if (skipConfirmation) {
-            setCookies([]);
+            handleClear();
         } else {
             setShowConfirmModal(true);
         }
-    };
-    
-      
+    };     
 
     // Get unique domains for the filter dropdown
     const uniqueDomains = Array.from(new Set(cookies.map(c => c.domain)));
@@ -136,16 +139,16 @@ function CookieReader() {
     }, {});
 
     const domainOptions = [
-        { value: 'all', label: 'All Domains' },
+        { value: 'all', label: t('allDomains') },
         ...uniqueDomains.map(domain => ({ value: domain, label: domain }))
     ];
       
     const categoryOptions = [
-        { value: 'all', label: 'All Categories' },
-        { value: 'essential', label: 'Essential' },
-        { value: 'tracking', label: 'Tracking' },
-        { value: 'advert', label: 'Advertisement' },
-        { value: 'unknown', label: 'Unknown' }
+        { value: 'all', label: t('allCategories') },
+        { value: t('essential'), label: t('essential') },
+        { value: t('tracking'), label: t('tracking') },
+        { value: t('advert'), label: t('advert') },
+        { value: t('unknown'), label: t('unknown') }
     ];
 
     // Convert grouped cookies object to array
@@ -320,7 +323,7 @@ function CookieReader() {
     return (
         <>
             <div className="middle-menu">
-                <h1 className="panel-title">Read Stored Cookies</h1>
+                <h1 className="panel-title">{t('title')}</h1>
 
                 <div className="tab-buttons">
                     <button
@@ -329,7 +332,7 @@ function CookieReader() {
                     >
                         <div className="button-content">
                             <Lock size={18} />
-                            Cookie Reader
+                            {t('reader')}
                         </div>
                     </button>
                     <button
@@ -338,7 +341,7 @@ function CookieReader() {
                     >
                         <div className="button-content">
                             <Book size={18} />
-                            Cookie Tips
+                            {t('tips')}
                         </div>
                     </button>
                 </div>
@@ -351,9 +354,9 @@ function CookieReader() {
                                     <Lock size={32} />
                                 </div>
                                 <div className="status-text">
-                                    <h3 className="status-title">Read Stored Data</h3>
+                                    <h3 className="status-title">{t('readStoredData')}</h3>
                                     <p className="status-description">
-                                        Click to scan your browser for stored cookies.
+                                        {t('click')}
                                     </p>
                                 </div>
                             </div>
@@ -365,17 +368,17 @@ function CookieReader() {
                                     onClick={fetchCookies}
                                     type="button"
                                 >
-                                    Read
+                                    {t('read')}
                                 </button>
 
                                 <button
                                     disabled={cookies.length === 0}
                                     className="btn btn-secondary"
                                     style={{ width: "200px" }}
-                                    onClick={handleClear}
+                                    onClick={clearData}
                                     type="button"
                                 >
-                                    Clear
+                                    {t('clear')}
                                 </button>
                             </div>
                         </div>
@@ -417,9 +420,9 @@ function CookieReader() {
                                     <table style={tableStyles}>
                                         <thead>
                                             <tr>
-                                                <th style={{...headerCellStyle, textAlign: "left"}}>Domain</th>
-                                                <th style={headerCellStyle}>Category</th>
-                                                <th style={headerCellStyle}>Qty</th>
+                                                <th style={{...headerCellStyle, textAlign: "left"}}>{t('domain')}</th>
+                                                <th style={headerCellStyle}>{t('category')}</th>
+                                                <th style={headerCellStyle}>{t('qty')}</th>
                                                 <th style={headerCellStyle}></th>
                                             </tr>
                                         </thead>
@@ -429,9 +432,9 @@ function CookieReader() {
                                                     <td style={cellStyle}>{group.domain}</td>
                                                     <td style={{
                                                         ...cellStyle,
-                                                        color: group.category === "tracking" ? "var(--error-color, #ff4747)" : 
-                                                            group.category === "essential" ? "var(--success-color, #47cf73)" :
-                                                            group.category === "advert" ? "var(--warning-color, #ffbb47)" : 
+                                                        color: group.category === t('tracking') ? "var(--error-color, #ff4747)" : 
+                                                            group.category === t('essential') ? "var(--success-color, #47cf73)" :
+                                                            group.category === t('advert') ? "var(--warning-color, #ffbb47)" : 
                                                             "var(--text-secondary, #a0aec0)",
                                                         textAlign: "center"
                                                     }}>
@@ -461,7 +464,7 @@ function CookieReader() {
                                             onClick={deleteFilteredCookies}
                                             style={{ width: "200px" }}
                                         >
-                                            Delete All Filtered
+                                            {t('deleteAllFiltered')}
                                         </button>
                                     </div>
                                 </div>
@@ -470,24 +473,28 @@ function CookieReader() {
                     </>
                 )}
 
-                {activeTab === "tips" && <CookieTips />}
-
                 {showConfirmModal && (
-                <div style={{
+                <div 
+                    
+                    style={{
                     position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
                     backgroundColor: "rgba(0,0,0,0.7)", display: "flex",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
                     justifyContent: "center", alignItems: "center", zIndex: 9999
                 }}>
-                    <div style={{
+                    <div 
+                    className="security-check-container glassmorphism"
+                    style={{
                     backgroundColor: "#1e293b", padding: "30px", borderRadius: "8px",
                     width: "90%", maxWidth: "400px", textAlign: "center",
                     boxShadow: "0 4px 20px rgba(0,0,0,0.5)"
                     }}>
                     <h2 style={{ color: "var(--text-primary)", marginBottom: "20px" }}>
-                        Confirm Clear
+                        {t('confirmClear')}
                     </h2>
                     <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
-                        Are you sure you want to clear all cookies?
+                        {t('areYouSure')}
                     </p>
                     <div style={{ marginBottom: "20px" }}>
                         <label style={{ color: "var(--text-primary)", fontSize: "14px" }}>
@@ -505,26 +512,26 @@ function CookieReader() {
                             defaultChecked={skipConfirmation}
                             style={{ marginRight: "8px" }}
                         />
-                        Don't ask me again
+                        {t('dontAsk')}
                         </label>
                     </div>
                     <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
                         <button
                         onClick={() => {
-                            setCookies([]);
+                            handleClear();
                             setShowConfirmModal(false);
                         }}
                         className="btn btn-danger"
                         style={{ width: "120px" }}
                         >
-                        Clear
+                        {t('clear')}
                         </button>
                         <button
                         onClick={() => setShowConfirmModal(false)}
                         className="btn btn-secondary"
                         style={{ width: "120px" }}
                         >
-                        Cancel
+                        {t('cancel')}
                         </button>
                     </div>
                     </div>

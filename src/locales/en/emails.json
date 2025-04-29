@@ -12,6 +12,7 @@
     "enter": "Enter email address...",
     "check": "Check",
     "clear": "Clear",
+    "cancel": "Cancel",
     "leaked": "Your email has been leaked!",
     "safe": "Your email is safe",
     "badEmail": "Unknown email address",
@@ -38,5 +39,8 @@
     "emailSafe": "Your email is safe!",
     "breaches": "Breaches",
     "info": "Leaked information:",
-    "pswdRisk": "Password risk: "
+    "pswdRisk": "Password risk: ",
+    "confirmClear": "Confirm Clear",
+    "areYouSure": "Are you sure you want to clear data?",
+    "dontAsk": "Don't ask me again"
 }

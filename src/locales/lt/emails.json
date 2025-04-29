@@ -12,6 +12,7 @@
     "enter": "Įveskite el. pašto adresą...",
     "check": "Tikrinti",
     "clear": "Išvalyti",
+    "cancel": "Atšaukti",
     "leaked": "Jūsų el. paštas buvo nutekėjęs!",
     "safe": "Jūsų el. paštas yra saugus",
     "badEmail": "Nežinomas el. pašto adresas",
@@ -38,5 +39,8 @@
     "emailSafe": "Jūsų el. paštas yra saugus!",
     "breaches": "Nutekėjimai",
     "info": "Nutekėjusi informacija:",
-    "pswdRisk": "Slaptažodžio rizika: "
+    "pswdRisk": "Slaptažodžio rizika: ",
+    "confirmClear": "Patvirtinti išvalymą",
+    "areYouSure": "Ar tikrai norite išvalyti duomenis?",
+    "dontAsk": "Daugiau neklausti"
 }

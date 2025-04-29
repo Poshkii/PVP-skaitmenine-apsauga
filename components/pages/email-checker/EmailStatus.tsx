@@ -31,6 +31,11 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const [isStored, setStored] = useState(false);
     const { t } = useTranslation('emails');
 
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [skipConfirmation, setSkipConfirmation] = useState(
+        localStorage.getItem("skipClearConfirmation") === "true"
+    );
+
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     useEffect(() => {
@@ -72,7 +77,8 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
         setResult(t('searching'));
         setLoading(true);
-        handleClear();  
+        
+        handleClear();
         
         var isStored = true;
 
@@ -189,7 +195,15 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
         setBreachesFound(false);
         setScanDone(false);
         setStored(false);
-        setRisk("");
+        setRisk("");           
+    };
+
+    const clearData = () => {
+        if (skipConfirmation) {
+            handleClear();            
+        } else {
+            setShowConfirmModal(true);
+        }       
     };
 
     return (
@@ -286,13 +300,79 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
 
                 {/*Clear & Tips buttons*/}
                 <div className="action-buttons">
-                    <button className="btn btn-secondary" onClick={handleClear}>
+                    <button className="btn btn-secondary" onClick={clearData}>
                     {t('clear')}
                     </button>
                     <button className="btn btn-primary" onClick={switchPage}>
                     {t('tips')}
                     </button>
                 </div>
+
+                {showConfirmModal && (
+                <div 
+                    
+                    style={{
+                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: "rgba(0,0,0,0.7)", display: "flex",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
+                    justifyContent: "center", alignItems: "center", zIndex: 9999
+                }}>
+                    <div 
+                    className="security-check-container glassmorphism"
+                    style={{
+                    backgroundColor: "#1e293b", padding: "30px", borderRadius: "8px",
+                    width: "90%", maxWidth: "400px", textAlign: "center",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.5)"
+                    }}>
+                    <h2 style={{ color: "var(--text-primary)", marginBottom: "20px" }}>
+                        {t('confirmClear')}
+                    </h2>
+                    <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
+                        {t('areYouSure')}
+                    </p>
+                    <div style={{ marginBottom: "20px" }}>
+                        <label style={{ color: "var(--text-primary)", fontSize: "14px" }}>
+                        <input
+                            type="checkbox"
+                            onChange={(e) => {
+                            if (e.target.checked) {
+                                localStorage.setItem("skipClearConfirmation", "true");
+                                setSkipConfirmation(true);
+                            } else {
+                                localStorage.removeItem("skipClearConfirmation");
+                                setSkipConfirmation(false);
+                            }
+                            }}
+                            defaultChecked={skipConfirmation}
+                            style={{ marginRight: "8px" }}
+                        />
+                        {t('dontAsk')}
+                        </label>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                        <button
+                        onClick={() => {
+                            handleClear();
+                            setShowConfirmModal(false);
+                        }}
+                        className="btn btn-danger"
+                        style={{ width: "120px" }}
+                        >
+                        {t('clear')}
+                        </button>
+                        <button
+                        onClick={() => setShowConfirmModal(false)}
+                        className="btn btn-secondary"
+                        style={{ width: "120px" }}
+                        >
+                        {t('cancel')}
+                        </button>
+                    </div>
+                    </div>
+                </div>
+                )}
+
             </div>
         </>
     );

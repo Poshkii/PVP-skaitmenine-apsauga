@@ -33,6 +33,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [scanDone, setScanDone] = useState(false);
     const { t } = useTranslation('urls');
 
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [skipConfirmation, setSkipConfirmation] = useState(
+    localStorage.getItem("skipClearConfirmation") === "true"
+    );
+
     const [vtDone, setVtDone] = useState(false);
     const [uioDone, setUioDone] = useState(false);
     const [vtFinal, setVtFinal] = useState<"Safe" | "Suspicious" | "Malicious" | "Unknown">("Unknown");
@@ -107,30 +112,39 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             return false;
         }
     };
+
     const handleClear = () => {
-        setVtDone(false);
-        setUioDone(false);
-        setVtFinal("Unknown");
-        setUioFinal("Unknown");
+            setVtDone(false);
+            setUioDone(false);
+            setVtFinal("Unknown");
+            setUioFinal("Unknown");
 
-        setResultVT('');
-        setResultUIO('');
-        setUnsafeVT(false);
-        setSafeVT(false);
-        setSuspiciousVT(false);
-        setUnknownVT(false);
-        setInprogressVT(false);
+            setResultVT('');
+            setResultUIO('');
+            setUnsafeVT(false);
+            setSafeVT(false);
+            setSuspiciousVT(false);
+            setUnknownVT(false);
+            setInprogressVT(false);
 
-        setUnsafeUIO(false);
-        setSafeUIO(false);
-        setSuspiciousUIO(false);
-        setUnknownUIO(false);
-        setInprogressUIO(false);
-        setResultUIO("");
+            setUnsafeUIO(false);
+            setSafeUIO(false);
+            setSuspiciousUIO(false);
+            setUnknownUIO(false);
+            setInprogressUIO(false);
+            setResultUIO("");
 
-        setShowURLScam(false);
-        setDebug("");  // Clear debug messages if needed
-        setScanDone(false);
+            setShowURLScam(false);
+            setDebug("");  // Clear debug messages if needed
+            setScanDone(false);
+    };
+
+    const clearData = () => {
+        if (skipConfirmation) {
+            handleClear();
+        } else {
+            setShowConfirmModal(true);
+        }        
     };
 
     useEffect(() => {
@@ -150,6 +164,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     }, [vtDone, uioDone, vtFinal, uioFinal]);
 
     const UrlChecker = async (e: FormEvent) => {
+        
         handleClear();
         e.preventDefault();
         setShowURLScam(false);
@@ -674,7 +689,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
                 <div className="action-buttons">
                 {scanDone && (    
-                    <button className="btn btn-secondary" onClick={handleClear}>
+                    <button className="btn btn-secondary" onClick={clearData}>
                     {t('clear')}
                     </button>
                 )}
@@ -682,6 +697,72 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                     {t('scanAgain')}
                     </button>
                 </div>
+
+                {showConfirmModal && (
+                <div 
+                    
+                    style={{
+                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: "rgba(0,0,0,0.7)", display: "flex",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
+                    justifyContent: "center", alignItems: "center", zIndex: 9999
+                }}>
+                    <div 
+                    className="security-check-container glassmorphism"
+                    style={{
+                    backgroundColor: "#1e293b", padding: "30px", borderRadius: "8px",
+                    width: "90%", maxWidth: "400px", textAlign: "center",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.5)"
+                    }}>
+                    <h2 style={{ color: "var(--text-primary)", marginBottom: "20px" }}>
+                        {t('confirmClear')}
+                    </h2>
+                    <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
+                        {t('areYouSure')}
+                    </p>
+                    <div style={{ marginBottom: "20px" }}>
+                        <label style={{ color: "var(--text-primary)", fontSize: "14px" }}>
+                        <input
+                            type="checkbox"
+                            onChange={(e) => {
+                            if (e.target.checked) {
+                                localStorage.setItem("skipClearConfirmation", "true");
+                                setSkipConfirmation(true);
+                            } else {
+                                localStorage.removeItem("skipClearConfirmation");
+                                setSkipConfirmation(false);
+                            }
+                            }}
+                            defaultChecked={skipConfirmation}
+                            style={{ marginRight: "8px" }}
+                        />
+                        {t('dontAsk')}
+                        </label>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                        <button
+                        onClick={() => {
+                            handleClear();
+                            setShowConfirmModal(false);
+                        }}
+                        className="btn btn-danger"
+                        style={{ width: "120px" }}
+                        >
+                        {t('clear')}
+                        </button>
+                        <button
+                        onClick={() => setShowConfirmModal(false)}
+                        className="btn btn-secondary"
+                        style={{ width: "120px" }}
+                        >
+                        {t('cancel')}
+                        </button>
+                    </div>
+                    </div>
+                </div>
+                )}
+
             </div>
         </>
     );

@@ -35,10 +35,14 @@
     "checkCurrent": "Patikrinti dabartinį URL",
     "check": "Tikrinti",
     "clear": "Išvalyti",
+    "cancel": "Atšaukti",
     "harmful": "Dėmesio: kenksminga svetainė!",
     "safe": "Saugu naudotis!",
     "risky": "Įspėjimas: galima rizika",
     "error": "Oi! Kažkas nepavyko.",
     "inProgress": "Vyksta skenavimas.",
-    "scanAgain": "Skenuoti dar kartą"
+    "scanAgain": "Skenuoti dar kartą",
+    "confirmClear": "Patvirtinti išvalymą",
+    "areYouSure": "Ar tikrai norite išvalyti duomenis?",
+    "dontAsk": "Daugiau neklausti"
 }

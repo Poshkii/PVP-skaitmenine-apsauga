@@ -2,6 +2,7 @@
     "pageName": "Phishing Checker in Email",
     "check": "Check",
     "clear": "Clear",
+    "cancel": "Cancel",
     "scan": "Scan Email",
     "checkNow": "New Scan",
     "prevScan": "Previous scan",
@@ -18,5 +19,8 @@
     "show": "Reveal body",
     "time": "Time of the scan:",
     "process": "Processing...",
-    "clearPrev": "Clear Previous Scan"
+    "clearPrev": "Clear Previous Scan",
+    "confirmClear": "Confirm Clear",
+    "areYouSure": "Are you sure you want to clear data?",
+    "dontAsk": "Don't ask me again"
 }
