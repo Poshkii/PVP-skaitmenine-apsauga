@@ -5,6 +5,7 @@ import {UiMessageId} from "@/entrypoints/content/types/ui-message";
 import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
+import { JSDOM } from "jsdom";
 
 interface EmailData {
     sender: string;
@@ -30,6 +31,7 @@ function PhishStatus() {
     const [activeTab, setActiveTab] = useState<"checkNow" | "prevScan">("checkNow");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [recentScan, setRecentScan] = useState<EmailData | null>(null);
     const [previousScan, setPreviousScan] = useState<EmailData | null>(null);
     const [showBody, setShowBody] = useState(false);
     const [showPrevBody, setShowPrevBody] = useState(false);
@@ -74,6 +76,8 @@ function PhishStatus() {
                     timestamp: Date.now()
                 };
                 
+                console.log("This is the data:", scanData);
+                setRecentScan(scanData);
                 saveScan(scanData);
             }
         };
@@ -157,50 +161,67 @@ function PhishStatus() {
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     };
 
-    const checkPhishing = async (urlToCheck: string) => {
+    const extractCleanBody = (html: string): string => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+    
+        // Get plain text
+        const text = doc.body.textContent?.trim() || "";
+    
+        // Get all links
+        const links = Array.from(doc.querySelectorAll("a[href]"))
+            .map(a => a.getAttribute("href"))
+            .filter(Boolean);
+    
+        // Get all image sources
+        const images = Array.from(doc.querySelectorAll("img[src]"))
+            .map(img => img.getAttribute("src"))
+            .filter(Boolean);
+    
+        // Combine result
+        let result = text;
+        if (links.length > 0) {
+            result += "\nURLs: " + links.join(", ");
+        }
+        if (images.length > 0) {
+            result += "\nImages: " + images.join(", ");
+        }
+    
+        return result.trim();
+    };
+
+    const checkPhishing = async (scan: EmailData) => {
+        console.log("This is before formatting:", scan);
         try {
-            const response = await fetch(SCAN_API_URL, {
+            const cleanedBody = extractCleanBody(scan.body);
+            const payload = JSON.stringify({
+                sender_name: scan.sender,
+                sender_email: scan.senderMail,
+                subject: scan.subject,
+                body: cleanedBody
+            });
+
+            console.log("This is my payload:", scan, "\n");
+    
+            const response = await fetch(SCAN_API_URL + "/predict", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
+                    "Content-Type": "application/json"
                 },
-                body: ``
+                body: payload
             });
-            
-            // Klaidu apdorojimas
-            if (!response.ok) {
-                // Handle HTTP errors
-                const errorCode = response.status; // Get the HTTP error code
     
-                let errorMessage = t('VirusTotal.errorScan');
-                switch (errorCode) {
-                    case 400:
-                        errorMessage = t('VirusTotal.400');
-                        break;
-                    case 401:
-                        errorMessage = t('VirusTotal.401');
-                        break;
-                    case 403:
-                        errorMessage = t('VirusTotal.403');
-                        break;
-                    case 429:
-                        errorMessage = t('VirusTotal.429');
-                        break;
-                    case 500:
-                        errorMessage = t('VirusTotal.500');
-                        break;
-                }
-                //setUnknownVT(true);
-                return errorMessage;
+            // Error handling
+            if (!response.ok) {
+                return t('error');
             }
-            
-            // Jei viskas gerai, bandom gauti analize
+    
+            // Process analysis result
             const data = await response.json();
-            return ""
-            
+            //console.log("This is response:", data);
+            return "";
         } catch (error) {
             console.error("VirusTotal error:", error);
-            //setUnknownVT(true);
             return t('VirusTotal.errorScan');
         }
     };
@@ -298,6 +319,15 @@ function PhishStatus() {
                                         )}
                                     </div>
                                 )}
+                                {recentScan && (
+                                <button 
+                                            className="btn btn-secondary" 
+                                            style={{ marginLeft: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
+                                            onClick={() => checkPhishing(recentScan)}
+                                        >
+                                            Check for phishing
+                                </button>
+                                 )}
                             </>
                         )}
                         </div>

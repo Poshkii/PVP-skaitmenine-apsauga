@@ -18,5 +18,6 @@
     "show": "Reveal body",
     "time": "Time of the scan:",
     "process": "Processing...",
-    "clearPrev": "Clear Previous Scan"
+    "clearPrev": "Clear Previous Scan",
+    "error": "Uh oh.. Something went wrong. Please try again."
 }
