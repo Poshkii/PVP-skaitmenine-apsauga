@@ -7,6 +7,7 @@ declare module 'wxt/sandbox' {
         virusTotalApiUrl?: string;
         metaDefenderApiUrl?: string;
         urlScanApiUrl?: string;
+        emailScanApiUrl?:string
     }
 }
 
@@ -15,4 +16,5 @@ export default defineAppConfig({
     virusTotalApiUrl: import.meta.env.WXT_PRIVACY_API_URL + import.meta.env.WXT_VIRUSTOTAL_ENDPOINT,
     metaDefenderApiUrl: import.meta.env.WXT_PRIVACY_API_URL + import.meta.env.WXT_METADEFENDER_ENDPOINT,
     urlScanApiUrl: import.meta.env.WXT_PRIVACY_API_URL + import.meta.env.WXT_URLSCAN_ENDPOINT,
+    emailScanApiUrl: import.meta.env.WXT_PRIVACY_API_URL + import.meta.env.WXT_EMAILSCAN_ENDPOINT,
 });

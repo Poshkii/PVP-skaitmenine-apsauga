@@ -15,6 +15,8 @@ interface EmailData {
     timestamp: number; // When the scan was performed
   }
 
+const SCAN_API_URL = String(useAppConfig().emailScanApiUrl);
+
 function PhishStatus() {
     const { t } = useTranslation('phishEmail');
     const navigate = useNavigate();
@@ -153,6 +155,54 @@ function PhishStatus() {
         
         // Format as YYYY-MM-DD HH:MM
         return `${year}-${month}-${day} ${hours}:${minutes}`;
+    };
+
+    const checkPhishing = async (urlToCheck: string) => {
+        try {
+            const response = await fetch(SCAN_API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: ``
+            });
+            
+            // Klaidu apdorojimas
+            if (!response.ok) {
+                // Handle HTTP errors
+                const errorCode = response.status; // Get the HTTP error code
+    
+                let errorMessage = t('VirusTotal.errorScan');
+                switch (errorCode) {
+                    case 400:
+                        errorMessage = t('VirusTotal.400');
+                        break;
+                    case 401:
+                        errorMessage = t('VirusTotal.401');
+                        break;
+                    case 403:
+                        errorMessage = t('VirusTotal.403');
+                        break;
+                    case 429:
+                        errorMessage = t('VirusTotal.429');
+                        break;
+                    case 500:
+                        errorMessage = t('VirusTotal.500');
+                        break;
+                }
+                //setUnknownVT(true);
+                return errorMessage;
+            }
+            
+            // Jei viskas gerai, bandom gauti analize
+            const data = await response.json();
+            return ""
+            
+        } catch (error) {
+            console.error("VirusTotal error:", error);
+            //setUnknownVT(true);
+            return t('VirusTotal.errorScan');
+        }
     };
 
     return (
