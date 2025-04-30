@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from "@/components/pages/trackers/TrackerDashBoard";
 import Settings from "@/components/pages/trackers/TrackerSettings";
-import { BgMessageId } from "@/entrypoints/content/types/bg-message";
 import { ModuleId } from "@/entrypoints/content/types/module";
 import { ModuleMessageId } from "@/entrypoints/content/types/module-message";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
-import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import './trackers.css';
 
 interface Stats {
@@ -41,7 +39,7 @@ interface StorageChange {
 }
 
 const Trackers: React.FC = () => {
-  const { sendToModule } = useContentMessaging();
+  const { sendToModule } = useModuleMessaging();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'settings'>('dashboard');
   const [stats, setStats] = useState<Stats>({
     total: 0,
