@@ -1,6 +1,8 @@
 export enum ModuleMessageId {
     PollFileScan,
     UpdateTrackerRules,
+    ApplyProtections,
+    ResetTrackerStats,
     ReadDom
 }
 

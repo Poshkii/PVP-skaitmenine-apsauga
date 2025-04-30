@@ -18,7 +18,8 @@ const Settings: React.FC<SettingsProps> = ({ settings, updateSettings, updateRul
   const handleToggle = (setting: keyof Omit<SettingsProps['settings'], 'lastUpdated'>): void => {
     const newSettings = {
       ...settings,
-      [setting]: !settings[setting]
+      [setting]: !settings[setting],
+      lastUpdated: new Date().toISOString()
     };
     updateSettings(newSettings);
   };
