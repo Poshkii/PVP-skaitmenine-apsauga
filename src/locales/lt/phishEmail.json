@@ -18,5 +18,6 @@
     "show": "Rodyti turinį",
     "time": "Skenavimo laikas:",
     "process": "Apdorojama...",
-    "clearPrev": "Išvalyti ankstesnį skenavimą"
+    "clearPrev": "Išvalyti ankstesnį skenavimą",
+    "error": "O ne.. Kažkas nutiko negerai. Bandykite dar kartą."
 }

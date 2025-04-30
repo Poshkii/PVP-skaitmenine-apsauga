@@ -180,18 +180,20 @@ function PhishStatus() {
     
         // Combine result
         let result = text;
+        /*
         if (links.length > 0) {
             result += "\nURLs: " + links.join(", ");
         }
         if (images.length > 0) {
             result += "\nImages: " + images.join(", ");
         }
-    
+        */
+        // Kol kas paliekam tik teksta, nuorodas ir paveiksliuku pavadinimus isimam
         return result.trim();
     };
 
     const checkPhishing = async (scan: EmailData) => {
-        console.log("This is before formatting:", scan);
+        console.log("This is before formatting:", SCAN_API_URL);
         try {
             const cleanedBody = extractCleanBody(scan.body);
             const payload = JSON.stringify({
@@ -201,7 +203,7 @@ function PhishStatus() {
                 body: cleanedBody
             });
 
-            console.log("This is my payload:", scan, "\n");
+            console.log("This is my payload:", payload, "\n");
     
             const response = await fetch(SCAN_API_URL + "/predict", {
                 method: "POST",
@@ -221,8 +223,8 @@ function PhishStatus() {
             //console.log("This is response:", data);
             return "";
         } catch (error) {
-            console.error("VirusTotal error:", error);
-            return t('VirusTotal.errorScan');
+            console.error("Error:", error);
+            return t('error');
         }
     };
 
@@ -322,7 +324,7 @@ function PhishStatus() {
                                 {recentScan && (
                                 <button 
                                             className="btn btn-secondary" 
-                                            style={{ marginLeft: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
+                                            style={{ marginTop: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
                                             onClick={() => checkPhishing(recentScan)}
                                         >
                                             Check for phishing
