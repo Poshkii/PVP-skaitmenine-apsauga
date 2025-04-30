@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from "@/components/pages/trackers/TrackerDashBoard";
 import Settings from "@/components/pages/trackers/TrackerSettings";
+import { BgMessageId } from "@/entrypoints/content/types/bg-message";
+import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import './trackers.css';
 
 interface Stats {
@@ -16,7 +18,7 @@ interface SettingsType {
   blockAdvertising: boolean;
   blockSocial: boolean;
   blockOther: boolean;
-  advancedProtection: boolean;
+  blockFingerprints: boolean;
   lastUpdated: string | null;
 }
 
@@ -48,7 +50,7 @@ const Trackers: React.FC = () => {
     blockAdvertising: true,
     blockSocial: true,
     blockOther: true,
-    advancedProtection: true,
+    blockFingerprints: true,
     lastUpdated: null
   });
   const [loading, setLoading] = useState<boolean>(false);
@@ -82,17 +84,36 @@ const Trackers: React.FC = () => {
     setLoading(true);
     chrome.storage.local.set({ settings: newSettings }, () => {
       setSettings(newSettings);
-      setTimeout(() => setLoading(false), 1000); // Give time for rules to update
+      setTimeout(() => setLoading(false), 1000); 
     });
   };
   
   // Force update of EasyList rules
-  const updateRules = (): void => {
+  const updateRules = () => {
     setLoading(true);
-    chrome.runtime.sendMessage({ action: 'updateEasyList' }, () => {
-      setTimeout(() => setLoading(false), 2000);
+    console.log("Manually updating tracker ruleset")
+    browser.runtime.sendMessage({ id: BgMessageId.UpdateTrackerRules })
+    .catch((err) => {
+        console.error("Error sending message:", err);
     });
   };
+
+  useEffect(() => {
+      const handleMessage = (message: any) => {
+          if (message.id === UiMessageId.UpdateTrackerRules) {
+            console.log("Manual ruleset update succesful")
+            setLoading(false);
+          } else if (message.id === UiMessageId.TrackerRulesError) {
+            console.error("Error updating tracker ruleset, try again");
+            setLoading(false);
+          }
+      };
+
+      browser.runtime.onMessage.addListener(handleMessage);
+      return () => {
+          browser.runtime.onMessage.removeListener(handleMessage);
+      };
+  }, []);
 
   const resetStats = (): void => {
     const resetBlockStats: Stats = {

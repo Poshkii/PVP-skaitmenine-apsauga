@@ -127,7 +127,18 @@ export default defineBackground(async () => {
               
                 openPopupAndScan();
                 break;
-              }
+            }
+            case BgMessageId.UpdateTrackerRules: {
+                try {
+                    await fetchAndProcessEasyLists();
+                    browser.runtime.sendMessage({ id: UiMessageId.UpdateTrackerRules});
+                    console.log("Tracker ruleset updated");
+                } catch (error) {
+                    console.error("Failed to update ruleset:", error);
+                    browser.runtime.sendMessage({ id: UiMessageId.TrackerRulesError, data: { message: (error as any).message } });
+                }
+                break;
+            }
         }
     });
 });
@@ -205,7 +216,7 @@ browser.runtime.onInstalled.addListener(async () => {
             blockAdvertising: true,
             blockSocial: true,
             blockOther: true,
-            advancedProtection: true,
+            blockFingerprints: true,
             lastUpdated: null
         }
     });
@@ -229,22 +240,22 @@ function checkTrackersOnPage(tabId: number, url: string) {
         // Make sure we're using the correct API
         if (browser.declarativeNetRequest && chrome.declarativeNetRequest.getMatchedRules) {
             chrome.declarativeNetRequest.getMatchedRules(
-            { tabId: tabId },
-            (results) => {
-                if (browser.runtime.lastError) {
-                    console.error("Error in getMatchedRules:", browser.runtime.lastError.message);
-                    return;
+                { tabId: tabId },
+                (results) => {
+                    if (browser.runtime.lastError) {
+                        console.error("Error in getMatchedRules:", browser.runtime.lastError.message);
+                        return;
+                    }
+                    
+                    // Access the matched rules info safely
+                    const matchedRules = results?.rulesMatchedInfo || [];
+                    console.log(`Detected ${matchedRules.length} tracker matches on ${url}`);
+                    
+                    if (matchedRules.length > 0) {
+                        updateStatsFromMatches(matchedRules);
+                        updateBadge(tabId, matchedRules.length);
+                    }
                 }
-                
-                // Access the matched rules info safely
-                const matchedRules = results?.rulesMatchedInfo || [];
-                console.log(`Detected ${matchedRules.length} tracker matches on ${url}`);
-                
-                if (matchedRules.length > 0) {
-                    updateStatsFromMatches(matchedRules);
-                    updateBadge(tabId, matchedRules.length);
-                }
-            }
             );
         } else {
             console.warn("declarativeNetRequest.getMatchedRules is not available");
@@ -256,12 +267,12 @@ function checkTrackersOnPage(tabId: number, url: string) {
 }  
 
 function updateStatsFromMatches(matchedRules: chrome.declarativeNetRequest.MatchedRuleInfo[]) {
-    browser.storage.local.get(['blockStats', 'ruleCategories'], (data) => {
+    browser.storage.local.get(['blockStats', 'ruleCategories', 'ruleMetadata'], (data) => {
         if (browser.runtime.lastError) {
             console.error("Error retrieving stats from storage:", browser.runtime.lastError.message);
             return;
         }
-        
+    
         const stats = data.blockStats || {
             total: 0,
             analytics: 0,
@@ -269,28 +280,32 @@ function updateStatsFromMatches(matchedRules: chrome.declarativeNetRequest.Match
             social: 0,
             other: 0
         };
-        
+    
         const ruleCategories = data.ruleCategories || {};
+        const ruleMetadata = data.ruleMetadata || {};
+    
         let newMatches = 0;
-        
+    
         matchedRules.forEach(info => {
-            // Get category for this rule ID, defaulting to 'other'
-            const category = ruleCategories[info.rule.ruleId] || 'other';
-            
-            // Since 'count' may not exist in the type definition, use a type assertion
-            // or check if it exists at runtime
-            const matchCount = 1; // Default to 1 if count isn't available
-            
-            stats[category] += matchCount;
-            stats.total += matchCount;
-            newMatches += matchCount;
+            const ruleId = info.rule.ruleId;
+            const category = ruleCategories[ruleId] || 'other';
+            const metadata = ruleMetadata[ruleId] || {};
+    
+            console.log(`[Tracker Match] Rule ID: ${ruleId}, Category: ${category}`);
+            if (metadata.urlFilter) console.log(`  ↳ URL Filter: ${metadata.urlFilter}`);
+            if (metadata.domains) console.log(`  ↳ Domains: ${metadata.domains.join(', ')}`);
+            if (metadata.action) console.log(`  ↳ Action: ${metadata.action}`);
+    
+            stats[category] += 1;
+            stats.total += 1;
+            newMatches += 1;
         });
-        
+    
         if (newMatches > 0) {
             console.log(`Updated block stats with ${newMatches} new matches`);
             browser.storage.local.set({ blockStats: stats }, () => {
                 if (browser.runtime.lastError) {
-                console.error("Error saving stats:", browser.runtime.lastError.message);
+                    console.error("Error saving stats:", browser.runtime.lastError.message);
                 }
             });
         }
@@ -331,7 +346,7 @@ async function fetchAndProcessEasyLists() {
             blockAdvertising: true,
             blockSocial: true,
             blockOther: true,
-            advancedProtection: true
+            blockFingerprints: true
         };
         
         const enabled = {
@@ -348,8 +363,14 @@ async function fetchAndProcessEasyLists() {
         ]);
         
         // Parse lists into rules
-        const easyListRules = easyListContent ? parseEasyList(easyListContent) : [];
-        const easyPrivacyRules = easyPrivacyContent ? parseEasyList(easyPrivacyContent) : [];
+        let nextId = 1;
+        const [easyListRules, nextAfterEasy] = easyListContent
+        ? parseEasyList(easyListContent, nextId)
+        : [[], nextId];
+
+        const [easyPrivacyRules, nextAfterPrivacy] = easyPrivacyContent
+        ? parseEasyList(easyPrivacyContent, nextAfterEasy)
+        : [[], nextAfterEasy];
         
         console.log(`Parsed ${easyListRules.length} EasyList rules and ${easyPrivacyRules.length} EasyPrivacy rules`);
         
@@ -398,20 +419,31 @@ async function applyRules(rulesets: Record<string, chrome.declarativeNetRequest.
         // Store which rule belongs to which category
         Object.entries(rulesets).forEach(([category, rules]) => {
             rules.forEach(rule => {
-                allRules.push(rule);
-                ruleCategories[rule.id] = category;
+                const originalId = rule.id;
+                ruleCategories[originalId] = category;
+                allRules.push({ ...rule }); 
             });
         });
 
         let ruleCounter = await getRuleCounter();
+        let finalRuleCategories: Record<number, string> = {};
+        let finalRuleMetadata: Record<number, { urlFilter?: string, domains?: string[], action?: string }> = {};
+        
         allRules = allRules.map((rule) => {
-            // Assign a unique rule ID based on the counter
-            rule.id = ruleCounter++;
-            // Update the category mapping with the new ID
-            ruleCategories[rule.id] = ruleCategories[rule.id] || 'other';
+            const originalId = rule.id;
+            const newId = ruleCounter++;
+        
+            finalRuleCategories[newId] = ruleCategories[originalId] || 'other';
+            finalRuleMetadata[newId] = {
+                urlFilter: rule.condition?.urlFilter,
+                domains: rule.condition?.domains,
+                action: rule.action?.type
+            };
+        
+            rule.id = newId;
             return rule;
         });
-
+        
         await setRuleCounter(ruleCounter);
 
         if (allRules.length > 30000) {
@@ -423,11 +455,11 @@ async function applyRules(rulesets: Record<string, chrome.declarativeNetRequest.
             await chrome.declarativeNetRequest.updateDynamicRules({
                 addRules: allRules,
             });
-            
-            // Store rule categories for later reference when counting matches
-            await browser.storage.local.set({ ruleCategories });
-            
-            console.log(`Applied ${allRules.length} blocking rules`);
+        
+            await browser.storage.local.set({
+                ruleCategories: finalRuleCategories,
+                ruleMetadata: finalRuleMetadata
+            });
         }
     } catch (error) {
         console.error("Error applying rules:", error);
@@ -499,5 +531,3 @@ export function waitForPopup(callback: () => void) {
 
     browser.action.openPopup();
 }
-
-

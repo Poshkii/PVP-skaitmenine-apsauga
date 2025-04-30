@@ -7,7 +7,7 @@ interface SettingsProps {
     blockAdvertising: boolean;
     blockSocial: boolean;
     blockOther: boolean;
-    advancedProtection: boolean;
+    blockFingerprints: boolean;
     lastUpdated: string | null;
   };
   updateSettings: (settings: SettingsProps['settings']) => void;
@@ -110,8 +110,8 @@ const Settings: React.FC<SettingsProps> = ({ settings, updateSettings, updateRul
         <label className="toggle">
           <input 
             type="checkbox" 
-            checked={settings.advancedProtection} 
-            onChange={() => handleToggle('advancedProtection')}
+            checked={settings.blockFingerprints} 
+            onChange={() => handleToggle('blockFingerprints')}
           />
           <span className="slider"></span>
         </label>

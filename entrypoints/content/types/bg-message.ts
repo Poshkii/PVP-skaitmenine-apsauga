@@ -10,6 +10,7 @@ export enum BgMessageId {
     ScanEmail = "SCAN_EMAIL",
     ReadEmail = "READ_EMAIL",
     ReadDOM = "READ_DOM",
+    UpdateTrackerRules = "UPDATE_TRACKER_RULES",
 }
 
 export interface BgMessage {

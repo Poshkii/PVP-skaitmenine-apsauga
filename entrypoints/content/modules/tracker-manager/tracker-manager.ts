@@ -1,6 +1,4 @@
 import {Module, ModuleId} from "../../types/module.ts";
-import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
-import {ModuleMessage, ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 
 export class TrackerManager extends Module { 
     readonly id = ModuleId.TrackerManager;
@@ -168,6 +166,4 @@ export class TrackerManager extends Module {
             this.detectTrackingCookies();
         }
     }
-
-    
 }

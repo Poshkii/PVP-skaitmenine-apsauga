@@ -28,9 +28,12 @@ export async function fetchEasyList(listUrl: string): Promise<string | null> {
 }
 
 // Parse EasyList content into DNR rules
-export function parseEasyList(easyListContent: string): chrome.declarativeNetRequest.Rule[] {
+export function parseEasyList(
+  easyListContent: string,
+  startingRuleId: number = 1
+): [chrome.declarativeNetRequest.Rule[], number] {
   const rules: chrome.declarativeNetRequest.Rule[] = [];
-  let ruleId = 1;
+  let ruleId = startingRuleId;
 
   const lines = easyListContent.split('\n');
 
@@ -93,7 +96,7 @@ export function parseEasyList(easyListContent: string): chrome.declarativeNetReq
     }
   }
 
-  return rules;
+  return [rules, ruleId]; // Return the final rule ID for chaining
 }
 
 // Categorize DNR rules by keywords
