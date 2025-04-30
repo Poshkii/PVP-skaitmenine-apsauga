@@ -12,7 +12,6 @@ export interface TrackerSettings {
     blockSocial: boolean;
     blockOther: boolean;
     blockFingerprints: boolean;
-    advancedProtection?: boolean;
     lastUpdated: string | null;
 }
 
@@ -47,6 +46,8 @@ export class TrackerManager extends Module {
             browser.alarms.clear('checkRuleMatches');
         }
     }
+
+    private isUpdatingRules = false;
 
     private setupEventListeners(): void {
         // Listen for web navigation events
@@ -254,7 +255,13 @@ export class TrackerManager extends Module {
         }
     }
 
-    async fetchAndProcessEasyLists(): Promise<void> {
+    private async fetchAndProcessEasyLists(): Promise<void> {
+        if (this.isUpdatingRules) {
+            console.warn("Rules update already in progress, skipping...");
+            return;
+        }
+
+        this.isUpdatingRules = true;
         console.log("Fetching EasyList rules");
 
         try {
@@ -318,7 +325,9 @@ export class TrackerManager extends Module {
             console.log("EasyList rules updated successfully");
         } catch (error) {
             console.error("Error processing EasyList rules:", error);
-            throw error; // Rethrow so caller can handle it
+            throw error;
+        } finally {
+            this.isUpdatingRules = false;
         }
     }
 
@@ -373,7 +382,7 @@ export class TrackerManager extends Module {
 
             if (allRules.length > 0) {
                 await chrome.declarativeNetRequest.updateDynamicRules({
-                    addRules: allRules,
+                    addRules: allRules
                 });
             
                 await browser.storage.local.set({
@@ -398,14 +407,14 @@ export class TrackerManager extends Module {
         await browser.storage.local.set({ ruleCounter: counter });
     }
 
-    handleMessage(message: ModuleMessage): any {
+    async handleMessage(message: ModuleMessage): Promise<void> {
         super.handleMessage(message);
 
         switch (message.id){
             case ModuleMessageId.UpdateTrackerRules: {
                 console.log("Received request to update tracker rules");
                 try {
-                    this.fetchAndProcessEasyLists();
+                    await this.fetchAndProcessEasyLists();
                     this.sendToRuntime({id: UiMessageId.UpdateTrackerRules});
                 } catch (error) {
                     console.error("Failed to update ruleset:", error);
@@ -415,6 +424,7 @@ export class TrackerManager extends Module {
             }
             case ModuleMessageId.ResetTrackerStats: {
                 this.resetTrackerStats();
+                this.sendToRuntime({id: UiMessageId.TrackerReset});
                 break;
             }
         }

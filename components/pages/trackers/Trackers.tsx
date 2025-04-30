@@ -4,6 +4,7 @@ import Settings from "@/components/pages/trackers/TrackerSettings";
 import { ModuleId } from "@/entrypoints/content/types/module";
 import { ModuleMessageId } from "@/entrypoints/content/types/module-message";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
+import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import './trackers.css';
 
 interface Stats {
@@ -20,7 +21,6 @@ interface SettingsType {
   blockSocial: boolean;
   blockOther: boolean;
   blockFingerprints: boolean;
-  advancedProtection?: boolean;
   lastUpdated: string | null;
 }
 
@@ -54,7 +54,6 @@ const Trackers: React.FC = () => {
     blockSocial: true,
     blockOther: true,
     blockFingerprints: true,
-    advancedProtection: false,
     lastUpdated: null
   });
   const [loading, setLoading] = useState<boolean>(false);
@@ -89,7 +88,7 @@ const Trackers: React.FC = () => {
     setLoading(true);
     setUpdateError(null);
   
-    const changed = settings.advancedProtection !== newSettings.advancedProtection;
+    const changed = settings.blockFingerprints !== newSettings.blockFingerprints;
   
     chrome.storage.local.set({ settings: newSettings }, () => {
       setSettings(newSettings);
@@ -119,7 +118,7 @@ const Trackers: React.FC = () => {
   // Reset tracker statistics
   const resetStats = (): void => {
     try {
-      setLoading(true);
+      //setLoading(true);
       console.log("Resetting tracker statistics");
 
       sendToModule(ModuleId.TrackerManager, {id: ModuleMessageId.ResetTrackerStats});
@@ -134,7 +133,7 @@ const Trackers: React.FC = () => {
   // Trigger an update for the protection settings
   const triggerProtectionUpdate = (): void => {
     try {
-      sendToModule(ModuleId.TrackerManager, {id: ModuleMessageId.ApplyProtections});
+      sendToModule(ModuleId.TrackerBlocker, {id: ModuleMessageId.ApplyProtections});
       
     } catch (error) {
       console.error("Error applying protection settings:", error);
@@ -143,15 +142,23 @@ const Trackers: React.FC = () => {
 
   useEffect(() => {
     const handleMessage = (message: any) => {
-      if (message.id === UiMessageId.UpdateTrackerRules) {
-        console.log("Manual ruleset update successful");
-        setLoading(false);
-      } else if (message.id === UiMessageId.TrackerRulesError) {
-        console.error("Error updating tracker ruleset:", message.data?.message);
-        setUpdateError(message.data?.message || "Error updating rules. Please try again.");
-        setLoading(false);
-      }
-    };
+      switch (message.id){
+        case UiMessageId.UpdateTrackerRules: {
+          console.log("Manual ruleset update successful");
+          setLoading(false);
+          break; 
+        }
+        case UiMessageId.TrackerRulesError: {
+          console.error("Error updating tracker ruleset:", message.data?.message);
+          setUpdateError(message.data?.message || "Error updating rules. Please try again.");
+          break;
+        }
+        case UiMessageId.TrackerReset: {
+          //setLoading(false);
+          break;
+        }
+      };
+    }
 
     browser.runtime.onMessage.addListener(handleMessage);
     

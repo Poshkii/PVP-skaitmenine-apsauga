@@ -1,5 +1,9 @@
 import React from 'react';
 import './settings.css';
+import ModuleToggle from "@/components/pages/settings/ModuleToggle.tsx";
+import {ModuleId} from "@/entrypoints/content/types/module.ts";
+import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
+import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 
 interface SettingsProps {
   settings: {

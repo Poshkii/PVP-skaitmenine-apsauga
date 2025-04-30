@@ -10,6 +10,7 @@ export enum UiMessageId {
     DOMError = "DOM_ERROR",
     UpdateTrackerRules = "RULES_UPDATED",
     TrackerRulesError = "RULES_ERROR",
+    TrackerReset = "TRACKER_STAT_RESET",
 }
 
 export interface UiMessage {
