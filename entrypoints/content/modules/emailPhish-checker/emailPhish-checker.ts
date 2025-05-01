@@ -48,13 +48,98 @@ export class PhishChecker extends Module {
             const sender = document.querySelector('.gD')?.getAttribute('name') || 'Unknown sender';
             const date = document.querySelector('.g3')?.getAttribute('title') || 'No date';
             const subject = document.querySelector('.hP')?.textContent || 'No subject';
-            const body = document.querySelector('.a3s.aiL')?.innerHTML || 'No body content found';
+            const body = this.getGmailBody();
             
             return { senderMail, sender, date, subject, body };
         } catch (error) {
             console.error("Error parsing Gmail:", error);
             return { sender: "Error", subject: "Error", body: "Failed to parse Gmail content" };
         }
+    }
+    private getGmailBody(): string {
+        const bodyElement = document.querySelector('.a3s.aiL');
+        
+        if (!bodyElement) {
+            return 'No body content found';
+        }
+        
+        const bodyClone = bodyElement.cloneNode(true) as HTMLElement;
+        
+        // Create a wrapper with scaling styles
+        const wrapper = document.createElement('div');
+        wrapper.className = 'gmail-scaled-content';
+        
+        // Apply scaling styles
+        wrapper.style.cssText = `
+            font-size: 0.85em; /* Reduce font size */
+            transform-origin: top left;
+            line-height: 1.4;
+        `;
+        
+        // Move all body content into the wrapper
+        while (bodyClone.firstChild) {
+            wrapper.appendChild(bodyClone.firstChild);
+        }
+        
+        // Reset image sizes to prevent oversized images
+        const images = wrapper.querySelectorAll('img');
+        images.forEach(img => {
+            img.removeAttribute('height');
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+        });
+        
+        // Scale down large tables
+        const tables = wrapper.querySelectorAll('table');
+        tables.forEach(table => {
+            table.style.width = 'auto';
+            table.style.maxWidth = '100%';
+            table.style.fontSize = '0.9em';
+        });
+        
+        // Target Gmail emojis specifically
+        const gmailEmojis = wrapper.querySelectorAll('img.an1[data-emoji], img[data-emoji]');
+        gmailEmojis.forEach(emoji => {
+            (emoji as HTMLElement).style.height = '1.2em';
+            (emoji as HTMLElement).style.width = 'auto';
+            (emoji as HTMLElement).style.maxHeight = '1.2em';
+            (emoji as HTMLElement).style.maxWidth = '1.2em';
+            (emoji as HTMLElement).style.display = 'inline-block';
+            (emoji as HTMLElement).style.verticalAlign = 'middle';
+        });
+        
+        // Add the wrapper back to the body
+        bodyClone.appendChild(wrapper);
+        
+        // Add a style element with targeted emoji styling
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            .gmail-scaled-content {
+                max-width: 100%;
+            }
+            .gmail-scaled-content * {
+                max-width: 100%;
+            }
+            .gmail-scaled-content h1 {
+                font-size: 1.4em;
+            }
+            .gmail-scaled-content h2 {
+                font-size: 1.3em;
+            }
+            .gmail-scaled-content h3 {
+                font-size: 1.2em;
+            }
+            .gmail-scaled-content pre, 
+            .gmail-scaled-content code {
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            
+            
+        `;
+        bodyClone.appendChild(styleElement);
+        
+        return bodyClone.innerHTML;
     }
     private parseProtonEmail() {
         try {

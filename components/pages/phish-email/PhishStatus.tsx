@@ -5,6 +5,7 @@ import {UiMessageId} from "@/entrypoints/content/types/ui-message";
 import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
+import { JSDOM } from "jsdom";
 
 interface EmailData {
     sender: string;
@@ -14,6 +15,9 @@ interface EmailData {
     body: string;
     timestamp: number; // When the scan was performed
   }
+
+
+const SCAN_API_URL = String(useAppConfig().emailScanApiUrl);
 
 function PhishStatus() {
     const { t } = useTranslation('phishEmail');
@@ -28,9 +32,12 @@ function PhishStatus() {
     const [activeTab, setActiveTab] = useState<"checkNow" | "prevScan">("checkNow");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [recentScan, setRecentScan] = useState<EmailData | null>(null);
     const [previousScan, setPreviousScan] = useState<EmailData | null>(null);
     const [showBody, setShowBody] = useState(false);
     const [showPrevBody, setShowPrevBody] = useState(false);
+    const [phishingScanned, setPhishingScanned] = useState(false);
+    const [answer, setAnswer] = useState<string | null>(null);
 
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [skipConfirmation, setSkipConfirmation] = useState(
@@ -66,6 +73,7 @@ function PhishStatus() {
                 setBody(message.data.body || "");
                 setResult("Email data successfully retrieved");
                 setLoading(false);
+                setPhishingScanned(false);
 
                 // Save as previous scan
                 const scanData = {
@@ -77,6 +85,8 @@ function PhishStatus() {
                     timestamp: Date.now()
                 };
                 
+                console.log("This is the data:", scanData);
+                setRecentScan(scanData);
                 saveScan(scanData);
             }
         };
@@ -169,6 +179,87 @@ function PhishStatus() {
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     };
 
+    const extractCleanBody = (html: string): string => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+    
+        // Get plain text
+        const text = doc.body.textContent?.trim() || "";
+    
+        // Get all links
+        const links = Array.from(doc.querySelectorAll("a[href]"))
+            .map(a => a.getAttribute("href"))
+            .filter(Boolean);
+    
+        // Get all image sources
+        const images = Array.from(doc.querySelectorAll("img[src]"))
+            .map(img => img.getAttribute("src"))
+            .filter(Boolean);
+    
+        // Combine result
+        let result = text;
+        /*
+        if (links.length > 0) {
+            result += "\nURLs: " + links.join(", ");
+        }
+        if (images.length > 0) {
+            result += "\nImages: " + images.join(", ");
+        }
+        */
+        // Kol kas paliekam tik teksta, nuorodas ir paveiksliuku pavadinimus isimam
+        return result.trim();
+    };
+
+    const checkPhishing = async (scan: EmailData) => {
+        console.log("This is before formatting:", SCAN_API_URL);
+        try {
+            const cleanedBody = extractCleanBody(scan.body);
+            const payload = JSON.stringify({
+                sender_name: scan.sender,
+                sender_email: scan.senderMail,
+                subject: scan.subject,
+                body: cleanedBody
+            });
+
+            console.log("This is my payload:", payload, "\n");
+    
+            const response = await fetch(SCAN_API_URL + "/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: payload
+            });
+    
+            // Error handling
+            if (!response.ok) {
+                setPhishingScanned(false);
+                setAnswer(t('error'));
+            }
+    
+            // Process analysis result
+            const data = await response.json();
+            console.log("This is my response:", data, "\n");
+            console.log("This is my type:", data.prediction, "\n");
+            console.log("This is my conf:", data.confidence, "\n");
+
+            setPhishingScanned(true);
+            const decoded = t('evaluation', {
+                type: data.prediction,
+                conf: data.confidence
+            }).replace(/&#x2F;/g, '/');
+            
+            setAnswer(decoded);
+            //return t('evaluation',  {type: phishingEval?.type, conf: phishingEval?.confidence})
+
+        } catch (error) {
+            console.error("Error:", error);
+            setAnswer(t('error'));
+            //return t('error');
+        }
+    };
+
+
     return (
         <>
             <div className="middle-menu" >
@@ -260,6 +351,21 @@ function PhishStatus() {
                                                 }}
                                             ></div>
                                         )}
+                                    </div>
+                                )}
+                                {recentScan && (
+                                <button 
+                                            className="btn btn-secondary" 
+                                            style={{ marginTop: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
+                                            onClick={() =>  checkPhishing(recentScan)}
+                                        >
+                                            Check for phishing
+                                </button>
+                                 )}
+
+                                { phishingScanned && (
+                                    <div className="status-description">
+                                        <strong>{t('answer')}</strong> {answer}
                                     </div>
                                 )}
                             </>

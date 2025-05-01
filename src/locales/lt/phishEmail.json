@@ -22,5 +22,8 @@
     "clearPrev": "Išvalyti ankstesnį skenavimą",
     "confirmClear": "Patvirtinti išvalymą",
     "areYouSure": "Ar tikrai norite išvalyti duomenis?",
-    "dontAsk": "Daugiau neklausti"
+    "dontAsk": "Daugiau neklausti",
+    "error": "O ne.. Kažkas nutiko negerai. Bandykite dar kartą.",
+    "evaluation": "Tikrinamas el. paštas nustatyas, kaip: {{type}}. Užtikrintumo įvertis: {{conf}}.",
+    "answer": "Fišingo skanavimo resultatai: "
 }
