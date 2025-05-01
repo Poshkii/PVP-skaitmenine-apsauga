@@ -5,6 +5,7 @@ import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 import {Configuration} from "@/utils/config.ts";
 import {PhishChecker} from "@/entrypoints/content/modules/emailPhish-checker/emailPhish-checker.ts";
 import {DeletionProvider} from "@/entrypoints/background/deletion-provider.ts";
+import {TrackerManager} from "@/entrypoints/content/modules/tracker-manager/tracker-manager.ts";
 
 interface BreachInfo {
     [email: string]: any;  // Stores breach data by email
@@ -25,6 +26,8 @@ export default defineBackground(async () => {
     moduleManager.registerModule(phishChecker, config.isModuleEnabled(phishChecker.id));
 
     const deletionProvider = new DeletionProvider();
+    const trackerManager = new TrackerManager();
+    moduleManager.registerModule(trackerManager, config.isModuleEnabled(trackerManager.id));
 
     browser.runtime.onMessage.addListener(async (
         message: BgMessage,
@@ -134,7 +137,6 @@ export default defineBackground(async () => {
     });
 });
 
-
 async function getCookiesForCurrentTab() {
     return new Promise((resolve, reject) => {
         chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
@@ -167,29 +169,6 @@ async function getAllCookies() {
             }
         });
     });
-}
-
-async function scanTrackingCookies(): Promise<chrome.cookies.Cookie[]> {
-    try {
-        // Explicitly type the returned value
-        const cookies = await getAllCookies() as chrome.cookies.Cookie[];
-
-        const trackerDomains = [
-            'doubleclick.net', 'google-analytics.com', 'ads.google.com',
-            'facebook.com', 'adservice.google.com', 'twitter.com',
-            'bing.com', 'amazon-adsystem.com'
-        ];
-
-        const trackingCookies = cookies.filter((cookie) =>
-            trackerDomains.some(domain => cookie.domain.includes(domain))
-        );
-
-        console.log("Tracking cookies found:", trackingCookies);
-        return trackingCookies;
-    } catch (error) {
-        console.error("Error retrieving cookies:", error);
-        return [];
-    }
 }
 
 export function waitForPopup(callback: () => void) {

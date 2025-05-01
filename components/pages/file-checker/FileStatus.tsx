@@ -513,19 +513,19 @@ function FileStatus({inputFile }: { inputFile: string }) {
             
                         {(params.scan_results_all && Object.entries(avThreats).length > 0) && (
                             <div style={{marginTop: "24px"}}>
-                            <h3 className="recent-list-title">Threat Details</h3>
-                            <div className="recent-items">
-                                {Object.entries(avThreats).map(([engine, threat], index) => (
-                                <div key={index} className="status-badge suspicious">
-                                    <div className="recent-item-text">
-                                    <div className="item-url">{engine}</div>
-                                    <div className="">
-                                        {typeof threat === "string" ? threat : JSON.stringify(threat)}
+                                <h3 className="recent-list-title">Threat Details</h3>
+                                <div className="recent-items">
+                                    {Object.entries(avThreats).map(([engine, threat], index) => (
+                                    <div key={index} className="status-badge suspicious">
+                                        <div className="recent-item-text">
+                                        <div className="item-url">{engine}</div>
+                                        <div className="">
+                                            {typeof threat === "string" ? threat : JSON.stringify(threat)}
+                                        </div>
+                                        </div>
                                     </div>
-                                    </div>
+                                    ))}
                                 </div>
-                                ))}
-                            </div>
                             </div>
                         )}
                         

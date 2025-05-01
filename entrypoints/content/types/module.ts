@@ -10,6 +10,8 @@ export enum ModuleId {
     HoverAnimations,
     PhishChecker,
     AccountDeleter,
+    TrackerManager,
+    TrackerBlocker
 }
 
 export abstract class Module extends EventEmitter {

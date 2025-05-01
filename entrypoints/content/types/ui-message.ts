@@ -7,8 +7,10 @@ export enum UiMessageId {
     ScanEmail = "SCAN_EMAIL",
     PopupReady = "POPUP_READY",
     DOMIsRead = "DOM_Is_Read",
-    DOMError = "DOM_ERROR"
-
+    DOMError = "DOM_ERROR",
+    UpdateTrackerRules = "RULES_UPDATED",
+    TrackerRulesError = "RULES_ERROR",
+    TrackerReset = "TRACKER_STAT_RESET",
 }
 
 export interface UiMessage {

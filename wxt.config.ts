@@ -9,6 +9,7 @@ export default defineConfig({
   manifest: {
     name: "FalconFort",
     description: "Privacy extension",
-    permissions: ["storage", "downloads", "downloads.open", "downloads.shelf", "notifications", "cookies", "tabs", "activeTab"],
+    permissions: ["storage", "downloads", "downloads.open", "downloads.shelf", "notifications", "cookies", "tabs", "activeTab", "declarativeNetRequest", "declarativeNetRequestFeedback", "webNavigation", "alarms"],
+    host_permissions: ["<all_urls>", "http://*/*", "https://*/*"],
   }
 });
