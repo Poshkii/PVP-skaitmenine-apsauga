@@ -11,7 +11,6 @@ export interface TrackerSettings {
     blockAdvertising: boolean;
     blockSocial: boolean;
     blockOther: boolean;
-    blockFingerprints: boolean;
     lastUpdated: string | null;
 }
 
@@ -131,7 +130,6 @@ export class TrackerManager extends Module {
                 blockAdvertising: true,
                 blockSocial: true,
                 blockOther: true,
-                blockFingerprints: true,
                 lastUpdated: null
             }
         });
@@ -272,7 +270,6 @@ export class TrackerManager extends Module {
                 blockAdvertising: true,
                 blockSocial: true,
                 blockOther: true,
-                blockFingerprints: true
             };
             
             const enabled = {

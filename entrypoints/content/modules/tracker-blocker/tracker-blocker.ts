@@ -15,18 +15,7 @@ export class TrackerBlocker extends Module {
     unload(): void {
     }
 
-    // Method to check if advanced protection is enabled
-    private async checkAdvancedProtection(): Promise<boolean> {
-        const data = await chrome.storage.local.get('settings');
-        return data.settings?.blockFingerprints ?? false;
-    }
-
-    // Method to apply anti-fingerprinting protections
     private async applyProtections(): Promise<void> {
-        const advancedProtectionEnabled = await this.checkAdvancedProtection();
-
-        if (!advancedProtectionEnabled) return;
-
         try {
             // Canvas fingerprinting protection
             if (HTMLCanvasElement) {
@@ -151,21 +140,4 @@ export class TrackerBlocker extends Module {
             console.error("Error in privacy protections:", error);
         }
     }
-
-    handleMessage(message: ModuleMessage): any {
-        super.handleMessage(message);
-
-        switch (message.id){
-            case ModuleMessageId.ApplyProtections: {
-                console.log("Received request to apply fingerprint blocking");
-                try {
-                    this.applyProtections();
-                } catch (error) {
-                    console.error("Failed to apply fingerprint protection:", error);
-                }
-                break; 
-            }
-        }
-    }
-
 }

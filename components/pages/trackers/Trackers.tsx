@@ -21,7 +21,6 @@ interface SettingsType {
   blockAdvertising: boolean;
   blockSocial: boolean;
   blockOther: boolean;
-  blockFingerprints: boolean;
   lastUpdated: string | null;
 }
 
@@ -54,7 +53,6 @@ const Trackers: React.FC = () => {
     blockAdvertising: true,
     blockSocial: true,
     blockOther: true,
-    blockFingerprints: true,
     lastUpdated: null
   });
   const [loading, setLoading] = useState<boolean>(false);
@@ -90,18 +88,8 @@ const Trackers: React.FC = () => {
     setLoading(true);
     setUpdateError(null);
   
-    const changed = settings.blockFingerprints !== newSettings.blockFingerprints;
-  
     chrome.storage.local.set({ settings: newSettings }, () => {
       setSettings(newSettings);
-  
-      if (changed) {
-        try {
-          sendToModule(ModuleId.TrackerBlocker, {id: ModuleMessageId.ApplyProtections});
-        } catch (error) {
-          console.error("Error applying protection settings:", error);
-        }
-      }
   
       setTimeout(() => setLoading(false), 1000);
     });

@@ -1,6 +1,15 @@
 import React from 'react';
 import { ModuleId } from "@/entrypoints/content/types/module.ts";
+import {useConfig} from "@/components/providers/ConfigProvider.tsx";
+import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import '/components/pages/settings/settings.css';
+
+interface ModuleToggleProps {
+  moduleId: ModuleId;
+  title: string;
+  description: string;
+  onChangeState: (moduleId: ModuleId, enabled: boolean) => void;
+}
 
 interface SettingsProps {
   settings: {
@@ -8,15 +17,14 @@ interface SettingsProps {
     blockAdvertising: boolean;
     blockSocial: boolean;
     blockOther: boolean;
-    blockFingerprints: boolean;
     lastUpdated: string | null;
   };
+
   updateSettings: (settings: SettingsProps['settings']) => void;
   updateRules: () => void;
 }
 
-// Custom ModuleToggle component since we don't have direct access to the original
-const ModuleToggle: React.FC<{
+const CustomToggle: React.FC<{
   moduleId: ModuleId;
   title: string;
   description: string;
@@ -24,24 +32,56 @@ const ModuleToggle: React.FC<{
   onChangeState: () => void;
 }> = ({ title, description, isEnabled = false, onChangeState }) => {
   return (
-    <div className="module-toggle">
-      <div className="module-info">
-        <h4 className="module-title">{title}</h4>
-        <p className="module-description">{description}</p>
+    <div className="setting-container">
+      <div className="setting-text">
+        <p className="setting-title">{title}</p>
+        <p className="setting-description">{description}</p>
       </div>
-      <label className="toggle-switch">
-        <input 
-          type="checkbox" 
-          checked={isEnabled} 
-          onChange={onChangeState} 
+      <label className="switch-toggle">
+        <input
+          type="checkbox"
+          checked={isEnabled}
+          onChange={onChangeState}
         />
-        <span className="toggle-slider"></span>
+        <span className="slider"></span>
       </label>
     </div>
   );
 };
 
+function FingerprintModuleToggle({moduleId, title, description, onChangeState}: ModuleToggleProps) {
+  const config = useConfig();
+  const [enabled, setEnabled] = useState(config.isModuleEnabled(moduleId));
+
+  function handleChange(checked: boolean) {
+      config.setModuleEnabled(moduleId, checked);
+      config.save();
+      setEnabled(checked);
+      onChangeState(moduleId, checked);
+      console.log("Toggled fingerprint protection");
+  }
+
+  return (
+      <div className="setting-container">
+          <div className="setting-text">
+              <p className="setting-title">{title}</p>
+              <p className="setting-description">{description}</p>
+          </div>
+          <label className="switch-toggle">
+              <input
+                  type="checkbox"
+                  onChange={(e) => handleChange(e.target.checked)}
+                  checked={enabled}
+              />
+              <span className="slider"></span>
+          </label>
+      </div>
+  );
+}
+
 function Settings({ settings, updateSettings, updateRules }: SettingsProps) {
+  const { changeContentModuleState } = useContentMessaging();
+
   const handleToggle = (setting: keyof Omit<SettingsProps['settings'], 'lastUpdated'>): void => {
     const newSettings = {
       ...settings,
@@ -53,54 +93,50 @@ function Settings({ settings, updateSettings, updateRules }: SettingsProps) {
 
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Never';
-    const date = new Date(dateString);
+      const date = new Date(dateString);
     return date.toLocaleString();
   };
-
   return (
-    <div className="settings-container">
-      <ModuleToggle
+    <div>
+      <CustomToggle
         moduleId={ModuleId.TrackerManager}
         title="Analytics Trackers"
-        description="Block scripts that collect usage analytics (Google Analytics, etc.)"
+        description="Scripts that collect usage analytics"
         isEnabled={settings.blockAnalytics}
         onChangeState={() => handleToggle('blockAnalytics')}
       />
 
-      <ModuleToggle
+      <CustomToggle
         moduleId={ModuleId.TrackerManager}
         title="Advertising Trackers"
-        description="Block ad networks and tracking pixels"
+        description="Ad networks and tracking pixels"
         isEnabled={settings.blockAdvertising}
         onChangeState={() => handleToggle('blockAdvertising')}
       />
 
-      <ModuleToggle
+      <CustomToggle
         moduleId={ModuleId.TrackerManager}
         title="Social Media Trackers"
-        description="Block social media buttons and trackers"
+        description="Social media buttons and trackers"
         isEnabled={settings.blockSocial}
         onChangeState={() => handleToggle('blockSocial')}
       />
 
-      <ModuleToggle
+      <CustomToggle
         moduleId={ModuleId.TrackerManager}
         title="Other Trackers"
-        description="Block miscellaneous and uncategorized trackers"
+        description="Miscellaneous and uncategorized trackers"
         isEnabled={settings.blockOther}
         onChangeState={() => handleToggle('blockOther')}
       />
-      
-      {/*
-      <ModuleToggle
-        moduleId={ModuleId.TrackerBlocker}
-        title="Advanced Fingerprint Protection"
-        description="Apply additional protections against browser fingerprinting"
-        isEnabled={settings.blockFingerprints}
-        onChangeState={() => handleToggle('blockFingerprints')}
+
+      <FingerprintModuleToggle
+          moduleId={ModuleId.TrackerBlocker}
+          title={"Advanced Fingerprint Protection"}
+          description={"Protection against browser fingerprinting"}
+          onChangeState={changeContentModuleState}
       />
-      */}
-      
+
       <div className="action-buttons">
         <button className="btn btn-primary" onClick={updateRules}>
           Update Rules Now
@@ -112,5 +148,4 @@ function Settings({ settings, updateSettings, updateRules }: SettingsProps) {
     </div>
   );
 }
-
 export default Settings;
