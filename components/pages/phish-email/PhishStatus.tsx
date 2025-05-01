@@ -16,6 +16,7 @@ interface EmailData {
     timestamp: number; // When the scan was performed
   }
 
+
 const SCAN_API_URL = String(useAppConfig().emailScanApiUrl);
 
 function PhishStatus() {
@@ -35,6 +36,8 @@ function PhishStatus() {
     const [previousScan, setPreviousScan] = useState<EmailData | null>(null);
     const [showBody, setShowBody] = useState(false);
     const [showPrevBody, setShowPrevBody] = useState(false);
+    const [phishingScanned, setPhishingScanned] = useState(false);
+    const [answer, setAnswer] = useState<string | null>(null);
 
     // Load previous scan when component mounts
     useEffect(() => {
@@ -65,6 +68,7 @@ function PhishStatus() {
                 setBody(message.data.body || "");
                 setResult("Email data successfully retrieved");
                 setLoading(false);
+                setPhishingScanned(false);
 
                 // Save as previous scan
                 const scanData = {
@@ -215,18 +219,32 @@ function PhishStatus() {
     
             // Error handling
             if (!response.ok) {
-                return t('error');
+                setPhishingScanned(false);
+                setAnswer(t('error'));
             }
     
             // Process analysis result
             const data = await response.json();
-            //console.log("This is response:", data);
-            return "";
+            console.log("This is my response:", data, "\n");
+            console.log("This is my type:", data.prediction, "\n");
+            console.log("This is my conf:", data.confidence, "\n");
+
+            setPhishingScanned(true);
+            const decoded = t('evaluation', {
+                type: data.prediction,
+                conf: data.confidence
+            }).replace(/&#x2F;/g, '/');
+            
+            setAnswer(decoded);
+            //return t('evaluation',  {type: phishingEval?.type, conf: phishingEval?.confidence})
+
         } catch (error) {
             console.error("Error:", error);
-            return t('error');
+            setAnswer(t('error'));
+            //return t('error');
         }
     };
+
 
     return (
         <>
@@ -325,11 +343,17 @@ function PhishStatus() {
                                 <button 
                                             className="btn btn-secondary" 
                                             style={{ marginTop: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
-                                            onClick={() => checkPhishing(recentScan)}
+                                            onClick={() =>  checkPhishing(recentScan)}
                                         >
                                             Check for phishing
                                 </button>
                                  )}
+
+                                { phishingScanned && (
+                                    <div className="status-description">
+                                        <strong>{t('answer')}</strong> {answer}
+                                    </div>
+                                )}
                             </>
                         )}
                         </div>

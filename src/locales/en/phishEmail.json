@@ -19,5 +19,7 @@
     "time": "Time of the scan:",
     "process": "Processing...",
     "clearPrev": "Clear Previous Scan",
-    "error": "Uh oh.. Something went wrong. Please try again."
+    "error": "Uh oh.. Something went wrong. Please try again.",
+    "evaluation": "The submitted email is declared as {{type}}. Confidence of this evaluation is: {{conf}}.",
+    "answer": "Phishing scan results: "
 }
