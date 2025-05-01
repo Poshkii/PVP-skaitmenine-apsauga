@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Info } from "lucide-react"; 
 import Dashboard from "@/components/pages/trackers/TrackerDashBoard";
 import Settings from "@/components/pages/trackers/TrackerSettings";
 import { ModuleId } from "@/entrypoints/content/types/module";
 import { ModuleMessageId } from "@/entrypoints/content/types/module-message";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
-import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
-import './trackers.css';
+import { useNavigate } from "react-router";
+import { useModuleMessaging } from "@/hooks/useModuleMessaging";
 
 interface Stats {
   total: number;
@@ -58,6 +59,7 @@ const Trackers: React.FC = () => {
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize tracker data from storage
@@ -94,7 +96,11 @@ const Trackers: React.FC = () => {
       setSettings(newSettings);
   
       if (changed) {
-        triggerProtectionUpdate();
+        try {
+          sendToModule(ModuleId.TrackerBlocker, {id: ModuleMessageId.ApplyProtections});
+        } catch (error) {
+          console.error("Error applying protection settings:", error);
+        }
       }
   
       setTimeout(() => setLoading(false), 1000);
@@ -118,25 +124,11 @@ const Trackers: React.FC = () => {
   // Reset tracker statistics
   const resetStats = (): void => {
     try {
-      //setLoading(true);
       console.log("Resetting tracker statistics");
-
       sendToModule(ModuleId.TrackerManager, {id: ModuleMessageId.ResetTrackerStats});
-      
     } catch (error) {
         console.error("Error resetting tracker stats:", error);
-        setLoading(false);
         setUpdateError("Failed to reset statistics. Please try again.");
-    }
-  };
-  
-  // Trigger an update for the protection settings
-  const triggerProtectionUpdate = (): void => {
-    try {
-      sendToModule(ModuleId.TrackerBlocker, {id: ModuleMessageId.ApplyProtections});
-      
-    } catch (error) {
-      console.error("Error applying protection settings:", error);
     }
   };
 
@@ -151,10 +143,11 @@ const Trackers: React.FC = () => {
         case UiMessageId.TrackerRulesError: {
           console.error("Error updating tracker ruleset:", message.data?.message);
           setUpdateError(message.data?.message || "Error updating rules. Please try again.");
+          setLoading(false);
           break;
         }
         case UiMessageId.TrackerReset: {
-          //setLoading(false);
+          // Handle tracker reset confirmation
           break;
         }
       };
@@ -168,55 +161,59 @@ const Trackers: React.FC = () => {
   }, []);
 
   return (
-    <>  
-      <div className="middle-menu" style={{color:"black"}}>
-        <div>
-          <div className="tabs">
-            <button 
-              className={activeTab === 'dashboard' ? 'active' : ''} 
-              onClick={() => setActiveTab('dashboard')}
-            >
-              Dashboard
-            </button>
-            <button 
-              className={activeTab === 'settings' ? 'active' : ''} 
-              onClick={() => setActiveTab('settings')}
-            >
-              Settings
-            </button>
-          </div>
+    <div className="middle-menu">
+      <h1 className="panel-title">
+        Blocked Trackers <span onClick={() => navigate("/tracker-data")}><Info className="info-icon"/></span>
+      </h1>
+
+      <div>
+        <div className="tab-buttons">
+          <button 
+            onClick={() => setActiveTab("dashboard")} 
+            className={`btn ${activeTab === "dashboard" ? "btn-primary" : "btn-secondary"} tab-button`}>
+            Statistics
+          </button>
+          <button
+            onClick={() => setActiveTab("settings") }
+            className={`btn ${activeTab === "settings" ? "btn-primary" : "btn-secondary"} tab-button`}>
+            Settings
+          </button>
         </div>
-      
-        <div>
-          {loading && (
-            <div className="loading-overlay">
-              <div className="spinner"></div>
-              <p>Updating tracker protection...</p>
-            </div>
-          )}
-          
-          {updateError && (
-            <div className="error-message">
-              {updateError}
-            </div>
-          )}
-          
-          {activeTab === 'dashboard' ? (
+
+        {activeTab === "dashboard" && (
+          <div className="security-check-container glassmorphism">
             <Dashboard 
               stats={stats} 
               resetStats={resetStats} 
               lastUpdated={settings.lastUpdated} 
             />
-          ) : (
+          </div>
+        )}
+
+        {activeTab === "settings" && (
+          <div className="security-check-container glassmorphism">
             <Settings 
               settings={settings} 
               updateSettings={updateSettings} 
               updateRules={updateRules} 
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    </>
+    
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>Updating tracker protection...</p>
+        </div>
+      )}
+      
+      {updateError && (
+        <div className="error-message">
+          {updateError}
+        </div>
+      )}
+    </div>
   );
 };
 

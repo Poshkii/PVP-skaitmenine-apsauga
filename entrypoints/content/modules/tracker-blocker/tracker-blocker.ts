@@ -152,14 +152,14 @@ export class TrackerBlocker extends Module {
         }
     }
 
-    async handleMessage(message: ModuleMessage): Promise<void> {
+    handleMessage(message: ModuleMessage): any {
         super.handleMessage(message);
 
         switch (message.id){
             case ModuleMessageId.ApplyProtections: {
                 console.log("Received request to apply fingerprint blocking");
                 try {
-                    await this.applyProtections();
+                    this.applyProtections();
                 } catch (error) {
                     console.error("Failed to apply fingerprint protection:", error);
                 }

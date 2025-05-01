@@ -3,13 +3,31 @@ import {configFactory, ConfigProvider} from "@/components/providers/ConfigProvid
 import Home from "@/components/pages/home/Home.tsx";
 import { ReportProvider } from '@/components/pages/report-page/ReportContext';
 import React from 'react';
+import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 
 import { useEffect, useState  } from "react";
 import { useConfig } from "@/components/providers/ConfigProvider.tsx";
 import { ModuleId } from "@/entrypoints/content/types/module.ts";
 
-function AnimationClassController() {
+function StartupController() {
     const config = useConfig();
+
+    /*
+    useEffect(() => {
+        const current = config.isModuleEnabled(ModuleId.TrackerBlocker);
+        const timeout = setTimeout(() => {
+            if (!current){
+                const moduleManager = new ModuleManager();
+                moduleManager.loadModule(ModuleId.TrackerBlocker);
+                console.log("blocker enabled");
+            }
+            else
+            console.log("blocker already enabled");
+        }, 500);
+        return () => clearTimeout(timeout);
+    });
+    */
+
     const [animationsEnabled, setAnimationsEnabled] = useState(
         config.isModuleEnabled(ModuleId.HoverAnimations)
     );
@@ -41,7 +59,7 @@ function App() {
         <ReportProvider>
             <ConfigProvider config={configFactory(undefined)}>
                 <React.Suspense fallback="loading">
-                    <AnimationClassController />
+                    <StartupController />
                     <Home />
                 </React.Suspense>
             </ConfigProvider>

@@ -18,6 +18,7 @@ import URLData from "../data-usage/URL/URLDataUsage";
 import FileData from "../data-usage/File/FileDataUsage";
 import PasswordData from "../data-usage/Password/PasswordDataUsage";
 import EmailData from "../data-usage/Email/EmailDataUsage";
+import TrackerData from "../data-usage/Email/EmailDataUsage";
 
 
 function HomeRoutes(){
@@ -41,6 +42,7 @@ function HomeRoutes(){
             <Route path="/file-data" element={<FileData />}></Route>
             <Route path="/password-data" element={<PasswordData />}></Route>
             <Route path="/email-data" element={<EmailData />}></Route>
+            <Route path="/tracker-data" element={<TrackerData />}></Route>
         </Routes>
     );
 }

@@ -1,9 +1,6 @@
 import React from 'react';
-import './settings.css';
-import ModuleToggle from "@/components/pages/settings/ModuleToggle.tsx";
-import {ModuleId} from "@/entrypoints/content/types/module.ts";
-import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
-import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
+import { ModuleId } from "@/entrypoints/content/types/module.ts";
+import '/components/pages/settings/settings.css';
 
 interface SettingsProps {
   settings: {
@@ -18,7 +15,33 @@ interface SettingsProps {
   updateRules: () => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ settings, updateSettings, updateRules }) => {
+// Custom ModuleToggle component since we don't have direct access to the original
+const ModuleToggle: React.FC<{
+  moduleId: ModuleId;
+  title: string;
+  description: string;
+  isEnabled?: boolean;
+  onChangeState: () => void;
+}> = ({ title, description, isEnabled = false, onChangeState }) => {
+  return (
+    <div className="module-toggle">
+      <div className="module-info">
+        <h4 className="module-title">{title}</h4>
+        <p className="module-description">{description}</p>
+      </div>
+      <label className="toggle-switch">
+        <input 
+          type="checkbox" 
+          checked={isEnabled} 
+          onChange={onChangeState} 
+        />
+        <span className="toggle-slider"></span>
+      </label>
+    </div>
+  );
+};
+
+function Settings({ settings, updateSettings, updateRules }: SettingsProps) {
   const handleToggle = (setting: keyof Omit<SettingsProps['settings'], 'lastUpdated'>): void => {
     const newSettings = {
       ...settings,
@@ -27,104 +50,67 @@ const Settings: React.FC<SettingsProps> = ({ settings, updateSettings, updateRul
     };
     updateSettings(newSettings);
   };
-  
+
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Never';
     const date = new Date(dateString);
     return date.toLocaleString();
   };
-  
+
   return (
-    <div className="settings">
-      <div className="setting-header">
-        <h2>Blocking Settings</h2>
-        <button className="update-button" onClick={updateRules}>
+    <div className="settings-container">
+      <ModuleToggle
+        moduleId={ModuleId.TrackerManager}
+        title="Analytics Trackers"
+        description="Block scripts that collect usage analytics (Google Analytics, etc.)"
+        isEnabled={settings.blockAnalytics}
+        onChangeState={() => handleToggle('blockAnalytics')}
+      />
+
+      <ModuleToggle
+        moduleId={ModuleId.TrackerManager}
+        title="Advertising Trackers"
+        description="Block ad networks and tracking pixels"
+        isEnabled={settings.blockAdvertising}
+        onChangeState={() => handleToggle('blockAdvertising')}
+      />
+
+      <ModuleToggle
+        moduleId={ModuleId.TrackerManager}
+        title="Social Media Trackers"
+        description="Block social media buttons and trackers"
+        isEnabled={settings.blockSocial}
+        onChangeState={() => handleToggle('blockSocial')}
+      />
+
+      <ModuleToggle
+        moduleId={ModuleId.TrackerManager}
+        title="Other Trackers"
+        description="Block miscellaneous and uncategorized trackers"
+        isEnabled={settings.blockOther}
+        onChangeState={() => handleToggle('blockOther')}
+      />
+      
+      {/*
+      <ModuleToggle
+        moduleId={ModuleId.TrackerBlocker}
+        title="Advanced Fingerprint Protection"
+        description="Apply additional protections against browser fingerprinting"
+        isEnabled={settings.blockFingerprints}
+        onChangeState={() => handleToggle('blockFingerprints')}
+      />
+      */}
+      
+      <div className="action-buttons">
+        <button className="btn btn-primary" onClick={updateRules}>
           Update Rules Now
         </button>
       </div>
-      
       <div className="last-update">
         Last update: {formatDate(settings.lastUpdated)}
       </div>
-      
-      <div className="setting-item">
-        <div>
-          <h3>Analytics Trackers</h3>
-          <p>Block scripts that collect usage analytics (Google Analytics, etc.)</p>
-        </div>
-        <label className="toggle">
-          <input 
-            type="checkbox" 
-            checked={settings.blockAnalytics} 
-            onChange={() => handleToggle('blockAnalytics')}
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
-      
-      <div className="setting-item">
-        <div>
-          <h3>Advertising Trackers</h3>
-          <p>Block ad networks and tracking pixels</p>
-        </div>
-        <label className="toggle">
-          <input 
-            type="checkbox" 
-            checked={settings.blockAdvertising} 
-            onChange={() => handleToggle('blockAdvertising')}
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
-      
-      <div className="setting-item">
-        <div>
-          <h3>Social Media Trackers</h3>
-          <p>Block social media buttons and trackers</p>
-        </div>
-        <label className="toggle">
-          <input 
-            type="checkbox" 
-            checked={settings.blockSocial} 
-            onChange={() => handleToggle('blockSocial')}
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
-      
-      <div className="setting-item">
-        <div>
-          <h3>Other Trackers</h3>
-          <p>Block miscellaneous and uncategorized trackers</p>
-        </div>
-        <label className="toggle">
-          <input 
-            type="checkbox" 
-            checked={settings.blockOther} 
-            onChange={() => handleToggle('blockOther')}
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
-      
-      <div className="setting-item">
-        <div>
-          <h3>Advanced Fingerprint Protection</h3>
-          <p>Apply additional protections against browser fingerprinting</p>
-        </div>
-        <label className="toggle">
-          <input 
-            type="checkbox" 
-            checked={settings.blockFingerprints} 
-            onChange={() => handleToggle('blockFingerprints')}
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
-      
-      
     </div>
   );
-};
+}
 
 export default Settings;

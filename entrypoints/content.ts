@@ -5,7 +5,6 @@ import {Configuration} from "@/utils/config.ts";
 import {ContentMessage, ContentMessageId} from "@/entrypoints/content/types/content-message.ts";
 import {PhishChecker} from "@/entrypoints/content/modules/emailPhish-checker/emailPhish-checker.ts";
 import {TrackerBlocker} from "@/entrypoints/content/modules/tracker-blocker/tracker-blocker.ts";
-import {ModuleId} from "@/entrypoints/content/types/module.ts";
 
 export default defineContentScript({
     matches: ['*://*/*'],
