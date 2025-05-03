@@ -3,6 +3,7 @@ import { ModuleId } from "@/entrypoints/content/types/module.ts";
 import {useConfig} from "@/components/providers/ConfigProvider.tsx";
 import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import '/components/pages/settings/settings.css';
+import { useTranslation } from "react-i18next";
 
 interface ModuleToggleProps {
   moduleId: ModuleId;
@@ -80,6 +81,7 @@ function FingerprintModuleToggle({moduleId, title, description, onChangeState}: 
 }
 
 function Settings({ settings, updateSettings, updateRules }: SettingsProps) {
+  const { t } = useTranslation('trackers');
   const { changeContentModuleState } = useContentMessaging();
 
   const handleToggle = (setting: keyof Omit<SettingsProps['settings'], 'lastUpdated'>): void => {
@@ -100,50 +102,50 @@ function Settings({ settings, updateSettings, updateRules }: SettingsProps) {
     <div>
       <CustomToggle
         moduleId={ModuleId.TrackerManager}
-        title="Analytics Trackers"
-        description="Scripts that collect usage analytics"
+        title={t('analyticsToggle')}
+        description={t('analyticsDesc')}
         isEnabled={settings.blockAnalytics}
         onChangeState={() => handleToggle('blockAnalytics')}
       />
 
       <CustomToggle
         moduleId={ModuleId.TrackerManager}
-        title="Advertising Trackers"
-        description="Ad networks and tracking pixels"
+        title={t('adsToggle')}
+        description={t('adsDesc')}
         isEnabled={settings.blockAdvertising}
         onChangeState={() => handleToggle('blockAdvertising')}
       />
 
       <CustomToggle
         moduleId={ModuleId.TrackerManager}
-        title="Social Media Trackers"
-        description="Social media buttons and trackers"
+        title={t('socialToggle')}
+        description={t('socialDesc')}
         isEnabled={settings.blockSocial}
         onChangeState={() => handleToggle('blockSocial')}
       />
 
       <CustomToggle
         moduleId={ModuleId.TrackerManager}
-        title="Other Trackers"
-        description="Miscellaneous and uncategorized trackers"
+        title={t('otherToggle')}
+        description={t('otherDesc')}
         isEnabled={settings.blockOther}
         onChangeState={() => handleToggle('blockOther')}
       />
 
       <FingerprintModuleToggle
           moduleId={ModuleId.TrackerBlocker}
-          title={"Advanced Fingerprint Protection"}
-          description={"Protection against browser fingerprinting"}
+          title={t('fingerprintToggle')}
+          description={t('fingerprintDesc')}
           onChangeState={changeContentModuleState}
       />
 
       <div className="action-buttons">
         <button className="btn btn-primary" onClick={updateRules}>
-          Update Rules Now
+          {t('updateRules')}
         </button>
       </div>
       <div className="last-update">
-        Last update: {formatDate(settings.lastUpdated)}
+        {t('lastUpdate')}:  {formatDate(settings.lastUpdated)}
       </div>
     </div>
   );

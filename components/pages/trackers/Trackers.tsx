@@ -7,6 +7,7 @@ import { ModuleMessageId } from "@/entrypoints/content/types/module-message";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import { useNavigate } from "react-router";
 import { useModuleMessaging } from "@/hooks/useModuleMessaging";
+import { useTranslation } from "react-i18next";
 
 interface Stats {
   total: number;
@@ -105,7 +106,7 @@ const Trackers: React.FC = () => {
     } catch (error) {
         console.error("Error sending update tracker rules message:", error);
         setLoading(false);
-        setUpdateError("Failed to send update request. Please try again.");
+        setUpdateError(t('errorUpdateRequest'));
     }
   };
   
@@ -116,7 +117,7 @@ const Trackers: React.FC = () => {
       sendToModule(ModuleId.TrackerManager, {id: ModuleMessageId.ResetTrackerStats});
     } catch (error) {
         console.error("Error resetting tracker stats:", error);
-        setUpdateError("Failed to reset statistics. Please try again.");
+        setUpdateError(t('errorStatReset'));
     }
   };
 
@@ -130,7 +131,7 @@ const Trackers: React.FC = () => {
         }
         case UiMessageId.TrackerRulesError: {
           console.error("Error updating tracker ruleset:", message.data?.message);
-          setUpdateError(message.data?.message || "Error updating rules. Please try again.");
+          setUpdateError(message.data?.message || t('errorUpdateRules'));
           setLoading(false);
           break;
         }
@@ -148,10 +149,12 @@ const Trackers: React.FC = () => {
     };
   }, []);
 
+  const { t } = useTranslation('trackers');
+
   return (
     <div className="middle-menu">
       <h1 className="panel-title">
-        Blocked Trackers <span onClick={() => navigate("/tracker-data")}><Info className="info-icon"/></span>
+        {t('header')} <span onClick={() => navigate("/tracker-data")}><Info className="info-icon"/></span>
       </h1>
 
       <div>
@@ -159,12 +162,12 @@ const Trackers: React.FC = () => {
           <button 
             onClick={() => setActiveTab("dashboard")} 
             className={`btn ${activeTab === "dashboard" ? "btn-primary" : "btn-secondary"} tab-button`}>
-            Statistics
+            {t('statBtn')}
           </button>
           <button
             onClick={() => setActiveTab("settings") }
             className={`btn ${activeTab === "settings" ? "btn-primary" : "btn-secondary"} tab-button`}>
-            Settings
+            {t('settingsBtn')}
           </button>
         </div>
 
@@ -191,8 +194,8 @@ const Trackers: React.FC = () => {
     
       {loading && (
         <div className="loading-overlay">
-          <div className="spinner"></div>
-          <p>Updating tracker protection...</p>
+          <div className="loading-spinner"></div>
+          <p>{t('updating')}</p>
         </div>
       )}
       

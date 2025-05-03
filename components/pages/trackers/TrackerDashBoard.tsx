@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from "react-i18next";
 
 interface DashboardProps {
   stats: {
@@ -13,6 +14,8 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated }) => {
+  const { t } = useTranslation('trackers');
+
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'Never';
     const date = new Date(dateString);
@@ -23,28 +26,28 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated })
     <>
       <div>
         <div className="stat-card total">
-          <h2>Total Trackers Blocked</h2>
+          <h2>{t('totalBlocked')}</h2>
           <div className="stat-value">{stats.total}</div>
         </div>
 
         <div className="stat-cards">
           <div className="stat-card">
-            <h3>Analytics</h3>
+            <h3>{t('analyticsBlocked')}</h3>
             <div className="stat-value">{stats.analytics}</div>
           </div>
           
           <div className="stat-card">
-            <h3>Advertising</h3>
+            <h3>{t('adsBlocked')}</h3>
             <div className="stat-value">{stats.advertising}</div>
           </div>
           
           <div className="stat-card">
-            <h3>Social Media</h3>
+            <h3>{t('socialBlocked')}</h3>
             <div className="stat-value">{stats.social}</div>
           </div>
           
           <div className="stat-card">
-            <h3>Other</h3>
+            <h3>{t('otherBlocked')}</h3>
             <div className="stat-value">{stats.other}</div>
           </div>
         </div>
@@ -52,7 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated })
         
       <div className="action-buttons">
         <button className="btn btn-primary" onClick={resetStats}>
-          Reset Statistics
+          {t('resetStats')}
         </button>
       </div>
     </>

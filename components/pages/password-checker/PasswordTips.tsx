@@ -2,8 +2,6 @@ import {useState} from "react";
 import { Lightbulb } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
-
-
 function PasswordTips() {
     const { t } = useTranslation('passwords');
     const slides = [
