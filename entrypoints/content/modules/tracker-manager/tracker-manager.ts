@@ -157,7 +157,7 @@ export class TrackerManager extends Module {
                             
                             if (matchedRules.length > 0) {
                                 this.updateStatsFromMatches(matchedRules);
-                                this.updateBadge(tabId, matchedRules.length);
+                                //this.updateBadge(tabId, matchedRules.length);
                             }
                         }
                     );
