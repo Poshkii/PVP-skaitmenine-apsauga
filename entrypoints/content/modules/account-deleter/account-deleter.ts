@@ -2,6 +2,8 @@ import {Module, ModuleId} from "@/entrypoints/content/types/module.ts";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 import {ArrowRight, createElement, Trash, X} from "lucide";
 import {DeletionDetails} from "@/entrypoints/background/deletion-provider.ts";
+import {marked} from "marked";
+import DOMPurify from "dompurify";
 
 export class AccountDeleter extends Module {
     readonly id = ModuleId.AccountDeleter;
@@ -119,14 +121,13 @@ export class AccountDeleter extends Module {
 
         // notes
         if (details.notes) {
-            const notes = document.createElement('p');
-            notes.textContent = details.notes;
-            Object.assign(notes.style, {
+            Object.assign(content.style, {
                 margin: '0 0 12px 0',
                 fontSize: '14px',
                 lineHeight: '1.4'
             });
-            content.appendChild(notes);
+
+            content.innerHTML = DOMPurify.sanitize(marked.parse(details.notes).toString());
         }
 
         // email info
