@@ -23,5 +23,10 @@
     "updating": "Updating tracker protection...",
     "errorUpdateRequest": "Failed to send update request. Please try again.",
     "errorStatReset": "Failed to reset statistics. Please try again.",
-    "errorUpdateRules": "Error updating rules. Please try again."
+    "errorUpdateRules": "Error updating rules. Please try again.",
+    "confirmClear": "Confirm Clear",
+    "areYouSure": "Are you sure you want to clear data?",
+    "dontAsk": "Don't ask me again",
+    "clear": "Clear",
+    "cancel": "Cancel"
 }

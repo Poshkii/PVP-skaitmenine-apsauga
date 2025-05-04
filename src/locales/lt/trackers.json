@@ -23,5 +23,10 @@
     "updating": "Atnaujinama sekiklių apsauga...",
     "errorUpdateRequest": "Nepavyko išsiųsti atnaujinimo užklausos. Bandykite dar kartą.",
     "errorStatReset": "Nepavyko atstatyti statistikos. Bandykite dar kart",
-    "errorUpdateRules": "Klaida atnaujinant taisykles. Bandykite dar kartą."
+    "errorUpdateRules": "Klaida atnaujinant taisykles. Bandykite dar kartą.",
+    "confirmClear": "Patvirtinti išvalymą",
+    "areYouSure": "Ar tikrai norite išvalyti duomenis?",
+    "dontAsk": "Daugiau neklausti",
+    "clear": "Išvalyti",
+    "cancel": "Atšaukti"
 }
