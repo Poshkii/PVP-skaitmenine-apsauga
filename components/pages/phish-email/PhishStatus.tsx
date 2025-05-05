@@ -38,6 +38,7 @@ function PhishStatus() {
     const [showPrevBody, setShowPrevBody] = useState(false);
     const [phishingScanned, setPhishingScanned] = useState(false);
     const [answer, setAnswer] = useState<string | null>(null);
+    const [canCheck, setCanCheck] = useState(false);
 
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [skipConfirmation, setSkipConfirmation] = useState(
@@ -74,6 +75,7 @@ function PhishStatus() {
                 setResult("Email data successfully retrieved");
                 setLoading(false);
                 setPhishingScanned(false);
+                setCanCheck(true);
 
                 // Save as previous scan
                 const scanData = {
@@ -88,6 +90,22 @@ function PhishStatus() {
                 console.log("This is the data:", scanData);
                 setRecentScan(scanData);
                 saveScan(scanData);
+            }
+        };
+
+        browser.runtime.onMessage.addListener(messageListener);
+
+        return () => {
+            browser.runtime.onMessage.removeListener(messageListener);
+        };
+    }, []);
+
+    useEffect(() => {
+        const messageListener = (message : any) => {
+            if (message.id === UiMessageId.DOMError) {
+                setLoading(false);
+                setCanCheck(false);
+                setError("Please select a certain email, not the whole inbox.");
             }
         };
 
@@ -119,6 +137,7 @@ function PhishStatus() {
         setResult("");
         setSenderMail("");
         setSubject("");
+        setCanCheck(false);
     };
 
     const clearData = () => {
@@ -144,6 +163,7 @@ function PhishStatus() {
             setTimeout(() => {
                 if (loading) {
                     setLoading(false);
+                    setCanCheck(false);
                     setError("Timeout: No response received from the page. Make sure you're on a Gmail or Outlook page.");
                 }
             }, 5000);
@@ -151,6 +171,7 @@ function PhishStatus() {
         } catch (error) {
             console.error("Error sending message:", error);
             setLoading(false);
+            setCanCheck(false);
             setError(`Error: ${error|| "Unknown error occurred"}`);
         }
     };
@@ -250,6 +271,7 @@ function PhishStatus() {
             }).replace(/&#x2F;/g, '/');
             
             setAnswer(decoded);
+            setCanCheck(false);
             //return t('evaluation',  {type: phishingEval?.type, conf: phishingEval?.confidence})
 
         } catch (error) {
@@ -287,7 +309,7 @@ function PhishStatus() {
                     
                     {activeTab === "checkNow" && (
                         <div>
-                            {!sender && !senderMail && !subject && !date && !body ? (
+                            {!sender && !senderMail && !subject && !date && !body && !error ? (
                                 // Empty state placeholder
                                 <div className="empty-container-placeholder">
                                     <div className="placeholder-icon">
@@ -353,15 +375,6 @@ function PhishStatus() {
                                         )}
                                     </div>
                                 )}
-                                {recentScan && (
-                                <button 
-                                            className="btn btn-secondary" 
-                                            style={{ marginTop: "10px", padding: "2px 8px", fontSize: "0.8rem" }}
-                                            onClick={() =>  checkPhishing(recentScan)}
-                                        >
-                                            Check for phishing
-                                </button>
-                                 )}
 
                                 { phishingScanned && (
                                     <div className="status-description">
@@ -440,21 +453,38 @@ function PhishStatus() {
                     )}
                 </div>
 
-                <div className="action-buttons">
+                <div className="action-buttons" style={{justifyContent: "space-between"}}>
+                    {activeTab === "checkNow" && (
+                            <button
+                                style={{whiteSpace: "nowrap"}} 
+                                className="btn btn-primary" 
+                                onClick={PhishChecker}
+                                disabled={loading}>
+                                {loading ? t('process') : t('scan')}
+                            </button>
+                        )}
+
                     {activeTab === "checkNow" && (
                     <button 
+                    style={{whiteSpace: "nowrap"}} 
                         className="btn btn-secondary" 
                         onClick={clearData}
                         disabled={loading}>
                         {t('clear')}
                     </button>
                     )}
+                    
+
                     {activeTab === "checkNow" && (
                         <button 
-                            className="btn btn-primary" 
-                            onClick={PhishChecker}
-                            disabled={loading}>
-                            {loading ? t('process') : t('scan')}
+                            className={`btn btn-primary ${(!canCheck) ? "disabled-button" : ""}`} 
+                            disabled={!canCheck}
+                            style={{whiteSpace: "nowrap"}} 
+                            onClick={() => {
+                                if (recentScan) checkPhishing(recentScan);
+                            }}
+                        >
+                            Check for phishing
                         </button>
                     )}
                     {activeTab === "prevScan" && previousScan && (

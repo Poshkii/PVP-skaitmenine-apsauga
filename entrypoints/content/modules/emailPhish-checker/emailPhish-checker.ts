@@ -42,6 +42,18 @@ export class PhishChecker extends Module {
     }
     
     private parseGmailEmail() {
+
+        const gmailHash = window.location.hash;
+        const isEmailOpen = /#(inbox|starred|sent|imp|snoozed|drafts|spam|trash|all)\/[a-zA-Z0-9]+/.test(gmailHash);
+        const hasEmailElements = !!document.querySelector('.gD') && !!document.querySelector('.hP');
+
+        if (!isEmailOpen || !hasEmailElements) {
+            this.sendToRuntime({
+                id: UiMessageId.DOMError
+            })
+            return
+        }
+
         try {
             // Basic Gmail selectors - you may need to adjust these
             const senderMail = document.querySelector('.gD')?.getAttribute('email') || 'Unknown sender email';
@@ -142,6 +154,15 @@ export class PhishChecker extends Module {
         return bodyClone.innerHTML;
     }
     private parseProtonEmail() {
+
+        const iframe = document.querySelector('[data-testid="content-iframe"]') as HTMLIFrameElement;
+        if (!iframe || iframe.style.display === 'none' || !iframe.contentDocument?.body?.innerText?.trim()) {
+            this.sendToRuntime({
+                id: UiMessageId.DOMError
+            })
+            return
+        }
+
         try {
             console.log("Parsing ProtonMail email");
             
