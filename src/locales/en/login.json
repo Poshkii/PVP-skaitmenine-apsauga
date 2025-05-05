@@ -14,5 +14,6 @@
     "logout": "Logout",
     "Loading": "Loading...",
     "profile": "Profile",
-    "noMatch": "Passwords do not match"
+    "noMatch": "Passwords do not match",
+    "delete": "Delete account"
 }

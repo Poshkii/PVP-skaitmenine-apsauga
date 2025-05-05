@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
-import { useTranslation } from "react-i18next";
+import {useTranslation} from "react-i18next";
+import DeleteAccount from "@/components/pages/profile/DeleteAccount.tsx";
 
 interface User {
     userId: number;
@@ -16,7 +17,7 @@ function Profile() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const { t } = useTranslation('login');
+    const {t} = useTranslation('login');
 
     const logout = async () => {
         try {
@@ -105,6 +106,7 @@ function Profile() {
                     </button>
                 </div>
             </div>
+            <DeleteAccount/>
         </>
     );
 };
