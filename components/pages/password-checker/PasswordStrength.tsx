@@ -3,6 +3,7 @@ import zxcvbn from 'zxcvbn';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
+
 function customPasswordAnalysis(password: string): string[] {
     const suggestions: string[] = [];
 
@@ -30,7 +31,6 @@ function customPasswordAnalysis(password: string): string[] {
 
     return suggestions;
 }
-
 
 const getStrengthPercentage = (score: number) => {
     return ((score + 1) / 5) * 100; // score is 0–4
@@ -144,7 +144,7 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
                                     ))}
                                 </ul>
                             )}
-                        </div>
+                        </div>                      
                     </div>
                 </div>
             )}
