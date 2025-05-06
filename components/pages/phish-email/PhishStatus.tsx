@@ -14,6 +14,7 @@ interface EmailData {
     subject: string;
     body: string;
     timestamp: number; // When the scan was performed
+    phishing: string;
   }
 
 
@@ -84,7 +85,8 @@ function PhishStatus() {
                     date: message.data.date || "",
                     subject: message.data.subject || "",
                     body: message.data.body || "",
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    phishing: ""
                 };
                 
                 console.log("This is the data:", scanData);
@@ -270,6 +272,11 @@ function PhishStatus() {
                 conf: data.confidence
             }).replace(/&#x2F;/g, '/');
             
+            const updatedScan: EmailData = {
+                ...scan,
+                phishing: data.prediction
+            };
+            saveScan(updatedScan);
             setAnswer(decoded);
             setCanCheck(false);
             //return t('evaluation',  {type: phishingEval?.type, conf: phishingEval?.confidence})
@@ -447,6 +454,13 @@ function PhishStatus() {
                                     <div className="status-description">
                                         <strong>{t('time')}</strong> ({formatDate(previousScan.timestamp)})
                                     </div>
+
+                                    { previousScan.phishing != "" && (
+                                    <div className="status-description">
+                                        <strong>{t('answer')}</strong> {answer}
+                                    </div>
+                                    )}
+
                                 </div>
                             )}
                         </div>
