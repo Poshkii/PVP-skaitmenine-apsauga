@@ -135,13 +135,10 @@ export class TrackerManager extends Module {
         });
     }
 
-
-
     private checkTrackersOnPage(tabId: number, url: string): void {
         // Give the page a moment to finish loading all resources
         setTimeout(() => {
             try {
-                // Make sure we're using the correct API
                 if (browser.declarativeNetRequest && chrome.declarativeNetRequest.getMatchedRules) {
                     chrome.declarativeNetRequest.getMatchedRules(
                         { tabId: tabId },
@@ -155,10 +152,15 @@ export class TrackerManager extends Module {
                             const matchedRules = results?.rulesMatchedInfo || [];
                             console.log(`Detected ${matchedRules.length} tracker matches on ${url}`);
                             
-                            if (matchedRules.length > 0) {
-                                this.updateStatsFromMatches(matchedRules);
+                            //if (matchedRules.length > 0) {
+                            this.updateStatsFromMatches(matchedRules);
+                            browser.storage.local.set({ "trackerLink": url }, () => {
+                                if (browser.runtime.lastError) {
+                                    console.error("Error saving blocked trackers' link:", browser.runtime.lastError.message);
+                                }
+                            });
                                 //this.updateBadge(tabId, matchedRules.length);
-                            }
+                            //}
                         }
                     );
                 } else {
@@ -189,6 +191,8 @@ export class TrackerManager extends Module {
             const ruleMetadata = data.ruleMetadata || {};
         
             let newMatches = 0;
+            let tracker = {type: "", filter: ""};
+            let blockedTrackers:  typeof tracker [] = [];
         
             matchedRules.forEach(info => {
                 const ruleId = info.rule.ruleId;
@@ -199,10 +203,21 @@ export class TrackerManager extends Module {
                 if (metadata.urlFilter) console.log(`  ↳ URL Filter: ${metadata.urlFilter}`);
                 if (metadata.domains) console.log(`  ↳ Domains: ${metadata.domains.join(', ')}`);
                 if (metadata.action) console.log(`  ↳ Action: ${metadata.action}`);
+
+                let type = category?category : "undefined";
+                let filter = metadata.urlFilter?metadata.urlFilter : "undefined";
+                tracker = {type, filter};
+                blockedTrackers.push(tracker);
         
                 stats[category] += 1;
                 stats.total += 1;
                 newMatches += 1;
+            });
+
+            browser.storage.local.set({ "blockedTrackers": blockedTrackers }, () => {
+                if (browser.runtime.lastError) {
+                    console.error("Error saving blocked trackers:", browser.runtime.lastError.message);
+                }
             });
         
             if (newMatches > 0) {

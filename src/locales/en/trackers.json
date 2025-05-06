@@ -28,5 +28,9 @@
     "areYouSure": "Are you sure you want to clear data?",
     "dontAsk": "Don't ask me again",
     "clear": "Clear",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "blockedTitle": "Blocked trackers at",
+    "type": "Type",
+    "filter": "Filter",
+    "noBlocks": "No trackers blocked."
 }

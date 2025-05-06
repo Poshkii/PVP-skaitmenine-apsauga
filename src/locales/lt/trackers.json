@@ -28,5 +28,9 @@
     "areYouSure": "Ar tikrai norite išvalyti duomenis?",
     "dontAsk": "Daugiau neklausti",
     "clear": "Išvalyti",
-    "cancel": "Atšaukti"
+    "cancel": "Atšaukti",
+    "blockedTitle": "Užblokuoti sekikliai puslapyje",
+    "type": "Tipas",
+    "filter": "Filtras",
+    "noBlocks": "Nėra užblokuotų sekiklių."
 }

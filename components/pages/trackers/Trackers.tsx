@@ -40,6 +40,8 @@ interface StorageChange {
 }
 
 const Trackers: React.FC = () => {
+  const [blockedTrackers, setBlockedTrackers] = useState([]);
+  const [trackerLink, setTrackerLink] = useState('');
   const { sendToModule } = useModuleMessaging();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'settings'>('dashboard');
   const [stats, setStats] = useState<Stats>({
@@ -59,6 +61,40 @@ const Trackers: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const SaveBlockedTrackers = async () => {
+    const blocked = await browser.storage.local.get(["blockedTrackers"]);
+    return blocked.blockedTrackers || [];
+  }
+
+  const SaveBlockedTrackersURL = async (): Promise<string> => {
+    const url = await browser.storage.local.get(["trackerLink"]);
+    return url.trackerLink || "unknown";
+  }
+
+  const getBaseDomain = (fullUrl: string): string => {
+    try {
+      const hostname = new URL(fullUrl).hostname;
+      const parts = hostname.split('.');
+  
+      if (parts.length <= 2) return hostname;
+  
+      return parts.slice(-2).join('.'); 
+    } catch {
+      return fullUrl;
+    }
+  };
+
+  useEffect(() => {
+    const fetchTrackers = async () => {
+      const blocked = await SaveBlockedTrackers();
+      const url = await SaveBlockedTrackersURL();
+      setBlockedTrackers(blocked);
+      setTrackerLink(url);
+    };
+
+    fetchTrackers();
+  }, []);
 
   useEffect(() => {
     // Initialize tracker data from storage
@@ -172,13 +208,13 @@ const Trackers: React.FC = () => {
         </div>
 
         {activeTab === "dashboard" && (
-          <div className="security-check-container glassmorphism">
             <Dashboard 
               stats={stats} 
               resetStats={resetStats} 
               lastUpdated={settings.lastUpdated} 
+              blocked={blockedTrackers}
+              url={getBaseDomain(trackerLink)}
             />
-          </div>
         )}
 
         {activeTab === "settings" && (

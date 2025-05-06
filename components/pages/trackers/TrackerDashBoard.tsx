@@ -1,5 +1,11 @@
 import React from 'react';
 import { useTranslation } from "react-i18next";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
+type Tracker = {
+  type: string;
+  filter: string;
+};
 
 interface DashboardProps {
   stats: {
@@ -11,9 +17,15 @@ interface DashboardProps {
   };
   resetStats: () => void;
   lastUpdated: string | null;
+  blocked: Tracker[];
+  url: string | null;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated }) => {
+const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated, blocked, url }) => {
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const toggleSection = (section: string) => {
+      setOpenSection(openSection === section ? null : section);
+  };
   const { t } = useTranslation('trackers');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [skipConfirmation, setSkipConfirmation] = useState(
@@ -36,7 +48,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated })
   
   return (
     <>
-      <div>
+      <div className="security-check-container glassmorphism">
         <div className="stat-card total">
           <h2>{t('totalBlocked')}</h2>
           <div className="stat-value">{stats.total}</div>
@@ -64,6 +76,45 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated })
           </div>
         </div>
       </div>
+
+      <div>
+          <button
+              className="dropdown-button btn btn-secondary security-check-container glassmorphism"
+              style={{
+                  borderBottomLeftRadius: openSection === 'open' ? '0' : '12px',
+                  borderBottomRightRadius: openSection === 'open' ? '0' : '12px',
+                  marginBottom: 0
+              }}
+              onClick={() => toggleSection('open')}
+          >
+              <h3 className="status-title" style={{margin:0}}>{t('blockedTitle')} <br></br><span className="overflow-text" style={{maxWidth: "300px"}}>{url}</span></h3>{openSection === 'open' ? <ChevronUp/> : <ChevronDown/>}
+          </button>
+          <div 
+              className="data-content"
+              style={{
+                  maxHeight: openSection === 'open' ? '100%' : '0',
+                  opacity: openSection === 'open' ? 1 : 0,
+                  padding: openSection === 'open' ? '16px 20px' : '0 20px',
+                  visibility: openSection === 'open' ? 'visible' : 'hidden'
+              }}
+          >
+              {blocked.length === 0 ? (
+                <p className="status-title">{t('noBlocks')}</p>
+              ) : (
+                <ul className="recent-items" style={{paddingLeft: "0", textAlign:"left"}}>
+                  {blocked.map((tracker, index) => (
+                    <li className="recent-item" key={index}>
+                      <div>
+                        <span className="recent-item-text overflow-text" style={{maxWidth: "350px"}}><strong >{t('type')}: </strong>{tracker.type}</span>
+                        <br></br>
+                        <span className="recent-item-text overflow-text" style={{maxWidth: "350px"}}><strong >{t('filter')}: </strong>{tracker.filter}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+          </div>
+        </div>
         
       <div className="action-buttons">
         <button className="btn btn-primary" onClick={clearData}>
