@@ -23,12 +23,13 @@ export class PhishChecker extends Module {
     private parseEmailData() {
         // Detect if we're on Gmail or Outlook
         const isGmail = window.location.hostname.includes('mail.google.com');
-        const isOutlook = window.location.hostname.includes('outlook.office365.com');
+        const isOutlook1 = window.location.hostname.includes('outlook.office365.com');
+        const isOutlook2 = window.location.hostname.includes('outlook.office.com');
         const isProton = window.location.hostname.includes('mail.proton.me');
         
         if (isGmail) {
             return this.parseGmailEmail();
-        } else if (isOutlook) {
+        } else if (isOutlook1 || isOutlook2) {
             return this.parseOutlookEmail();
         } else if (isProton) {
             return this.parseProtonEmail();
@@ -42,6 +43,18 @@ export class PhishChecker extends Module {
     }
     
     private parseGmailEmail() {
+
+        const gmailHash = window.location.hash;
+        const isEmailOpen = /#(inbox|starred|sent|imp|snoozed|drafts|spam|trash|all)\/[a-zA-Z0-9]+/.test(gmailHash);
+        const hasEmailElements = !!document.querySelector('.gD') && !!document.querySelector('.hP');
+
+        if (!isEmailOpen || !hasEmailElements) {
+            this.sendToRuntime({
+                id: UiMessageId.DOMError
+            })
+            return
+        }
+
         try {
             // Basic Gmail selectors - you may need to adjust these
             const senderMail = document.querySelector('.gD')?.getAttribute('email') || 'Unknown sender email';
@@ -142,6 +155,15 @@ export class PhishChecker extends Module {
         return bodyClone.innerHTML;
     }
     private parseProtonEmail() {
+
+        const iframe = document.querySelector('[data-testid="content-iframe"]') as HTMLIFrameElement;
+        if (!iframe || iframe.style.display === 'none' || !iframe.contentDocument?.body?.innerText?.trim()) {
+            this.sendToRuntime({
+                id: UiMessageId.DOMError
+            })
+            return
+        }
+
         try {
             console.log("Parsing ProtonMail email");
             
@@ -238,8 +260,15 @@ export class PhishChecker extends Module {
     }
     private parseOutlookEmail() {
         try {
+            /*
+            const senderMail = document.querySelector('[data-testid="recipient-address"]')?.textContent || 'Unknown sender email';
+            const sender = document.querySelector('[data-testid="recipient-label"]')?.textContent || 'Unknown sender';
+            const date = document.querySelector('[data-testid="item-date-simple"]')?.getAttribute('datetime') || 'No date';
+            const subject = document.querySelector('[data-testid="conversation-header:subject"]')?.getAttribute('title') || 'No subject';
+            const body = this.getProtonMailBody();
+            */
             // Basic Outlook selectors - you may need to adjust these
-            const sender = document.querySelector('._1yIHkYLrqDZpAMQ6uMi8Ix')?.textContent || 'Unknown sender';
+            const sender = document.querySelector('.OZZZK')?.textContent?.trim() || 'Unknown sender';
             const subject = document.querySelector('._2LhyGc5yl3hbzUyNGQi-9s')?.textContent || 'No subject';
             const body = document.querySelector('._4utP_vaqQ3UQZH0GEBVQe')?.innerHTML || 'No body content found';
             
