@@ -3,7 +3,8 @@ export enum ModuleMessageId {
     UpdateTrackerRules,
     ApplyProtections,
     ResetTrackerStats,
-    ReadDom
+    ReadDom,
+    ProcessEmlData
 }
 
 export interface ModuleMessage {

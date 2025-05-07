@@ -6,6 +6,8 @@ import {Configuration} from "@/utils/config.ts";
 import {PhishChecker} from "@/entrypoints/content/modules/emailPhish-checker/emailPhish-checker.ts";
 import {DeletionProvider} from "@/entrypoints/background/deletion-provider.ts";
 import {TrackerManager} from "@/entrypoints/content/modules/tracker-manager/tracker-manager.ts";
+import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
+import {ModuleId} from "@/entrypoints/content/types/module.ts";
 
 interface BreachInfo {
     [email: string]: any;  // Stores breach data by email
@@ -28,6 +30,71 @@ export default defineBackground(async () => {
     const deletionProvider = new DeletionProvider();
     const trackerManager = new TrackerManager();
     moduleManager.registerModule(trackerManager, config.isModuleEnabled(trackerManager.id));
+
+    browser.webRequest.onBeforeRequest.addListener(
+        (details) => {
+            // Check if this is an Outlook EML download
+            if (details.url.includes(".eml") && 
+                (details.url.includes("outlook.office") || 
+                 details.url.includes("outlook.live"))) {
+                
+                console.log("Intercepted EML download:", details.url);
+                
+                // Use a non-async approach to fetch the EML content
+                fetch(details.url)
+                    .then(response => response.text())
+                    .then(emlData => {
+                        // Send the EML data to the content script
+                        browser.tabs.query({active: true, currentWindow: true})
+                            .then(tabs => {
+                                if (tabs.length > 0) {
+                                    moduleManager.sendMessage(ModuleId.PhishChecker, {
+                                        id: ModuleMessageId.ProcessEmlData,
+                                        data: { emlData }
+                                    });
+                                }
+                            });
+                    })
+                    .catch(error => {
+                        console.error("Error fetching EML data:", error);
+                    });
+            }
+            
+            // We're not canceling the request, so return { cancel: false }
+            return { cancel: false };
+        },
+        {urls: ["*://*.outlook.office.com/*", "*://*.outlook.office365.com/*", "*://*.outlook.live.com/*"]},
+        ["blocking"]
+    );
+
+    browser.webRequest.onCompleted.addListener(
+        (details) => {
+            if (details.url.includes(".eml") && 
+                (details.url.includes("outlook.office") || 
+                 details.url.includes("outlook.live"))) {
+                
+                console.log("Completed EML download:", details.url);
+                
+                fetch(details.url)
+                    .then(response => response.text())
+                    .then(emlData => {
+                        browser.tabs.query({active: true, currentWindow: true})
+                            .then(tabs => {
+                                if (tabs.length > 0) {
+                                    moduleManager.sendMessage(ModuleId.PhishChecker, {
+                                        id: ModuleMessageId.ProcessEmlData,
+                                        data: { emlData }
+                                    });
+                                }
+                            });
+                    })
+                    .catch(error => {
+                        console.error("Error fetching EML data:", error);
+                    });
+            }
+        },
+        {urls: ["*://*.outlook.office.com/*", "*://*.outlook.office365.com/*", "*://*.outlook.live.com/*"]}
+    );
 
     browser.runtime.onMessage.addListener(async (
         message: BgMessage,
@@ -131,6 +198,44 @@ export default defineBackground(async () => {
                 const {domain} = message.data;
                 const details = deletionProvider.getDeletionDetails(domain);
                 sendResponse(details);
+                break;
+            }
+            case BgMessageId.DownloadOutlookEml: {
+                const { messageId } = message.data;
+                const tabs = await browser.tabs.query({active: true, currentWindow: true});
+                
+                if (tabs.length > 0 && tabs[0].id) {
+                    // Execute a content script to trigger the download
+                    await browser.tabs.executeScript(tabs[0].id, {
+                        code: `
+                            (function() {
+                                // Find and click the "More actions" button
+                                const moreActionsButton = document.querySelector('[aria-label="More actions"] button, [aria-label="More commands"] button');
+                                if (moreActionsButton) {
+                                    moreActionsButton.click();
+                                    
+                                    // Wait for the menu to appear
+                                    setTimeout(() => {
+                                        // Look for "Download" or "Download message" option in the menu
+                                        const downloadOptions = Array.from(document.querySelectorAll('button, [role="menuitem"]'));
+                                        const downloadOption = downloadOptions.find(el => 
+                                            el.textContent?.includes('Download') || 
+                                            el.getAttribute('aria-label')?.includes('Download')
+                                        );
+                                        
+                                        if (downloadOption) {
+                                            downloadOption.click();
+                                        } else {
+                                            console.error("Download option not found");
+                                        }
+                                    }, 500);
+                                } else {
+                                    console.error("More actions button not found");
+                                }
+                            })();
+                        `
+                    });
+                }
                 break;
             }
         }

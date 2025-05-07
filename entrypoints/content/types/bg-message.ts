@@ -12,6 +12,7 @@ export enum BgMessageId {
     ReadDOM = "READ_DOM",
     DeletionUrl = "DELETION_URL",
     UpdateTrackerRules = "UPDATE_TRACKER_RULES",
+    DownloadOutlookEml = "DOWNLOAD_OUTLOOK_EML",
 }
 
 export interface BgMessage {

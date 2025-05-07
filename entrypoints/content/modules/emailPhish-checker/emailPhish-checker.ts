@@ -1,6 +1,8 @@
 import {Module, ModuleId} from "../../types/module.ts";
 import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {ModuleMessage, ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
+import { BgMessageId } from "../../types/bg-message.ts";
+import MimeParser  from 'postal-mime';
 
 export class PhishChecker extends Module { 
     readonly id = ModuleId.PhishChecker;
@@ -25,11 +27,12 @@ export class PhishChecker extends Module {
         const isGmail = window.location.hostname.includes('mail.google.com');
         const isOutlook1 = window.location.hostname.includes('outlook.office365.com');
         const isOutlook2 = window.location.hostname.includes('outlook.office.com');
+        const isOutlook3 = window.location.hostname.includes('outlook.live.com');
         const isProton = window.location.hostname.includes('mail.proton.me');
         
         if (isGmail) {
             return this.parseGmailEmail();
-        } else if (isOutlook1 || isOutlook2) {
+        } else if (isOutlook1 || isOutlook2 || isOutlook3) {
             return this.parseOutlookEmail();
         } else if (isProton) {
             return this.parseProtonEmail();
@@ -260,22 +263,83 @@ export class PhishChecker extends Module {
     }
     private parseOutlookEmail() {
         try {
-            /*
-            const senderMail = document.querySelector('[data-testid="recipient-address"]')?.textContent || 'Unknown sender email';
-            const sender = document.querySelector('[data-testid="recipient-label"]')?.textContent || 'Unknown sender';
-            const date = document.querySelector('[data-testid="item-date-simple"]')?.getAttribute('datetime') || 'No date';
-            const subject = document.querySelector('[data-testid="conversation-header:subject"]')?.getAttribute('title') || 'No subject';
-            const body = this.getProtonMailBody();
-            */
-            // Basic Outlook selectors - you may need to adjust these
-            const sender = document.querySelector('.OZZZK')?.textContent?.trim() || 'Unknown sender';
-            const subject = document.querySelector('._2LhyGc5yl3hbzUyNGQi-9s')?.textContent || 'No subject';
-            const body = document.querySelector('._4utP_vaqQ3UQZH0GEBVQe')?.innerHTML || 'No body content found';
+            // First, try to get the message ID from the URL
+            const messageId = this.getOutlookMessageId();
             
-            return { sender, subject, body };
+            if (!messageId) {
+                console.error("Could not find message ID in URL");
+                return {
+                    sender: "Error",
+                    subject: "Error",
+                    body: "Could not identify the email message ID"
+                };
+            }
+            
+            // Request the background script to download the EML file
+            this.sendToRuntime({
+                id: BgMessageId.DownloadOutlookEml,
+                data: { messageId }
+            });
+            
+            // Since the download is asynchronous, we'll return a placeholder
+            // The actual email content will be processed once the EML is downloaded
+            return {
+                sender: "Processing...",
+                subject: "Processing Outlook Email...",
+                body: "Please wait while we process your email..."
+            };
+            
         } catch (error) {
-            console.error("Error parsing Outlook:", error);
-            return { sender: "Error", subject: "Error", body: "Failed to parse Outlook content" };
+            console.error("Error initiating Outlook email download:", error);
+            return {
+                sender: "Error",
+                subject: "Error",
+                body: "Failed to initiate Outlook email download"
+            };
+        }
+    }
+    
+    private getOutlookMessageId(): string | null {
+        // Extract message ID from URL
+        const url = window.location.href;
+        
+        // Pattern for Office 365 and Outlook.com
+        const regex = /(?:\/(?:id|item)\/|messageId=)([A-Za-z0-9\-_]+)/;
+        const match = url.match(regex);
+        
+        return match ? match[1] : null;
+    }
+    
+    // New method to handle EML data received from background script
+    private async processEmlData(emlData: string) {
+        try {
+            const parser = new MimeParser();
+            const parsed = await parser.parse(emlData);
+            
+            const senderMail = Array.isArray(parsed.from) && parsed.from.length > 0 ? 
+                parsed.from[0].address : 'Unknown sender email';
+            const sender = Array.isArray(parsed.from) && parsed.from.length > 0 ? 
+                parsed.from[0].name || parsed.from[0].address : 'Unknown sender';
+            const subject = parsed.subject || 'No subject';
+            const body = parsed.html || parsed.text || 'No body content';
+            const date = parsed.date ? new Date(parsed.date).toLocaleString() : 'Unknown date';
+            
+            const emailData = { senderMail, sender, date, subject, body };
+            
+            // Send the parsed email data to the UI
+            this.sendToRuntime({
+                id: UiMessageId.DOMIsRead,
+                data: emailData
+            });
+            
+            return emailData;
+        } catch (error) {
+            console.error("Error parsing EML data:", error);
+            this.sendToRuntime({
+                id: UiMessageId.DOMError,
+                data: { error: "Failed to parse EML data" }
+            });
+            return null;
         }
     }
 
