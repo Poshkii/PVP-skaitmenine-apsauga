@@ -2,12 +2,14 @@ import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
 import {useTranslation} from "react-i18next";
 import DeleteAccount from "@/components/pages/profile/DeleteAccount.tsx";
+import VerifyEmail from "@/components/pages/profile/VerifyEmail.tsx";
 
 interface User {
     userId: number;
-    username: string;
+    email: string;
     createdAt: string;
     lastLogin: string;
+    verified: boolean;
     isPaid: boolean;
 }
 
@@ -90,10 +92,11 @@ function Profile() {
     return (
         <>
             <h1 className="panel-title">{t('profile')}</h1>
+            {!user?.verified && <VerifyEmail/>}
             <div className="security-check-container glassmorphism">
                 {user ? (
                     <div>
-                        <h4>{t('welcome', {user: user.username})}</h4>
+                        <h4>{t('welcome', {user: user.email})}</h4>
                         <h5>{t('paid')}{user.isPaid ? t('yes') : t('no')}</h5>
                     </div>
                 ) : (

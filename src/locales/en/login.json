@@ -1,6 +1,6 @@
 {
     "login": "Login",
-    "user": "Username",
+    "email": "Email",
     "pswd": "Password",
     "confirm": "Confirm Password",
     "loading": "Logging in...",
@@ -15,5 +15,8 @@
     "Loading": "Loading...",
     "profile": "Profile",
     "noMatch": "Passwords do not match",
-    "delete": "Delete account"
+    "delete": "Delete account",
+    "resend": "Resend verification",
+    "unverified": "Your email is unverified",
+    "sent": "Verification was sent to your inbox"
 }
