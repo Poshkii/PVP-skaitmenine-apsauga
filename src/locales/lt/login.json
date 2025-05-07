@@ -14,5 +14,6 @@
     "logout": "Atsijungti",
     "Loading": "Kraunama...",
     "profile": "Profilis",
-    "noMatch": "Slaptažodžiai nesutampa"
+    "noMatch": "Slaptažodžiai nesutampa",
+    "delete": "Ištrinti paskyrą"
 }
