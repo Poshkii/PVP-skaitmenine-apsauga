@@ -4,29 +4,30 @@ import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
 
-function customPasswordAnalysis(password: string): string[] {
+
+function customPasswordAnalysis(password: string, t: (key: string) => string): string[] {
     const suggestions: string[] = [];
 
     // Emphasize length
     if (password.length < 8) {
-        suggestions.push("Use at least 8 characters. Longer passwords are much stronger.");
+        suggestions.push(t('length8'));
     } else if (password.length < 12) {
-        suggestions.push("Consider using 12 or more characters for better security.");
+        suggestions.push(t('length12'));
     }
 
     // Optional: flag common weak patterns (even though zxcvbn catches many)
     if (/^[a-z]{1,}$/i.test(password)) {
-        suggestions.push("Avoid simple dictionary words alone. Try a longer passphrase.");
+        suggestions.push(t('dictionaryWords'));
     }
 
     // Optional: warn about very repetitive characters
     if (/([a-zA-Z0-9])\1{3,}/.test(password)) {
-        suggestions.push("Avoid repeating the same character multiple times.");
+        suggestions.push(t('avoidRepeat'));
     }
 
     // Optional: warn if it's all one character type
     if (/^[a-z]+$/.test(password) || /^[A-Z]+$/.test(password) || /^[0-9]+$/.test(password)) {
-        suggestions.push("Mixing character types can help avoid guessable patterns.");
+        suggestions.push(t('mixCharacters'));
     }
 
     return suggestions;
@@ -41,17 +42,17 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
     const [feedback, setFeedback] = useState<string[]>([]);
     const initialized = useRef(false);
     const { t } = useTranslation('passwords');
-
+    
     useEffect(() => {
         if (inputPassword) {
             initialized.current = true;
             const result = zxcvbn(inputPassword);
-            const customSuggestions = customPasswordAnalysis(inputPassword);
+            const customSuggestions = customPasswordAnalysis(inputPassword, t);
             const combinedFeedback = [...result.feedback.suggestions, ...customSuggestions];
             setScore(result.score);
             setFeedback(customSuggestions);
         }
-    }, [inputPassword]);
+    }, [inputPassword, t]);
     
 
     // gauna stiprumo reiksme
