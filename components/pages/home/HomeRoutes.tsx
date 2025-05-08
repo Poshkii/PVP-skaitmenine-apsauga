@@ -19,7 +19,7 @@ import FileData from "../data-usage/File/FileDataUsage";
 import PasswordData from "../data-usage/Password/PasswordDataUsage";
 import EmailData from "../data-usage/Email/EmailDataUsage";
 import PhishData from "../data-usage/Phish/PhishDataUsage";
-import TrackerData from "../data-usage/Email/EmailDataUsage";
+import TrackerData from "../data-usage/Tracker/TrackerDataUsage";
 
 
 function HomeRoutes(){

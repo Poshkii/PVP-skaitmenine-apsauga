@@ -38,11 +38,21 @@
         "page": "Duomenų bazė"
     },
     "phish": {
-    "title": "El. laiškų nuskaitymo duomenų naudojimas",
-    "infoBanner": "Nuskaitant el. laiškus, ar tai būtų Gmail, Proton Mail, Outlook ir kt., inicijuojamas užklausos selektorius, kuris iš DOM struktūros išgauna tokius el. laiško objektus kaip tema, siuntėjo el. pašto adresas. Jokie asmeniniai duomenys nėra bendrinami ar saugomi. Nuskaityti duomenys naudojami tik tam, kad būtų nustatyta, ar el. laiškas yra sukčiavimo (phishing) atvejis, pasitelkiant iš anksto apmokytą AI modelį RoBERTa. Daugiau informacijos apie AI modelį galite rasti čia:",
-    "serviceName": "RoBERTa",
-    "content": "El. laiškai yra klasifikuojami kaip sukčiavimo arba saugūs, tačiau duomenys nėra saugomi.",
-    "notice": "Naudodami šią funkciją, jūs sutinkate, kad jūsų privatūs el. laiškai būtų nuskaitomi sukčiavimo aptikimui.",
-    "page": "RoBERTa dokumentacija"
+        "title": "El. laiškų nuskaitymo duomenų naudojimas",
+        "infoBanner": "Nuskaitant el. laiškus, ar tai būtų Gmail, Proton Mail, Outlook ir kt., inicijuojamas užklausos selektorius, kuris iš DOM struktūros išgauna tokius el. laiško objektus kaip tema, siuntėjo el. pašto adresas. Jokie asmeniniai duomenys nėra bendrinami ar saugomi. Nuskaityti duomenys naudojami tik tam, kad būtų nustatyta, ar el. laiškas yra sukčiavimo (phishing) atvejis, pasitelkiant iš anksto apmokytą AI modelį RoBERTa. Daugiau informacijos apie AI modelį galite rasti čia:",
+        "serviceName": "RoBERTa",
+        "content": "El. laiškai yra klasifikuojami kaip sukčiavimo arba saugūs, tačiau duomenys nėra saugomi.",
+        "notice": "Naudodami šią funkciją, jūs sutinkate, kad jūsų privatūs el. laiškai būtų nuskaitomi sukčiavimo aptikimui.",
+        "page": "RoBERTa dokumentacija"
+    },
+    "trackers": {
+        "title": "Sekiklių blokavimo duomenų naudojimas",
+        "infoBanner": "Sekiklių blokavimo funkcija naudoja išorinius filtrų sąrašus ir naršyklės API apsaugas, kad apsaugotų jūsų naršymo privatumą. Štai informacija apie tai, kokie duomenys naudojami siekiant užtikrinti jūsų privatumą:",
+        "serviceName1": "EasyList filtravimo taisyklės",
+        "content1": "Plėtinys atsisiunčia ir apdoroja filtrų sąrašus iš EasyList, kad atpažintų ir blokuotų sekiklius. Šie sąrašai atsisiunčiami iš easylist.io ir apdorojami lokaliai jūsų įrenginyje. Plėtinys identifikuoja sekėjų užklausas remdamasis šiomis taisyklėmis ir jas kategorizuoja. Visa apdorojimo veikla vykdoma jūsų įrenginyje ir jokie naršymo duomenys nėra siunčiami į EasyList serverius.",
+        "serviceName2": "Apsauga nuo skaitmeninio pėdsako",
+        "content2": "Siekiant užkirsti kelią naršyklės skaitmeninių pėdsakų rinkimui, atliekami nedideli tam tikrų naršyklės API, kurias svetainės naudoja vartotojų sekimui, pakeitimai. Tai apima nedidelius Canvas duomenų, garso duomenų, šriftų aptikimo ir aparatūros informacijos gavimo pakeitimus. Pakeitimai yra pakankamai subtilūs, kad netrukdytų įprastam svetainių veikimui, tačiau apsunkina nuoseklų vartotojų atpažinimą. Visi pakeitimai atliekami lokaliai jūsų naršyklėje ir nėra susieti su išoriniais serveriais.",
+        "notice": "Ši funkcija sukurta atsižvelgiant į privatumą ir nesidalija naršymo duomenimis su jokiomis trečiosiomis šalimis."
     }
+      
 }

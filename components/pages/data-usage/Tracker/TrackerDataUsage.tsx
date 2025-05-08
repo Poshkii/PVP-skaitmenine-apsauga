@@ -1,9 +1,10 @@
 import "/entrypoints/popup/style.css";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 
-function InfoPage(){
+function TrackerDataUsage(){
     const handleButtonClick = (url: string | URL | undefined) => {
         window.open(url, "_blank");
     };
@@ -12,37 +13,41 @@ function InfoPage(){
     const toggleSection = (section: string) => {
         setOpenSection(openSection === section ? null : section);
     };
+    const navigate = useNavigate();
+
     const { t } = useTranslation('dataUsage');
 
     return (
         <div className="middle-menu">
-            <h1 className="panel-title">{t('url.title')}</h1>
+            <h1 className="panel-title">{t('trackers.title')}</h1>
             <div className="security-check-container glassmorphism">
                 <p>
-                    {t('url.infoBanner')}
+                    {t('trackers.infoBanner')}
                 </p>
                 <div style={{marginBottom: "14px"}}>
                     <button
                         className="dropdown-button btn btn-primary"
                         style={{
-                            borderBottomLeftRadius: openSection === 'virustotal' ? '0' : '12px',
-                            borderBottomRightRadius: openSection === 'virustotal' ? '0' : '12px'
+                            borderBottomLeftRadius: openSection === 'easylist' ? '0' : '12px',
+                            borderBottomRightRadius: openSection === 'easylist' ? '0' : '12px'
                         }}
-                        onClick={() => toggleSection('virustotal')}
+                        onClick={() => toggleSection('easylist')}
                     >
-                        {t('url.serviceName')}{openSection === 'virustotal' ? <ChevronUp/> : <ChevronDown/>}
+                        {t('trackers.serviceName1')} {openSection === 'easylist' ? <ChevronUp/> : <ChevronDown/>}
                     </button>
                     <div 
                         className="data-content"
                         style={{
-                            maxHeight: openSection === 'virustotal' ? '100vh' : '0',
-                            opacity: openSection === 'virustotal' ? 1 : 0,
-                            padding: openSection === 'virustotal' ? '16px 20px' : '0 20px',
-                            visibility: openSection === 'virustotal' ? 'visible' : 'hidden'
+                            maxHeight: openSection === 'easylist' ? '100vh' : '0',
+                            opacity: openSection === 'easylist' ? 1 : 0,
+                            padding: openSection === 'easylist' ? '16px 20px' : '0 20px',
+                            visibility: openSection === 'easylist' ? 'visible' : 'hidden'
                         }}
                     >
-                        <p>{t('url.content')}</p>
-                        <a style={{color:"white"}} href="https://cloud.google.com/terms/secops/privacy-notice" target="_blank" rel="noopener noreferrer">{t('policy')}</a>
+                        <p>
+                            {t('trackers.content1')}
+                        </p>
+                        <a style={{color:"white"}} href="https://easylist.to/pages/privacy.html" target="_blank" rel="noopener noreferrer">EasyList Privacy Policy</a>
                     </div>
                 </div>
                 
@@ -50,65 +55,40 @@ function InfoPage(){
                     <button
                         className="dropdown-button btn btn-primary"
                         style={{
-                            borderBottomLeftRadius: openSection === 'cryptoscam' ? '0' : '12px',
-                            borderBottomRightRadius: openSection === 'cryptoscam' ? '0' : '12px'
+                            borderBottomLeftRadius: openSection === 'fingerprinting' ? '0' : '12px',
+                            borderBottomRightRadius: openSection === 'fingerprinting' ? '0' : '12px'
                         }}
-                        onClick={() => toggleSection('cryptoscam')}
+                        onClick={() => toggleSection('fingerprinting')}
                     >
-                        {t('url.serviceName1')}{openSection === 'cryptoscam' ? <ChevronUp/> : <ChevronDown/>}
+                        {t('trackers.serviceName2')} {openSection === 'fingerprinting' ? <ChevronUp/> : <ChevronDown/>}
                     </button>
                     <div 
                         className="data-content"
                         style={{
-                            maxHeight: openSection === 'cryptoscam' ? '100vh' : '0',
-                            opacity: openSection === 'cryptoscam' ? 1 : 0,
-                            padding: openSection === 'cryptoscam' ? '16px 20px' : '0 20px',
-                            visibility: openSection === 'cryptoscam' ? 'visible' : 'hidden'
+                            maxHeight: openSection === 'fingerprinting' ? '100vh' : '0',
+                            opacity: openSection === 'fingerprinting' ? 1 : 0,
+                            padding: openSection === 'fingerprinting' ? '16px 20px' : '0 20px',
+                            visibility: openSection === 'fingerprinting' ? 'visible' : 'hidden'
                         }}
                     >
-                        <p>{t('url.content1')}</p>
-                        <a style={{color:"white"}} href="https://dfpi.ca.gov/consumers/crypto/crypto-scam-tracker/" target="_blank" rel="noopener noreferrer">{t('url.page')}</a>
-                    </div>
-                </div>
-
-                <div style={{marginBottom: "14px"}}>
-                    <button
-                        className="dropdown-button btn btn-primary"
-                        style={{
-                            borderBottomLeftRadius: openSection === 'urlscan' ? '0' : '12px',
-                            borderBottomRightRadius: openSection === 'urlscan' ? '0' : '12px'
-                        }}
-                        onClick={() => toggleSection('urlscan')}
-                    >
-                        {t('url.serviceName2')}{openSection === 'urlscan' ? <ChevronUp/> : <ChevronDown/>}
-                    </button>
-                    <div 
-                        className="data-content"
-                        style={{
-                            maxHeight: openSection === 'urlscan' ? '100vh' : '0',
-                            opacity: openSection === 'urlscan' ? 1 : 0,
-                            padding: openSection === 'urlscan' ? '16px 20px' : '0 20px',
-                            visibility: openSection === 'urlscan' ? 'visible' : 'hidden'
-                        }}
-                    >
-                        <p>{t('url.content2')}</p>
-                        <a style={{color:"white"}} href="https://urlscan.io/privacy/" target="_blank" rel="noopener noreferrer">{t('policy')}</a>
+                        <p>
+                            {t('trackers.content2')}
+                        </p>
                     </div>
                 </div>
             
                 <p style={{fontStyle: "italic"}}>
-                    {t('url.notice')}
+                    {t('trackers.notice')}
                 </p>
             
                 <button className="btn btn-secondary"
-                    onClick={() => window.history.back()}
+                    onClick={() => navigate(-1)}
                 >
                     {t('back')}
                 </button>
             </div>
         </div>
     );
-
 }
 
-export default InfoPage;
+export default TrackerDataUsage;

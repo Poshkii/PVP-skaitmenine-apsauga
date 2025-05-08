@@ -44,5 +44,14 @@
         "content": "Emails are classified as phishing or safe, but no data is being saved.",
         "notice": "By using this feature, you consent to scanning your private emails for Phishing detection.",
         "page": "RoBERTa documentation"
+    },
+    "trackers": {
+        "title": "Tracker Blocking Data Usage",
+        "infoBanner": "Tracker blocking feature uses external filter lists and browser API protections to keep your browsing private. Here's information about what data is used to ensure your privacy:",
+        "serviceName1": "EasyList Filter Rules",
+        "content1": "Extension downloads and processes filterlists from EasyList to identify and block trackers. These lists are fetched from easylist.io and processed locally on your device. The extension identifies tracker requests based on these rules and categorizes them. All processing happens locally on your device, and no browsing data is sent to EasyList servers.",
+        "serviceName2": "Fingerprinting Protection",
+        "content2": "To prevent browser fingerprinting, minor modifications are applied to certain browser APIs that websites commonly use to track users. This includes slight alterations to Canvas data, Audio data, Font detection, and hardware information reporting. Alterations are subtle enough not to impact normal website functionality while preventing consistent identification. All modifications are applied locally in your browser and do not involve external servers.",
+        "notice": "This feature is designed with privacy in mind and doesn't share browsing data with any 3rd parties."
     }
 }
