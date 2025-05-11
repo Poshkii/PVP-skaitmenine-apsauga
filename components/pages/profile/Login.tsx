@@ -1,16 +1,16 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router';
-import { useTranslation } from "react-i18next";
+import {useTranslation} from "react-i18next";
 
 const API_URL = useAppConfig().privacyApiUrl;
 
 function Login() {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { t } = useTranslation('login');
+    const {t} = useTranslation('login');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,7 +23,7 @@ function Login() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({username, password})
+                body: JSON.stringify({email, password})
             });
 
             if (!response.ok) {
@@ -52,11 +52,11 @@ function Login() {
                     <div>
                         <input
                             className='input-box'
-                            type="text"
-                            id="username"
-                            placeholder={t('user')}
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            type="email"
+                            id="email"
+                            placeholder={t('email')}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>

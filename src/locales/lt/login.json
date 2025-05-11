@@ -1,6 +1,6 @@
 {
     "login": "Prisijungti",
-    "user": "Naudotojo vardas",
+    "email": "El. paštas",
     "pswd": "Slaptažodis",
     "confirm": "Patvirtinkite slaptažodį",
     "loading": "Jungiamasi...",
@@ -15,5 +15,8 @@
     "Loading": "Kraunama...",
     "profile": "Profilis",
     "noMatch": "Slaptažodžiai nesutampa",
-    "delete": "Ištrinti paskyrą"
+    "delete": "Ištrinti paskyrą",
+    "resend": "Išsiųsti patvirtinimą",
+    "unverified": "Jūsų el. paštas nėra patvirtintas",
+    "sent": "Patvirtinimas buvo išsiųstas į Jūsų el. pašto dežutę"
 }
