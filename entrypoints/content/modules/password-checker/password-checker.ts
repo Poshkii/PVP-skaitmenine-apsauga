@@ -1,10 +1,12 @@
 import {Module, ModuleId} from "../../types/module.ts";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
-import infoBtn from "@/public/btn_images/info_btn.png"
+import infoBtn from "@/public/btn_images/info_btn.png";
+import zxcvbn from 'zxcvbn';
+import i18next from "i18next";
 
 export class PasswordChecker extends Module {
     readonly id = ModuleId.PasswordChecker;
-    private buttonId = "password-action-button";
+    private buttonId = "password-action-button";    
 
     load(): void {
         document.addEventListener("focusin", this.onFocusIn);
@@ -17,6 +19,116 @@ export class PasswordChecker extends Module {
 
         const button = document.getElementById(this.buttonId);
         if (button) button.remove();
+    }        
+
+   private async showStrengthMeter(passwordField: HTMLInputElement, password: string) {
+    await i18next.loadNamespaces('passwords');
+    const t = i18next.getFixedT(null, 'passwords');
+
+    const existing = document.getElementById("password-strength-meter");
+    if (existing) existing.remove();
+
+    const result = zxcvbn(password);
+    const score = result.score;
+
+    const getColor = (score: number) => {
+        switch (score) {
+            case 0:
+            case 1: return "#dc2626"; // red
+            case 2: return "#facc15"; // yellow
+            case 3: return "#22c55e"; // green
+            case 4: return "#16a34a"; // dark green
+            default: return "#ccc";
+        }
+    };
+
+    const getLabel = (score: number) => {
+        return ["Very Weak", "Weak", "Average", "Strong", "Very Strong"][score] || "";
+    };
+
+    const box = document.createElement("div");
+    box.id = "password-strength-meter";
+    box.style.position = "absolute";
+    box.style.zIndex = "9999";
+    box.style.background = "#0f172a";
+    box.style.border = "1px solid #ddd";
+    box.style.padding = "10px";
+    box.style.borderRadius = "6px";
+    box.style.boxShadow = "0 2px 6px rgba(0,0,0,0.1)";
+    box.style.fontSize = "13px";
+    box.style.width = "250px";
+
+    const rect = passwordField.getBoundingClientRect();
+    box.style.top = `${window.scrollY + rect.bottom + 6}px`;
+    box.style.left = `${window.scrollX + rect.left}px`;
+
+    const strengthBar = document.createElement("div");
+    strengthBar.style.width = "100%";
+    strengthBar.style.height = "8px";
+    strengthBar.style.background = "#e5e7eb";
+    strengthBar.style.borderRadius = "4px";
+    strengthBar.style.margin = "8px 0";
+    const fill = document.createElement("div");
+    fill.style.height = "100%";
+    fill.style.width = `${((score + 1) / 5) * 100}%`;
+    fill.style.background = getColor(score);
+    fill.style.borderRadius = "4px";
+    strengthBar.appendChild(fill);
+
+    const label = document.createElement("div");
+    label.textContent = `Strength: ${getLabel(score)}`;
+
+    const feedbackList = document.createElement("ul");
+    feedbackList.style.margin = "8px 0 0 0";
+    feedbackList.style.padding = "0 0 0 16px";
+
+    const customSuggestions = this.customPasswordAnalysis(password, t);
+
+    customSuggestions.forEach(suggestion => {
+        const li = document.createElement("li");
+        li.textContent = suggestion;
+        feedbackList.appendChild(li);
+    });
+
+    box.appendChild(label);
+    box.appendChild(strengthBar);
+    box.appendChild(feedbackList);
+
+    document.body.appendChild(box);
+
+    // Cleanup on blur
+    passwordField.addEventListener("blur", () => {
+        setTimeout(() => box.remove(), 100);
+    });
+}
+
+
+    private customPasswordAnalysis(password: string, t: (key: string) => string): string[] {
+        const suggestions: string[] = [];
+
+        // Emphasize length
+        if (password.length < 8) {
+            suggestions.push("Use at least 8 characters. Longer passwords are much stronger.");
+        } else if (password.length < 12) {
+            suggestions.push("Consider using 12 or more characters for better security.");
+        }
+
+        // Optional: flag common weak patterns (even though zxcvbn catches many)
+        if (/^[a-z]{1,}$/i.test(password)) {
+            suggestions.push("Avoid simple dictionary words alone. Try a longer passphrase.");
+        }
+
+        // Optional: warn about very repetitive characters
+        if (/([a-zA-Z0-9])\1{3,}/.test(password)) {
+            suggestions.push("Avoid repeating the same character multiple times.");
+        }
+
+        // Optional: warn if it's all one character type
+        if (/^[a-z]+$/.test(password) || /^[A-Z]+$/.test(password) || /^[0-9]+$/.test(password)) {
+            suggestions.push("Mixing character types can help avoid guessable patterns.");
+        }
+
+        return suggestions;
     }
 
     private createButton(passwordField: HTMLInputElement) {
@@ -83,10 +195,10 @@ export class PasswordChecker extends Module {
         const updateButtonPosition = () => {
             const rect = passwordField.getBoundingClientRect();
             const zoomLevel = window.visualViewport?.scale || 1; // Adjust size based on zoom level
-    
+
             button.style.top = `${window.scrollY + rect.top + offset / 2 + 1}px`;
             button.style.left = `${window.scrollX + rect.left + passwordField.offsetWidth - height + offset / 2 - 1}px`;
-    
+
             // Adjust button size dynamically based on zoom
             const baseSize = 14; // Base font size in pixels
             button.style.fontSize = `${baseSize / zoomLevel}px`;
@@ -99,20 +211,21 @@ export class PasswordChecker extends Module {
 
         // Add event listener to send message to background
         button.addEventListener("click", () => {
-            console.log("Button clicked, sending message to background script...");
 
-            this.sendToRuntime({
-                id: BgMessageId.NavigateTo,
-                data: {
-                    route: `/password-checker/${passwordField.value}`
-                }
-            });
+            // this.sendToRuntime({
+            //     id: BgMessageId.NavigateTo,
+            //     data: {
+            //         route: `/password-checker/${passwordField.value}`
+            //     }
+            // });
 
             // Optional: Remove button after click
-            button.remove();
+            //button.remove();
+            void this.showStrengthMeter(passwordField, passwordField.value);
+
         });
 
-         // Cleanup on blur
+            // Cleanup on blur
         passwordField.addEventListener("blur", () => {
             setTimeout(() => {
                 button.remove();
