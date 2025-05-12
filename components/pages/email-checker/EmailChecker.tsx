@@ -9,12 +9,7 @@ function EmailChecker() {
 
     return (
         <>
-            {activePage === "status" ? (
-                <EmailStatus inputEmail={email ?? ''} switchPage={() => setActivePage("tips")} />
-            ) : (
-                <EmailLeakTips switchPage={() => setActivePage("status")} />
-            )
-            }      
+            <EmailStatus inputEmail={email ?? ''} />    
         </>
     );
 }

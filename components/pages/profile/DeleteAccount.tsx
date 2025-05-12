@@ -1,6 +1,7 @@
 import React from "react";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router";
+import { DeleteIcon } from "lucide-react"; 
 
 const API_URL = useAppConfig().privacyApiUrl;
 
@@ -55,7 +56,18 @@ function DeleteAccount() {
             <div className="security-check-container glassmorphism">
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={handleSubmit}>
-                    <div>
+                    <div className="security-status" style={{}}>
+                        <div className="status-icon">
+                            <DeleteIcon size={30} />
+                        </div>
+                        <div className="status-text">
+                            <h3 className="status-title">
+                                {t('deleteTitle')}
+                            </h3>
+                            <h4 className="status-description">{t('deleteDesc')}</h4>
+                        </div>
+                    </div>
+                    <div style={{marginTop:"16px"}}>
                         <input
                             className='input-box'
                             type="password"
@@ -68,7 +80,7 @@ function DeleteAccount() {
                     </div>
                     <div className="action-buttons">
                         <button
-                            className="btn btn-primary"
+                            className="btn btn-danger"
                             style={{width: '100%'}}
                             type="submit"
                             disabled={loading}

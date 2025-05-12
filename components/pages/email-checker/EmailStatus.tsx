@@ -5,12 +5,13 @@ import { data } from "react-router";
 import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { useReport } from "../report-page/ReportContext";
 import {useNavigate} from "react-router";
-import { Info } from 'lucide-react';
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import { BgMessageId } from "@/entrypoints/content/types/bg-message";
 import { useTranslation } from "react-i18next";
+import { Info, Mail, Book, ChevronDown, ChevronUp} from 'lucide-react';
+import EmailLeakTips from "@/components/pages/email-checker/EmailLeakTips.tsx";
 
-function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPage: () => void }) {
+function EmailStatus({ inputEmail }: { inputEmail: string; }) {
     const [email, setEmail] = useState(inputEmail);
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
@@ -30,6 +31,10 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
     const [scanDone, setScanDone] = useState(false);
     const [isStored, setStored] = useState(false);
     const { t } = useTranslation('emails');
+    const [openSection, setOpenSection] = useState<string | null>(null);
+    const toggleSection = (section: string) => {
+        setOpenSection(openSection === section ? null : section);
+    };
 
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [skipConfirmation, setSkipConfirmation] = useState(
@@ -206,107 +211,158 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
         }       
     };
 
+    const [activeTab, setActiveTab] = useState<"scan" | "tips">("scan");
+
     return (
         <>
-            <div className="middle-menu">
+            <div style={{paddingBottom:0}}className="middle-menu">
                 <h1 className="panel-title">{t('pageName')}<span onClick={() => navigate("/email-data")}><Info className="info-icon"/></span></h1>
 
-                <div className="security-check-container">
-                    <form onSubmit={EmailCheck}>
-                        <input
-                            type="text"
-                            placeholder={t('enter')}
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="input-box"
-                        />
-
-                        <div className="action-buttons">
-                            <button
-                                disabled={!email || loading || !email.match(emailPattern)}
-                                type="submit"
-                                className={`btn ${!email || loading || !email.match(emailPattern) ? "" : "btn-primary"}`}
-                                style={{ 
-                                width: "200px",
-                                opacity: !email || loading || !email.match(emailPattern) ? "0.6" : "1",
-                                cursor: !email || loading || !email.match(emailPattern) ? "not-allowed" : "pointer",
-                                }}
-                                >
-                                {t('check')}
-                            </button>                            
-                            <button
-                                className="btn btn-secondary"
-                                style={{ 
-                                width: "200px"
-                                }}
-                                onClick={() => setEmail('')}
-                                type="button"
-                                >
-                                {t('clear')}
-                            </button>
-                        </div>                        
-                    </form>
+                <div className="tab-buttons">
+                    <button 
+                        style={ {marginRight: "8px"} }
+                        onClick={() => setActiveTab("scan")} 
+                        className={`btn ${activeTab === "scan" ? "btn-primary" : "btn-secondary"} tab-button`}
+                    >
+                        <div className="button-content">
+                            <Mail size={18} />
+                            {t('emailCheck')}
+                        </div>
+                    </button>
+                    <button 
+                        style={ {marginRight: "8px"} }
+                        onClick={() => setActiveTab("tips")} 
+                        className={`btn ${activeTab === "tips" ? "btn-primary" : "btn-secondary"} tab-button`}
+                    >
+                        <div className="button-content">
+                            <Book size={18} />
+                            {t('tips')}
+                        </div>
+                    </button>
                 </div>
-                
-                {scanDone && (
-                    <div className="security-check-container" style={{ maxHeight: "300px", minHeight: "110px", overflowY: "auto" }}> 
 
-                    {!loading && (
+                {activeTab === "scan" && ( 
                     <>
-                        {/* Display result status */}                   
-                        <div className="security-status" style={{ marginTop: "24px" }}>
-                            {dangerEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                            {safeEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                            {(warningEmail || unknownEmail) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
-                            <div className="status-text">
-                                {(dangerEmail || warningEmail) && <h3 className="status-title">{t('leaked')}</h3> }
-                                {safeEmail && <h3 className="status-title">{t('safe')}</h3> }
-                                {unknownEmail && <h3 className="status-title">{t('badEmail')}</h3> }                        
-                                <p className="status-description">
-                                    {(unknownEmail || dangerEmail || warningEmail) && result}
-                                </p>
-                            </div>
-                        </div> 
+                        <div className="security-check-container">
+                            <form onSubmit={EmailCheck}>
+                                <input
+                                    type="text"
+                                    placeholder={t('enter')}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="input-box"
+                                />
 
-                        <div className="security-status" style={{ marginTop: "24px" }}>
-                            {highRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                            {lowRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                            {(mediumRisk || unknownRisk) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
-                            <div className="status-text">
-                                {breachesFound && <h3 className="status-title">{t('risk')}{risk}</h3>}
-                                <p className="status-description">
-                                    {lowRisk && t('riskMessages.low')}
-                                    {mediumRisk && t('riskMessages.medium')}
-                                    {highRisk && t('riskMessages.high')}
-                                    {unknownRisk && t('riskMessages.unknown')}
-                                </p>
+                                <div className="action-buttons">
+                                    <button
+                                        disabled={!email || loading || !email.match(emailPattern)}
+                                        type="submit"
+                                        className={`btn ${!email || loading || !email.match(emailPattern) ? "" : "btn-primary"}`}
+                                        style={{ 
+                                        width: "200px",
+                                        opacity: !email || loading || !email.match(emailPattern) ? "0.6" : "1",
+                                        cursor: !email || loading || !email.match(emailPattern) ? "not-allowed" : "pointer",
+                                        }}
+                                        >
+                                        {t('check')}
+                                    </button>                            
+                                    <button
+                                        className="btn btn-secondary"
+                                        style={{ 
+                                        width: "200px"
+                                        }}
+                                        onClick={() => setEmail('')}
+                                        type="button"
+                                        >
+                                        {t('clear')}
+                                    </button>
+                                </div>                        
+                            </form>
+                        </div>
+                        
+                        {scanDone && (
+                            <div className="security-check-container" style={{ maxHeight: "300px", minHeight: "110px", overflowY: "auto", paddingTop: 0}}> 
+
+                                {!loading && (
+                                <>
+                                    {/* Display result status */}                   
+                                    <div className="security-status" style={{ marginTop: "24px" }}>
+                                        {dangerEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                                        {safeEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                                        {(warningEmail || unknownEmail) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                                        <div className="status-text">
+                                            {(dangerEmail || warningEmail) && <h3 className="status-title">{t('leaked')}</h3> }
+                                            {safeEmail && <h3 className="status-title">{t('safe')}</h3> }
+                                            {unknownEmail && <h3 className="status-title">{t('badEmail')}</h3> }                        
+                                            <p className="status-description">
+                                                {(unknownEmail || dangerEmail || warningEmail) && result}
+                                            </p>
+                                        </div>
+                                    </div> 
+
+                                    <div className="security-status" style={{ marginTop: "24px" }}>
+                                        {highRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                                        {lowRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                                        {(mediumRisk || unknownRisk) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                                        <div className="status-text">
+                                            {breachesFound && <h3 className="status-title">{t('risk')}{risk}</h3>}
+                                            <p className="status-description">
+                                                {lowRisk && t('riskMessages.low')}
+                                                {mediumRisk && t('riskMessages.medium')}
+                                                {highRisk && t('riskMessages.high')}
+                                                {unknownRisk && t('riskMessages.unknown')}
+                                            </p>
+                                        </div>
+                                    </div>                             
+                                </>
+                                )}   
+
+                                {loading &&
+                                <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
+                                    <div className="loading-spinner"></div>
+                                </div>  
+                                }
+
+                                {/* Show EmailBreachDetails if breaches are found */}
                             </div>
-                        </div>                             
+                        )}
+
+                        {scanDone && (
+                            <div> 
+                                {!loading && (
+                                    <>
+                                        <div>
+                                            <button
+                                                className="dropdown-button btn btn-secondary security-check-container glassmorphism"
+                                                style={{
+                                                    borderBottomLeftRadius: openSection === 'open' ? '0' : '12px',
+                                                    borderBottomRightRadius: openSection === 'open' ? '0' : '12px',
+                                                    marginBottom: 0
+                                                }}
+                                                onClick={() => toggleSection('open')}
+                                            >
+                                                <h3 className="status-title" style={{margin:0}}>{t('breaches')}</h3>{openSection === 'open' ? <ChevronUp/> : <ChevronDown/>}
+                                            </button>
+                                            <div 
+                                                className="data-content"
+                                                style={{
+                                                    maxHeight: openSection === 'open' ? '100%' : '0',
+                                                    opacity: openSection === 'open' ? 1 : 0,
+                                                    padding: openSection === 'open' ? '16px 20px' : '0 20px',
+                                                    visibility: openSection === 'open' ? 'visible' : 'hidden'
+                                                }}
+                                            >
+                                                {breachData && breachesFound && <EmailBreachDetails data={breachData} />}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
                     </>
-                    )}   
-
-                    {loading &&
-                    <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
-                        <div className="loading-spinner"></div>
-                    </div>  
-                    }
-
-                    {/* Show EmailBreachDetails if breaches are found */}
-                    {breachData && breachesFound && <EmailBreachDetails data={breachData} />}
-
-                </div>
                 )}
-                               
 
-                {/*Clear & Tips buttons*/}
-                <div className="action-buttons">
-                    <button className="btn btn-secondary" onClick={clearData}>
-                    {t('clear')}
-                    </button>
-                    <button className="btn btn-primary" onClick={switchPage}>
-                    {t('tips')}
-                    </button>
-                </div>
+                {activeTab === "tips" && <EmailLeakTips />}
 
                 {showConfirmModal && (
                 <div 
@@ -321,11 +377,11 @@ function EmailStatus({ inputEmail, switchPage }: { inputEmail: string; switchPag
                     <div 
                     className="security-check-container glassmorphism"
                     style={{
-                    backgroundColor: "#1e293b", padding: "30px", borderRadius: "8px",
+                    backgroundColor: "var(--bg-primary)", padding: "30px", borderRadius: "8px",
                     width: "90%", maxWidth: "400px", textAlign: "center",
                     boxShadow: "0 4px 20px rgba(0,0,0,0.5)"
                     }}>
-                    <h2 style={{ color: "var(--text-primary)", marginBottom: "20px" }}>
+                    <h2 className="panel-title" style={{ marginBottom: "20px" }}>
                         {t('confirmClear')}
                     </h2>
                     <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>

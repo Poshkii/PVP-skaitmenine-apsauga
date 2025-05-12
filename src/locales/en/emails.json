@@ -42,5 +42,6 @@
     "pswdRisk": "Password risk: ",
     "confirmClear": "Confirm Clear",
     "areYouSure": "Are you sure you want to clear data?",
-    "dontAsk": "Don't ask me again"
+    "dontAsk": "Don't ask me again",
+    "emailCheck": "Check Email"
 }

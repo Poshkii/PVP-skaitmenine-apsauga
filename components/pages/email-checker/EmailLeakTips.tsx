@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 //                      "skyrybos klaidas, siuntėjo adresą bei nespauskite ant nuorodų."},
 // ]
 
-function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
+function EmailLeakTips() {
     const { t } = useTranslation('emails');
     const titles = [
         { id: 1, content: t('title1') },
@@ -53,100 +53,40 @@ function EmailLeakTips({ switchPage }: { switchPage: () => void }) {
     }
 
     return (
-        <>          
-            <div style={{ 
-                display: "flex", 
-                flexDirection: "column",
-                height: "100%", // Set height to parent container
-            }}>                  
-                <div style={{ 
-                    marginTop: "1rem", 
-                    color: "white", 
-                    display: "flex", 
-                    flexDirection: "column",
-                    flex: "1", // Makes this container take available space
-                    height: "100%", // Ensure this container uses full height
-                    justifyContent: "space-between" // This is important - distributes space
-                }}>
-                    {/* Top content section */}
-                    <div>
-                        {/* Title */}
-                        <h2 className="panel-title">{t('dataTips')}</h2>
+        <>
+            <div style={{marginBottom: 0}} className="security-check-container glassmorphism">
+                <div className="security-status">
+                    <div className="status-icon" style={{background: "var(--accent-gradient)"}}>
+                        <span><Lightbulb size={30}/></span>
+                    </div>
+                    <div className="status-text">
+                        {titles.map((title, index) => (
+                            <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+                                <h3 className="status-title" style={{margin: 0}}>{title.content}</h3>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-                        {/* Status container */}
-                        <div className="security-status" style={{ 
-                            marginTop: "24px", 
-                            display: "flex", 
-                            flexDirection: "row",
-                            alignItems: "flex-start",
-                            gap: "1rem"
+                <div style={{marginTop: "20px", height: "120px"}}>
+                    {descriptions.map((desc, index) => (
+                        <div key={desc.id} style={{
+                            display: index === currentIndex ? "block" : "none"
                         }}>
-                            {/* Icon (Fixed Position) */}
-                            <div className="status-icon" style={{ 
-                                backgroundColor: "var(--error)",                             
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                borderRadius: "50%"
-                            }}>
-                                <Lightbulb color="white" size={30} />
-                            </div>
-
-                            {/* Text Content */}
-                            <div className="status-text" style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "flex-start",
-                                textAlign: "left",
-                                flexGrow: 1,
-                                overflow: "hidden",
-                                minWidth: "0"
-                            }}>
-                                {/* Titles */}
-                                {titles.map((title, index) => (
-                                    <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
-                                        <h3 style={{ marginBottom: "0.5rem", fontSize: "1.4rem"}}>{title.content}</h3>
-                                    </div>
-                                ))}
-
-                                {/* Descriptions */}
-                                {descriptions.map((description, index) => (
-                                    <div key={description.id} style={{ 
-                                        display: index === currentIndex ? "block" : "none",
-                                        overflow: "auto",
-                                        maxHeight: "100%"
-                                    }}>
-                                        <div style={{ color: "#ADADAD", fontSize: "1rem"}}>
-                                            {description.content}
-                                        </div>                          
-                                    </div>
-                                ))}
+                            <div style={{ color: "#ADADAD", fontSize: "1rem" }}>
+                                {desc.content}
                             </div>
                         </div>
+                    ))}
+                </div>
+                
+                <div className="action-buttons slide-buttons" style={{marginTop: "16px"}}>
+                    <button className="btn btn-secondary" onClick={prevSlide}>❮</button>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent:"center", color: "var(--text-primary)", width: "50px" }}>
+                        {currentIndex + 1} / {descriptions.length}
                     </div>
-
-                    {/* Bottom navigation with explicit padding */}
-                    <div style={{
-                        marginTop: "3rem", // Add significant margin above
-                        paddingBottom: "1rem", // Explicit padding at bottom
-                    }}>  
-                        {/* Page Number */}
-                        <div style={{ textAlign: "center", fontSize: "1.2rem", fontWeight: "bold" }}>
-                            {currentIndex + 1} / {descriptions.length}
-                        </div>
-                        {/* Buttons */}
-                        <div style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            gap: "1rem",
-                            marginTop: "1rem"
-                        }}>                              
-                            <button className="btn btn-secondary" onClick={prevSlide}>❮</button>
-                            <button className="btn btn-primary" onClick={switchPage}>{t('return')}</button>
-                            <button className="btn btn-secondary" onClick={nextSlide}>❯</button>
-                        </div>  
-                    </div>
-                </div>     
+                    <button className="btn btn-secondary" onClick={nextSlide}>❯</button>
+                </div>
             </div>
         </>
     );

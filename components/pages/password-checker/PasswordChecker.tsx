@@ -43,21 +43,21 @@ function PasswordChecker() {
                 </button>
                 <button 
                     style={ {marginRight: "8px"} }
-                    onClick={() => setActiveTab("tips")} 
-                    className={`btn ${activeTab === "tips" ? "btn-primary" : "btn-secondary"} tab-button`}
-                >
-                    <div className="button-content">
-                        <Book size={18} />
-                        {t('secTips')}
-                    </div>
-                </button>
-                <button 
                     onClick={() => setActiveTab("generator")} 
                     className={`btn ${activeTab === "generator" ? "btn-primary" : "btn-secondary"} tab-button`}
                 >
                     <div className="button-content">
                         <Sparkles size={18} />
                         {t('generator')}
+                    </div>
+                </button>
+                <button 
+                    onClick={() => setActiveTab("tips")} 
+                    className={`btn ${activeTab === "tips" ? "btn-primary" : "btn-secondary"} tab-button`}
+                >
+                    <div className="button-content">
+                        <Book size={18} />
+                        {t('secTips')}
                     </div>
                 </button>
             </div>
@@ -106,9 +106,8 @@ function PasswordChecker() {
                     {password && <PasswordBreaches inputPassword={password} />}
                 </>
             )}
-
-            {activeTab === "tips" && <PasswordTips />}
             {activeTab === "generator" && <PasswordGenerator />}
+            {activeTab === "tips" && <PasswordTips />}
         </div>
     );
 }

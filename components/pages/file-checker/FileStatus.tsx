@@ -561,13 +561,13 @@ function FileStatus({inputFile }: { inputFile: string }) {
 
                         <div className="security-status" style={{marginTop: "24px"}}>
                             <div className="status-icon">
-                            {prevSafety === "safe" ? (
-                                <Check size={32}/>
-                            ) : prevSafety === "unsafe" ? (
-                                <AlertTriangle size={32} style={{color:"var(--error)"}}/>
-                            ) : (
-                                <Info size={32} />
-                            )}
+                                {prevSafety === "safe" ? (
+                                    <Check size={30}/>
+                                ) : prevSafety === "unsafe" ? (
+                                    <AlertTriangle size={30} style={{color:"var(--error)"}}/>
+                                ) : (
+                                    <Info size={30} />
+                                )}
                             </div>
                             <div className="status-text">
                                 <h3 className="status-title">

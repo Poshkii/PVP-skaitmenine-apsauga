@@ -34,10 +34,7 @@ const EmailBreachDetails = ({ data }: { data: BreachData }) => {
 
         <div style={{ padding: "1rem", maxWidth: "800px", margin: "auto"}}>
 
-            {/* Breach List */}
-            <div style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.5rem" }}>
-                <h2 className="security-status" style={{ textAlign: "center" }}>{t('breaches')}</h2>
-            </div>             
+            {/* Breach List */}          
             {data.ExposedBreaches.breaches_details.map((breach, index) => (
                 <div key={index} style={{
                     border: "1px solid #ddd",

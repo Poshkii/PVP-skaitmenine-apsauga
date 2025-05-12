@@ -335,7 +335,7 @@ h1, h2, h3, h4, h5, h6 {
 .security-check-container {
   background-color: var(--bg-secondary);
   border-radius: var(--border-radius-lg);
-  padding: 24px;
+  padding: 20px 24px;
   margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
   position: relative;
@@ -721,7 +721,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .slide-buttons {
   width: 100%;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .dropdown-button {

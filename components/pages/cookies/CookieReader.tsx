@@ -322,7 +322,7 @@ function CookieReader() {
 
     return (
         <>
-            <div className="middle-menu">
+            <div style={{paddingBottom: 0}} className="middle-menu">
                 <h1 className="panel-title">{t('title')}</h1>
 
                 <div className="tab-buttons">
@@ -488,11 +488,11 @@ function CookieReader() {
                     <div 
                     className="security-check-container glassmorphism"
                     style={{
-                    backgroundColor: "#1e293b", padding: "30px", borderRadius: "8px",
+                    backgroundColor: "var(--bg-primary)", padding: "30px", borderRadius: "8px",
                     width: "90%", maxWidth: "400px", textAlign: "center",
                     boxShadow: "0 4px 20px rgba(0,0,0,0.5)"
                     }}>
-                    <h2 style={{ color: "var(--text-primary)", marginBottom: "20px" }}>
+                    <h2 className="panel-title" style={{marginBottom: "20px" }}>
                         {t('confirmClear')}
                     </h2>
                     <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>

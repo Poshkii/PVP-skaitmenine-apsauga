@@ -25,5 +25,6 @@
     "dontAsk": "Don't ask me again",
     "error": "Uh oh.. Something went wrong. Please try again.",
     "evaluation": "The submitted email is declared as {{type}}. Confidence of this evaluation is: {{conf}}.",
-    "answer": "Phishing scan results: "
+    "answer": "Phishing scan results: ",
+    "lastScan": "Last Checked Email"
 }

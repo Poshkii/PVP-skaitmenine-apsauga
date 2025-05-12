@@ -25,5 +25,6 @@
     "dontAsk": "Daugiau neklausti",
     "error": "O ne.. Kažkas nutiko negerai. Bandykite dar kartą.",
     "evaluation": "Tikrinamas el. paštas nustatyas, kaip: {{type}}. Užtikrintumo įvertis: {{conf}}.",
-    "answer": "Fišingo skanavimo resultatai: "
+    "answer": "Fišingo skanavimo resultatai: ",
+    "lastScan": "Paskutinis patikrintas el. laiškas"
 }

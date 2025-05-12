@@ -268,7 +268,7 @@ function ReportPage() {
                 </div>
             </div>
 
-            <button className="btn btn-secondary" onClick={clearReport}>
+            <button className="btn btn-danger" onClick={clearReport}>
                 {t('clear')}
             </button>
         </div>

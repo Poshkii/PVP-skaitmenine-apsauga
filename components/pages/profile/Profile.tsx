@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router';
 import {useTranslation} from "react-i18next";
 import DeleteAccount from "@/components/pages/profile/DeleteAccount.tsx";
 import VerifyEmail from "@/components/pages/profile/VerifyEmail.tsx";
+import { User } from "lucide-react"; 
 
 interface User {
     userId: number;
@@ -95,16 +96,25 @@ function Profile() {
             {!user?.verified && <VerifyEmail/>}
             <div className="security-check-container glassmorphism">
                 {user ? (
-                    <div>
-                        <h4>{t('welcome', {user: user.email})}</h4>
-                        <h5>{t('paid')}{user.isPaid ? t('yes') : t('no')}</h5>
-                    </div>
+                    <>
+                        <div className="security-status" style={{}}>
+                            <div className="status-icon">
+                                <User size={30} />
+                            </div>
+                            <div className="status-text">
+                                <h3 className="status-title">
+                                    {t('welcome', {user: user.email})}
+                                </h3>
+                                <h4 className="status-description">{t('paid')}{user.isPaid ? t('yes') : t('no')}</h4>
+                            </div>
+                        </div>
+                    </>
                 ) : (
                     <p>{t('cannotLoad')}</p>
                 )}
                 <div className="action-buttons">
                     <button
-                        className="btn btn-primary"
+                        className="btn btn-secondary"
                         onClick={logout}>{t('logout')}
                     </button>
                 </div>

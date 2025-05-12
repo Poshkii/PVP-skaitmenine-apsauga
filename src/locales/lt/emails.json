@@ -42,5 +42,6 @@
     "pswdRisk": "Slaptažodžio rizika: ",
     "confirmClear": "Patvirtinti išvalymą",
     "areYouSure": "Ar tikrai norite išvalyti duomenis?",
-    "dontAsk": "Daugiau neklausti"
+    "dontAsk": "Daugiau neklausti",
+    "emailCheck": "Patikrinti E. Paštą"
 }
