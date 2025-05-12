@@ -4,13 +4,15 @@ import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
 import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react'; // Add this import
+import { useEffect, useState } from 'react';
+import {useUserSession} from "@/components/providers/UserSessionProvider.tsx"; // Add this import
 
 function Settings() {
     const { changeBgModuleState } = useModuleMessaging();
     const { changeContentModuleState } = useContentMessaging();
     const { t, i18n } = useTranslation();
     const [currentLanguage, setCurrentLanguage] = useState(i18n.language); // Track current language
+    const { user } = useUserSession();
 
     // Update currentLanguage state when i18n.language changes
     useEffect(() => {
@@ -53,6 +55,7 @@ function Settings() {
                     moduleId={ModuleId.FileChecker}
                     title={t('settings:scan')}
                     description={t('settings:scanDsc')}
+                    locked={!user?.isPaid}
                     onChangeState={changeBgModuleState}
                 />
                 <ModuleToggle

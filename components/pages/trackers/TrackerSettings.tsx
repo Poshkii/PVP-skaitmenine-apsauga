@@ -4,11 +4,13 @@ import {useConfig} from "@/components/providers/ConfigProvider.tsx";
 import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import '/components/pages/settings/settings.css';
 import { useTranslation } from "react-i18next";
+import {useUserSession} from "@/components/providers/UserSessionProvider.tsx";
 
 interface ModuleToggleProps {
   moduleId: ModuleId;
   title: string;
   description: string;
+  locked?: boolean;
   onChangeState: (moduleId: ModuleId, enabled: boolean) => void;
 }
 
@@ -50,11 +52,14 @@ const CustomToggle: React.FC<{
   );
 };
 
-function FingerprintModuleToggle({moduleId, title, description, onChangeState}: ModuleToggleProps) {
+function FingerprintModuleToggle({moduleId, title, description, locked = false, onChangeState}: ModuleToggleProps) {
   const config = useConfig();
-  const [enabled, setEnabled] = useState(config.isModuleEnabled(moduleId));
+  const [enabled, setEnabled] = useState(locked ? false : config.isModuleEnabled(moduleId));
 
   function handleChange(checked: boolean) {
+      if (locked)
+          return;
+
       config.setModuleEnabled(moduleId, checked);
       config.save();
       setEnabled(checked);
@@ -65,7 +70,7 @@ function FingerprintModuleToggle({moduleId, title, description, onChangeState}: 
   return (
       <div className="setting-container">
           <div className="setting-text">
-              <p className="setting-title">{title}</p>
+              <p className="setting-title">{title}{ locked ? " (Pro)" : ''}</p>
               <p className="setting-description">{description}</p>
           </div>
           <label className="switch-toggle">
@@ -83,6 +88,7 @@ function FingerprintModuleToggle({moduleId, title, description, onChangeState}: 
 function Settings({ settings, updateSettings, updateRules }: SettingsProps) {
   const { t } = useTranslation('trackers');
   const { changeContentModuleState } = useContentMessaging();
+  const { user } = useUserSession();
 
   const handleToggle = (setting: keyof Omit<SettingsProps['settings'], 'lastUpdated'>): void => {
     const newSettings = {
@@ -136,6 +142,7 @@ function Settings({ settings, updateSettings, updateRules }: SettingsProps) {
           moduleId={ModuleId.TrackerBlocker}
           title={t('fingerprintToggle')}
           description={t('fingerprintDesc')}
+          locked={!user?.isPaid}
           onChangeState={changeContentModuleState}
       />
 

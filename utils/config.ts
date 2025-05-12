@@ -9,6 +9,12 @@ export interface Config {
     Modules: ModuleConfig[];
 }
 
+// these are paid so disable them by default
+const ConfigOverrides = new Map<ModuleId, boolean>([
+    [ModuleId.FileChecker, false],
+    [ModuleId.TrackerBlocker, false]
+]);
+
 // TODO: verifying and migrating between config versions? if a new module id is added for example
 
 export class Configuration {
@@ -53,7 +59,7 @@ export class Configuration {
                 .filter(value => typeof value === 'number')
                 .map(id => ({
                     id: id as number,
-                    enabled: true
+                    enabled: ConfigOverrides.get(id) ?? true
                 }))
         };
     }
