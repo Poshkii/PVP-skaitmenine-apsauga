@@ -22,6 +22,95 @@ export class PasswordChecker extends Module {
     }        
 
    private async showStrengthMeter(passwordField: HTMLInputElement, password: string) {
+    const styles = document.createElement('style');
+        styles.textContent = `
+        :root {
+            --ff-bg-primary: #0f172a;
+            --ff-bg-secondary: #1e293b;
+            --ff-bg-tertiary: #334155;
+            --ff-text-primary: #f8fafc;
+            --ff-text-secondary: #cbd5e1;
+            --ff-text-muted: #64748b;
+            --ff-accent-primary: #0ea5e9;
+            --ff-accent-secondary: #2dd4bf;
+            --ff-accent-gradient: linear-gradient(135deg, #0ea5e9, #2dd4bf);
+            --ff-success: #10b981;
+            --ff-warning: #f59e0b;
+            --ff-error: #ef4444;
+            --ff-border-radius-sm: 6px;
+            --ff-border-radius-md: 12px;
+            --ff-border-radius-lg: 16px;
+            --ff-transition-fast: 0.2s;
+            --ff-transition-medium: 0.3s;
+            --ff-shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --ff-shadow-md: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --ff-shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.1);
+            --ff-font-heading: 'Inter', sans-serif;
+            --ff-font-body: 'Inter', sans-serif;
+        }
+
+        .ff-btn {
+            padding: 12px 24px;
+            border-radius: var(--ff-border-radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--ff-transition-medium);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ff-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .ff-btn:hover::after {
+            left: 100%;
+        }
+
+        .ff-btn-primary {
+            background: var(--ff-accent-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+        }
+
+        .ff-btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(14, 165, 233, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .ff-btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .ff-btn-secondary {
+            background-color: transparent;
+            color: var(--ff-text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ff-btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--ff-accent-primary);
+            color: var(--ff-accent-primary);
+        }
+        
+       .ff-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* centers children horizontally */
+        }
+        `;
+        document.head.appendChild(styles);
+
     await i18next.loadNamespaces('passwords');
     const t = i18next.getFixedT(null, 'passwords');
 
@@ -59,8 +148,8 @@ export class PasswordChecker extends Module {
     box.style.width = "250px";
 
     const rect = passwordField.getBoundingClientRect();
-    box.style.top = `${window.scrollY + rect.bottom + 6}px`;
-    box.style.left = `${window.scrollX + rect.left}px`;
+    box.style.top = `${window.scrollY + rect.top}px`;
+    box.style.left = `${window.scrollX + rect.right + 8}px`; 
 
     const strengthBar = document.createElement("div");
     strengthBar.style.width = "100%";
@@ -76,6 +165,7 @@ export class PasswordChecker extends Module {
     strengthBar.appendChild(fill);
 
     const label = document.createElement("div");
+    label.style.fontSize = "24px";
     label.textContent = `Strength: ${getLabel(score)}`;
 
     const feedbackList = document.createElement("ul");
@@ -90,9 +180,24 @@ export class PasswordChecker extends Module {
         feedbackList.appendChild(li);
     });
 
+    const buttonWrapper = document.createElement("div");
+    buttonWrapper.style.display = "flex";
+    buttonWrapper.style.justifyContent = "center";
+    buttonWrapper.style.marginTop = "10px"; // optional spacing
+
+    const closeButton = document.createElement("button");
+    closeButton.className = "ff-btn ff-btn-secondary";
+    closeButton.innerText = "Close";
+    closeButton.style.marginTop = "10px";
+    closeButton.addEventListener("click", () => {
+        box.remove();
+    });
+
     box.appendChild(label);
     box.appendChild(strengthBar);
     box.appendChild(feedbackList);
+    buttonWrapper.appendChild(closeButton);
+    box.appendChild(buttonWrapper);
 
     document.body.appendChild(box);
 
@@ -210,18 +315,21 @@ export class PasswordChecker extends Module {
         window.addEventListener("resize", updateButtonPosition);
 
         // Add event listener to send message to background
-        button.addEventListener("click", () => {
-
-            // this.sendToRuntime({
-            //     id: BgMessageId.NavigateTo,
-            //     data: {
-            //         route: `/password-checker/${passwordField.value}`
-            //     }
-            // });
-
-            // Optional: Remove button after click
-            //button.remove();
+        button.addEventListener("click", () => {            
             void this.showStrengthMeter(passwordField, passwordField.value);
+
+            // Add an input event listener to update strength meter as the user types
+            const onInput = () => {
+                void this.showStrengthMeter(passwordField, passwordField.value);
+            };
+            passwordField.addEventListener("input", onInput);
+
+            // Optionally remove the listener on blur to prevent memory leaks
+            const onBlur = () => {
+                passwordField.removeEventListener("input", onInput);
+                passwordField.removeEventListener("blur", onBlur);
+            };
+            passwordField.addEventListener("blur", onBlur);
 
         });
 
