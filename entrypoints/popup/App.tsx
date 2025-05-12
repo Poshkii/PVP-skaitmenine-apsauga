@@ -3,11 +3,11 @@ import {configFactory, ConfigProvider} from "@/components/providers/ConfigProvid
 import Home from "@/components/pages/home/Home.tsx";
 import { ReportProvider } from '@/components/pages/report-page/ReportContext';
 import React from 'react';
-import {ModuleManager} from "@/entrypoints/content/modules/module-manager.ts";
 
 import { useEffect, useState  } from "react";
 import { useConfig } from "@/components/providers/ConfigProvider.tsx";
 import { ModuleId } from "@/entrypoints/content/types/module.ts";
+import {UserSessionProvider} from "@/components/providers/UserSessionProvider.tsx";
 
 function StartupController() {
     const config = useConfig();
@@ -58,10 +58,12 @@ function App() {
     return (
         <ReportProvider>
             <ConfigProvider config={configFactory(undefined)}>
-                <React.Suspense fallback="loading">
-                    <StartupController />
-                    <Home />
-                </React.Suspense>
+                <UserSessionProvider>
+                    <React.Suspense fallback="loading">
+                        <StartupController />
+                        <Home />
+                    </React.Suspense>
+                </UserSessionProvider>
             </ConfigProvider>
         </ReportProvider>
     );

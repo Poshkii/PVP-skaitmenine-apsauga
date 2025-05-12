@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router';
 import {useTranslation} from "react-i18next";
+import {useUserSession} from "@/components/providers/UserSessionProvider.tsx";
 
 const API_URL = useAppConfig().privacyApiUrl;
 
@@ -11,6 +12,7 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const {t} = useTranslation('login');
+    const { refreshSession } = useUserSession();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,7 +34,9 @@ function Login() {
 
             const data = await response.json();
 
-            localStorage.setItem("token", data.token);
+            await browser.storage.local.set({ token : data.token });
+
+            await refreshSession();
 
             // Successful login
             navigate('/profile');

@@ -58,7 +58,10 @@ async function checkFileByHash(file: File): Promise<any | null> {
     if (sha256Hash) {
         try {
             const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha256Hash}`, {
-                method: "GET"
+                method: "GET",
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("token")
+                }
             });
             if (res.ok) {
                 return await res.json();
@@ -76,7 +79,8 @@ async function getScanResult(url: string) {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem("token")
             }
         });
 

@@ -19,8 +19,8 @@ import FileData from "../data-usage/File/FileDataUsage";
 import PasswordData from "../data-usage/Password/PasswordDataUsage";
 import EmailData from "../data-usage/Email/EmailDataUsage";
 import PhishData from "../data-usage/Phish/PhishDataUsage";
-import TrackerData from "../data-usage/Tracker/TrackerDataUsage";
-
+import TrackerData from "../data-usage/Tracker/TrackerDataUsage";;
+import PaidRoute from "@/components/pages/unauthorized/PaidRoute.tsx";
 
 function HomeRoutes(){
     return (
@@ -29,7 +29,11 @@ function HomeRoutes(){
             <Route path="/info-page" element={<InfoPage />}></Route>
             <Route path="/password-checker/:password?" element={<PasswordChecker />}/>
             <Route path="/url-checker/:url?" element={<URLChecker />}/>
-            <Route path="/file-checker/:file?" element={<FileChecker />}/>
+            <Route path="/file-checker/:file?" element={
+                    <PaidRoute featureName={"File Scanning"}>
+                            <FileChecker />
+                    </PaidRoute>
+            }/>
             <Route path="/settings" element={<Settings />}/>
             <Route path="/report-page" element={<ReportPage />}/>
             <Route path="/email-checker/:email?" element={<EmailChecker />}/>
@@ -37,7 +41,11 @@ function HomeRoutes(){
             <Route path="/login" element={<Login />}/>
             <Route path="/register" element={<Register />}/>
             <Route path="/cookies" element={<Cookies />}/>
-            <Route path="/phish-email" element={<PhishEmail />}/>
+            <Route path="/phish-email" element={
+                    <PaidRoute featureName={"Phishing Email Detection"}>
+                            <PhishEmail />
+                    </PaidRoute>
+            }/>
             <Route path="/trackers" element={<Trackers />}/>
             <Route path="/url-data" element={<URLData />}></Route>
             <Route path="/file-data" element={<FileData />}></Route>

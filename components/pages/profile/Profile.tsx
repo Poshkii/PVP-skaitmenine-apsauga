@@ -3,91 +3,23 @@ import {useNavigate} from 'react-router';
 import {useTranslation} from "react-i18next";
 import DeleteAccount from "@/components/pages/profile/DeleteAccount.tsx";
 import VerifyEmail from "@/components/pages/profile/VerifyEmail.tsx";
-
-interface User {
-    userId: number;
-    email: string;
-    createdAt: string;
-    lastLogin: string;
-    verified: boolean;
-    isPaid: boolean;
-}
-
-const API_URL = useAppConfig().privacyApiUrl;
+import {useUserSession} from "@/components/providers/UserSessionProvider.tsx";
 
 function Profile() {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { user, logoutSession } = useUserSession();
     const {t} = useTranslation('login');
 
     const logout = async () => {
-        try {
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                throw new Error("Token not set");
-            }
-
-            await fetch(API_URL + '/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-            });
-
-        } catch (error) {
-            console.error('Error logging out:', error);
-        } finally {
-            localStorage.removeItem("token");
-            navigate('/login');
-        }
+        await logoutSession();
+        navigate("/login");
     }
-
 
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-                const token = localStorage.getItem("token");
-
-                if (!token) {
-                    throw new Error("Token not set");
-                }
-
-                const response = await fetch(API_URL + '/users/me', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        // Unauthorized, redirect to login
-                        navigate('/login');
-                        return;
-                    }
-                    throw new Error('Failed to fetch user profile');
-                }
-
-                const userData = await response.json();
-                setUser(userData);
-            } catch (error) {
-                console.error('Error fetching profile:', error);
-                navigate('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUserProfile();
+        if (!user){
+            navigate('/login');
+        }
     }, [navigate]);
-
-    if (loading) {
-        return <div>{t('Loading')}</div>;
-    }
 
     return (
         <>
