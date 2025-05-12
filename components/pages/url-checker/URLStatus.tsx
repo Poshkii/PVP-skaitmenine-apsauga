@@ -1,10 +1,12 @@
-import {FormEvent, useState, useEffect } from "react";
+import React, {FormEvent, useState, useEffect } from "react";
 import URLScam from "./URLScam";
 import { useReport } from "../report-page/ReportContext";
 import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import {useNavigate} from "react-router";
 import { Info } from 'lucide-react';
 import { useTranslation } from "react-i18next";
+import {getAuthHeader} from "@/utils/client.ts";
+import {useUserSession} from "@/components/providers/UserSessionProvider.tsx";
 
 const VT_API_URL = String(useAppConfig().virusTotalApiUrl);
 const US_API_URL = String(useAppConfig().urlScanApiUrl);
@@ -32,6 +34,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     const [doCheck, setDoCheck] = useState(false);
     const [scanDone, setScanDone] = useState(false);
     const { t } = useTranslation('urls');
+    const { user } = useUserSession();
 
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [skipConfirmation, setSkipConfirmation] = useState(
@@ -229,7 +232,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             const response = await fetch(VT_API_URL + "/urls", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    ...await getAuthHeader()
                 },
                 body: `url=${encodeURIComponent(normalizedUrl)}`
             });
@@ -277,7 +281,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             const normalizedUrl = normalizeURL(urlToCheck);
             // First, check if the URL has already been scanned recently
             const searchResponse = await fetch(`${US_API_URL}/search/?q=page.url:"${encodeURIComponent(normalizedUrl)}"&size=1`, {
-                method: "GET"
+                method: "GET",
+                headers: {
+                    ...await getAuthHeader()
+                }
             });
             
             // If we found a recent scan, use those results instead of creating a new scan
@@ -303,7 +310,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                             
                             // Fetch the detailed scan results from the result URL
                             const detailedResultResponse = await fetch(resultUrl, {
-                                method: "GET"
+                                method: "GET",
+                                headers: {
+                                    ...await getAuthHeader()
+                                }
                             });
                             
                             if (!detailedResultResponse.ok) {
@@ -331,7 +341,8 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             const scanResponse = await fetch(US_API_URL + "/scan", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    ...await getAuthHeader()
                 },
                 body: JSON.stringify({
                     url: normalizedUrl,
@@ -386,7 +397,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             try {
                 // GET scan results
                 const resultResponse = await fetch(resultUrl, {
-                    method: "GET"
+                    method: "GET",
+                    headers: {
+                        ...await getAuthHeader()
+                    }
                 });
                 console.log(`Result response status is:  ${resultResponse.status}`);
                 console.log(`Attempt ${attempts + 1}/${maxAttempts}`);
@@ -416,7 +430,11 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         // If we timeout, check one more time with an alternative method
         try {
             const directResultUrl = `${US_API_URL}/result/${uuid}/`;
-            const finalAttempt = await fetch(directResultUrl);
+            const finalAttempt = await fetch(directResultUrl, {
+                headers: {
+                    ...await getAuthHeader()
+                }
+            });
             
             if (finalAttempt.ok) {
                 const resultData = await finalAttempt.json();
@@ -517,7 +535,10 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             try {
                 // GET analysis
                 const resultResponse = await fetch(resultUrl, {
-                    method: "GET"
+                    method: "GET",
+                    headers: {
+                        ...await getAuthHeader()
+                    }
                 });
 
                 if (resultResponse.ok) {
@@ -576,7 +597,9 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         <>
             <div className="middle-menu" >
                 <h1 className="panel-title">{t('pageName')} <span onClick={() => navigate("/url-data")}><Info className="info-icon"/></span></h1>
-
+                { !user?.isPaid && (
+                    <div className="alert alert-info">{t("upgrade")}</div>
+                )}
                 <div className="security-check-container">
                     <form onSubmit={UrlChecker}>
                             <input

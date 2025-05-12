@@ -3,6 +3,7 @@ import {Module, ModuleId} from "../../types/module.ts";
 import {UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {showNotification} from "@/utils/notifications.ts";
 import DownloadDelta = chrome.downloads.DownloadDelta;
+import {getAuthHeader} from "@/utils/client.ts";
 
 export class FileChecker extends Module {
     readonly id = ModuleId.FileChecker;
@@ -40,7 +41,11 @@ export class FileChecker extends Module {
 
         try {
             // Convert file URL to a File object
-            const response = await fetch(downloadItem.finalUrl);
+            const response = await fetch(downloadItem.finalUrl, {
+                headers: {
+                    ...await getAuthHeader()
+                }
+            });
             const blob = await response.blob();
             const file = new File([blob], downloadItem.filename, { type: blob.type });
 
@@ -70,6 +75,9 @@ export class FileChecker extends Module {
             try {
                 const res = await fetch(`${this.API_URL}${this.HASH_ENDPOINT}/${sha256Hash}`, {
                     method: "GET",
+                    headers: {
+                        ...await getAuthHeader()
+                    }
                 });
                 if (res.ok) {
                     return await res.json();
@@ -121,7 +129,10 @@ export class FileChecker extends Module {
 
             const uploadResponse = await fetch(this.API_URL + this.FILE_ENDPOINT, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    ...await getAuthHeader()
+                }
             });
 
             if (uploadResponse.ok) {
@@ -195,7 +206,8 @@ export class FileChecker extends Module {
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        ...await getAuthHeader()
                     }
                 });
 

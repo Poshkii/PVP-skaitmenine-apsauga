@@ -1,6 +1,5 @@
 import {Route, Routes} from "react-router";
 import PasswordChecker from "@/components/pages/password-checker/PasswordChecker.tsx";
-import FeatureList from "@/components/pages/home/FeatureList.tsx";
 import Settings from "@/components/pages/settings/Settings.tsx";
 import URLChecker from "../url-checker/URLChecker";
 import EmailChecker from "../email-checker/EmailChecker";
@@ -21,16 +20,19 @@ import EmailData from "../data-usage/Email/EmailDataUsage";
 import PhishData from "../data-usage/Phish/PhishDataUsage";
 import TrackerData from "../data-usage/Tracker/TrackerDataUsage";;
 import PaidRoute from "@/components/pages/unauthorized/PaidRoute.tsx";
+import {useTranslation} from "react-i18next";
 
 function HomeRoutes(){
-    return (
+        const {t} = useTranslation();
+
+        return (
         <Routes>
             <Route path="/" element={<ReportPage />}></Route>
             <Route path="/info-page" element={<InfoPage />}></Route>
             <Route path="/password-checker/:password?" element={<PasswordChecker />}/>
             <Route path="/url-checker/:url?" element={<URLChecker />}/>
             <Route path="/file-checker/:file?" element={
-                    <PaidRoute featureName={"File Scanning"}>
+                    <PaidRoute featureName={t("meniu:fileCheck.name")}>
                             <FileChecker />
                     </PaidRoute>
             }/>
@@ -42,7 +44,7 @@ function HomeRoutes(){
             <Route path="/register" element={<Register />}/>
             <Route path="/cookies" element={<Cookies />}/>
             <Route path="/phish-email" element={
-                    <PaidRoute featureName={"Phishing Email Detection"}>
+                    <PaidRoute featureName={t("meniu:phishEmail.name")}>
                             <PhishEmail />
                     </PaidRoute>
             }/>

@@ -27,6 +27,8 @@ import ltPhishEmail from '../../src/locales/lt/phishEmail.json';
 import enPhishEmail from '../../src/locales/en/phishEmail.json';
 import ltTrackers from '../../src/locales/lt/trackers.json';
 import enTrackers from '../../src/locales/en/trackers.json';
+import ltUnauthorized from '../../src/locales/lt/unauthorized.json';
+import enUnauthorized from '../../src/locales/en/unauthorized.json';
 
 i18next
     .use(initReactI18next)
@@ -47,6 +49,7 @@ i18next
               info: enInfo,
               phishEmail: enPhishEmail,
               trackers: enTrackers,
+              unauthorized: enUnauthorized
              },
             lt: { 
               files: ltFiles,
@@ -62,10 +65,11 @@ i18next
               info: ltInfo,
               phishEmail: ltPhishEmail,
               trackers: ltTrackers,
+              unauthorized: ltUnauthorized
              }
           },
         fallbackLng: 'en',
-        ns: ['files', 'settings', 'meniu', 'urls', 'passwords', 'cookies', 'emails', 'login', 'report', 'dataUsage', 'info', 'phishEmail', 'trackers'],
+        ns: ['files', 'settings', 'meniu', 'urls', 'passwords', 'cookies', 'emails', 'login', 'report', 'dataUsage', 'info', 'phishEmail', 'trackers', 'unauthorized'],
         defaultNS: 'settings'
 })
 

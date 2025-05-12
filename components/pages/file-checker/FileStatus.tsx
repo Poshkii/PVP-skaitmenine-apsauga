@@ -7,6 +7,7 @@ import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 import {UiMessage, UiMessageId} from "@/entrypoints/content/types/ui-message.ts";
 import {useNavigate} from "react-router";
 import { useTranslation } from "react-i18next";
+import {getAuthHeader} from "@/utils/client.ts";
 
 const API_URL = String(useAppConfig().metaDefenderApiUrl);
 const HASH_ENDPOINT = "/hash";
@@ -60,7 +61,7 @@ async function checkFileByHash(file: File): Promise<any | null> {
             const res = await fetch(`${API_URL}${HASH_ENDPOINT}/${sha256Hash}`, {
                 method: "GET",
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem("token")
+                    ...await getAuthHeader()
                 }
             });
             if (res.ok) {
@@ -80,7 +81,7 @@ async function getScanResult(url: string) {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem("token")
+                ...await getAuthHeader()
             }
         });
 
@@ -253,7 +254,10 @@ function FileStatus({inputFile }: { inputFile: string }) {
         // ikelia faila skenavimui
         const uploadResponse = await fetch(API_URL + FILE_ENDPOINT, {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                ...await getAuthHeader()
+            }
         });
 
         // bando gaut rezultatus jei sekmingai ikelia

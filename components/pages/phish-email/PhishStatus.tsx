@@ -6,6 +6,7 @@ import {useContentMessaging} from "@/hooks/useContentMessaging.ts";
 import {ModuleId} from "@/entrypoints/content/types/module.ts";
 import {ModuleMessageId} from "@/entrypoints/content/types/module-message.ts";
 import { JSDOM } from "jsdom";
+import {getAuthHeader} from "@/utils/client.ts";
 
 interface EmailData {
     sender: string;
@@ -249,7 +250,8 @@ function PhishStatus() {
             const response = await fetch(SCAN_API_URL + "/predict", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    ...await getAuthHeader()
                 },
                 body: payload
             });
