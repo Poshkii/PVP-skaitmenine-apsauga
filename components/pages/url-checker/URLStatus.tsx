@@ -588,13 +588,13 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                         </div>
                     </div>
                     <form style={{marginTop:"16px"}} onSubmit={UrlChecker}>
-                            <input
-                                type="text"
-                                placeholder= {t('enter')}
-                                value={url}
-                                onChange={(e) => setUrl(e.target.value)}
-                                className="input-box"
-                            />
+                        <input
+                            type="text"
+                            placeholder= {t('enter')}
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className="input-box"
+                        />
 
                         <div className="action-buttons">                         
                             {!url ?
@@ -689,7 +689,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                         {showURLScam && <URLScam scamURL={submittedUrl} />}
                     </div>
 
-                    <div className="action-buttons">
+                    <div className="action-buttons" style={{margin: "24px auto 0  auto"}}>
                         {scanDone && (
                             <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
                             {t('scanAgain')}

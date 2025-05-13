@@ -76,6 +76,8 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
     const EmailCheck = async (e: FormEvent) => {
         e.preventDefault();
 
+        setChecking(true);
+
         if (!email.match(emailPattern)) {
             setResult(t('wrongFormat'));
             return;
@@ -268,7 +270,6 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                                 <div className="action-buttons">
                                     <button
                                         style={{margin: "0 auto"}}
-                                        onClick={() => setChecking(true)}
                                         disabled={!email || loading || checking || !email.match(emailPattern)}
                                         type="submit"
                                         className={`btn btn-primary ${!email || loading || checking || !email.match(emailPattern) ? 'disabled-button' : ''}`}>
@@ -287,56 +288,43 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                             </form>
                         </div>
                         
-                        {scanDone && (
-                            <div className="security-check-container" style={{ maxHeight: "300px", minHeight: "110px", overflowY: "auto", paddingTop: 0}}> 
+                        {scanDone && !loading && (
+                            <>
+                                <div className="security-check-container glassmorphism" style={{ maxHeight: "300px", minHeight: "110px", overflowY: "auto", paddingTop: 0}}> 
+                                        {/* Display result status */}                   
+                                        <div className="security-status" style={{ marginTop: "24px" }}>
+                                            {dangerEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                                            {safeEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                                            {(warningEmail || unknownEmail) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                                            <div className="status-text">
+                                                {(dangerEmail || warningEmail) && <h3 className="status-title">{t('leaked')}</h3> }
+                                                {safeEmail && <h3 className="status-title">{t('safe')}</h3> }
+                                                {unknownEmail && <h3 className="status-title">{t('badEmail')}</h3> }                        
+                                                <p className="status-description">
+                                                    {(unknownEmail || dangerEmail || warningEmail) && result}
+                                                </p>
+                                            </div>
+                                        </div> 
 
-                                {!loading && (
-                                <>
-                                    {/* Display result status */}                   
-                                    <div className="security-status" style={{ marginTop: "24px" }}>
-                                        {dangerEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                                        {safeEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                                        {(warningEmail || unknownEmail) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
-                                        <div className="status-text">
-                                            {(dangerEmail || warningEmail) && <h3 className="status-title">{t('leaked')}</h3> }
-                                            {safeEmail && <h3 className="status-title">{t('safe')}</h3> }
-                                            {unknownEmail && <h3 className="status-title">{t('badEmail')}</h3> }                        
-                                            <p className="status-description">
-                                                {(unknownEmail || dangerEmail || warningEmail) && result}
-                                            </p>
-                                        </div>
-                                    </div> 
+                                        {!safeEmail && (
+                                            <div className="security-status" style={{ marginTop: "24px" }}>
+                                                {highRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
+                                                {lowRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
+                                                {(mediumRisk || unknownRisk) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                                                <div className="status-text">
+                                                    {breachesFound && <h3 className="status-title">{t('risk')}{risk}</h3>}
+                                                    <p className="status-description">
+                                                        {lowRisk && t('riskMessages.low')}
+                                                        {mediumRisk && t('riskMessages.medium')}
+                                                        {highRisk && t('riskMessages.high')}
+                                                        {unknownRisk && t('riskMessages.unknown')}
+                                                    </p>
+                                                </div>
+                                            </div> 
+                                        )}
+                                </div>
 
-                                    <div className="security-status" style={{ marginTop: "24px" }}>
-                                        {highRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                                        {lowRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                                        {(mediumRisk || unknownRisk) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
-                                        <div className="status-text">
-                                            {breachesFound && <h3 className="status-title">{t('risk')}{risk}</h3>}
-                                            <p className="status-description">
-                                                {lowRisk && t('riskMessages.low')}
-                                                {mediumRisk && t('riskMessages.medium')}
-                                                {highRisk && t('riskMessages.high')}
-                                                {unknownRisk && t('riskMessages.unknown')}
-                                            </p>
-                                        </div>
-                                    </div>                             
-                                </>
-                                )}   
-
-                                {loading &&
-                                <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
-                                    <div className="loading-spinner"></div>
-                                </div>  
-                                }
-
-                                {/* Show EmailBreachDetails if breaches are found */}
-                            </div>
-                        )}
-
-                        {scanDone && (
-                            <div> 
-                                {!loading && (
+                                {!safeEmail && (
                                     <>
                                         <div>
                                             <button
@@ -348,7 +336,7 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                                                 }}
                                                 onClick={() => toggleSection('open')}
                                             >
-                                                <h3 className="status-title" style={{margin:0}}>{t('breaches')}</h3>{openSection === 'open' ? <ChevronUp/> : <ChevronDown/>}
+                                                <h3 className="status-title" style={{margin:0}}>{t('found', {count: breachData.ExposedBreaches.breaches_details.length})}</h3>{openSection === 'open' ? <ChevronUp/> : <ChevronDown/>}
                                             </button>
                                             <div 
                                                 className="data-content"
@@ -364,7 +352,7 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                                         </div>
                                     </>
                                 )}
-                            </div>
+                            </>
                         )}
                     </>
                 )}
