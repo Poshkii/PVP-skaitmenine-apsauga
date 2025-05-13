@@ -1,6 +1,6 @@
 import {useState, useEffect, useRef } from 'react';
 import zxcvbn from 'zxcvbn';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { CircleAlert, CircleCheckBig , CircleX  } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
 
@@ -106,9 +106,11 @@ function PasswordStrength({ inputPassword } : {inputPassword: string }) {
                             marginTop: '4px' // optional fine-tuning
                         }}>
                             {score >= 3 ? (
-                                <CheckCircle size={20} />
+                                <CircleCheckBig  size={30} />
+                            ) : score >= 2 ? (
+                                <CircleAlert size={30} />
                             ) : (
-                                <AlertTriangle size={20} />
+                                <CircleX size={30} />
                             )}
                         </div>
 

@@ -2,7 +2,7 @@ import EmailBreachDetails from "@/components/pages/email-checker/EmailBreachData
 import EmailBreachData from "@/components/pages/email-checker/EmailBreachData.tsx";
 import { FormEvent } from "react";
 import { data } from "react-router";
-import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
+import { CircleAlert, CircleCheckBig, CircleX } from 'lucide-react';
 import { useReport } from "../report-page/ReportContext";
 import {useNavigate} from "react-router";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
@@ -12,6 +12,7 @@ import { Info, Mail, Book, ChevronDown, ChevronUp} from 'lucide-react';
 import EmailLeakTips from "@/components/pages/email-checker/EmailLeakTips.tsx";
 
 function EmailStatus({ inputEmail }: { inputEmail: string; }) {
+    const [showResults, setShowResults] = useState(false);
     const [checking, setChecking] = useState(false)
     const [email, setEmail] = useState(inputEmail);
     const [result, setResult] = useState("");
@@ -102,6 +103,7 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                     // Process the stored data
                     processBreachData(response, email);
                     setChecking(false);
+                    setShowResults(true);
                 }
                 else {
                     // No stored data, fetch from API
@@ -129,18 +131,21 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                             // Process the fetched data
                             processBreachData(data, email);
                             setScanDone(true);
+                            setShowResults(true);
                         }
                         // Email not found
                         else {
                             setResult(t('notVerified'));  
                             setScanDone(true);
-                            setUnknownEmail(true);          
+                            setUnknownEmail(true);    
+                            setShowResults(true);      
                         }
                     } catch (fetchError) {
                         console.error("API fetch error:", fetchError);
                         setResult(t('error'));
                     }
                     setChecking(false);
+                    setShowResults(true);
                 }
             });
         } catch (error) {
@@ -192,6 +197,7 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
     const navigate = useNavigate();
 
     const handleClear = () => {
+        setShowResults(false);
         setBreachData(null); // Clear previous data before a new search
         setSafe(false);
         setUnknownEmail(false);        
@@ -247,58 +253,63 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
 
                 {activeTab === "scan" && ( 
                     <>
-                        <div className="security-check-container glassmorphism">
-                            <div className="security-status">
-                                <div className="status-icon">
-                                    <Mail size={30} />
+                    {!showResults ? (
+                        <>
+                            <div className="security-check-container glassmorphism">
+                                <div className="security-status">
+                                    <div className="status-icon">
+                                        <Mail size={30} />
+                                    </div>
+                                    <div className="status-text">
+                                        <h3 className="status-title">{t('emailTitle')}</h3>
+                                        <p className="status-description">{t('emailDesc')}</p>
+                                    </div>
                                 </div>
-                                <div className="status-text">
-                                    <h3 className="status-title">{t('emailTitle')}</h3>
-                                    <p className="status-description">{t('emailDesc')}</p>
-                                </div>
+
+                                <form style={{marginTop:"16px"}} onSubmit={EmailCheck}>
+                                    <input
+                                        type="text"
+                                        placeholder={t('enter')}
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="input-box"
+                                    />
+
+                                    <div className="action-buttons">
+                                        <button
+                                            style={{margin: "0 auto"}}
+                                            disabled={!email || loading || checking || !email.match(emailPattern)}
+                                            type="submit"
+                                            className={`btn btn-primary ${!email || loading || checking || !email.match(emailPattern) ? 'disabled-button' : ''}`}>
+                                            {checking ? (
+                                                <div className="button-content">
+                                                <div className="loading-spinner"></div>
+                                                    {t('analyzing')}
+                                                </div>
+                                            ) : (
+                                                <div className="button-content">
+                                                    {t('check')}
+                                                </div>
+                                            )}
+                                        </button>
+                                    </div>                        
+                                </form>
                             </div>
-
-                            <form style={{marginTop:"16px"}} onSubmit={EmailCheck}>
-                                <input
-                                    type="text"
-                                    placeholder={t('enter')}
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="input-box"
-                                />
-
-                                <div className="action-buttons">
-                                    <button
-                                        style={{margin: "0 auto"}}
-                                        disabled={!email || loading || checking || !email.match(emailPattern)}
-                                        type="submit"
-                                        className={`btn btn-primary ${!email || loading || checking || !email.match(emailPattern) ? 'disabled-button' : ''}`}>
-                                        {checking ? (
-                                            <div className="button-content">
-                                            <div className="loading-spinner"></div>
-                                                {t('analyzing')}
-                                            </div>
-                                        ) : (
-                                            <div className="button-content">
-                                                {t('check')}
-                                            </div>
-                                        )}
-                                    </button>
-                                </div>                        
-                            </form>
-                        </div>
-                        
-                        {scanDone && !loading && (
-                            <>
-                                <div className="security-check-container glassmorphism" style={{ maxHeight: "300px", minHeight: "110px", overflowY: "auto", paddingTop: 0}}> 
+                        </>
+                    ) : (
+                        <>
+                            {scanDone && !loading && (
+                                <>
+                                    <div className="security-check-container glassmorphism">
+                                        <h3 style={{marginBottom:"0"}} className="recent-list-title">{t('resultTitle')}</h3> 
                                         {/* Display result status */}                   
                                         <div className="security-status" style={{ marginTop: "24px" }}>
-                                            {dangerEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                                            {safeEmail && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                                            {(warningEmail || unknownEmail) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                                            {dangerEmail && <div className="status-icon status-error"><CircleX size={30} /></div> }
+                                            {safeEmail && <div className="status-icon status-success"><CircleCheckBig size={30} /></div> }
+                                            {(warningEmail || unknownEmail) && <div className="status-icon status-alert"><CircleAlert size={30} /></div> }
                                             <div className="status-text">
-                                                {(dangerEmail || warningEmail) && <h3 className="status-title">{t('leaked')}</h3> }
-                                                {safeEmail && <h3 className="status-title">{t('safe')}</h3> }
+                                                {(dangerEmail || warningEmail) && <h3 className="status-title">{email}<br></br>{t('leaked')}</h3>}
+                                                {safeEmail && <h3 className="status-title">{email}<br></br>{t('safe')}</h3> }
                                                 {unknownEmail && <h3 className="status-title">{t('badEmail')}</h3> }                        
                                                 <p className="status-description">
                                                     {(unknownEmail || dangerEmail || warningEmail) && result}
@@ -308,9 +319,9 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
 
                                         {!safeEmail && (
                                             <div className="security-status" style={{ marginTop: "24px" }}>
-                                                {highRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                                                {lowRisk && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                                                {(mediumRisk || unknownRisk) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                                                {highRisk && <div className="status-icon status-error"><CircleX  size={30} /></div> }
+                                                {lowRisk && <div className="status-icon status-success" ><CircleCheckBig  size={30} /></div> }
+                                                {(mediumRisk || unknownRisk) && <div className="status-icon status-alert"><CircleAlert size={30} /></div> }
                                                 <div className="status-text">
                                                     {breachesFound && <h3 className="status-title">{t('risk')}{risk}</h3>}
                                                     <p className="status-description">
@@ -322,38 +333,53 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                                                 </div>
                                             </div> 
                                         )}
-                                </div>
 
-                                {!safeEmail && (
-                                    <>
-                                        <div>
+                                        <div className="action-buttons" style={{marginTop: "24px"}}>
                                             <button
-                                                className="dropdown-button btn btn-secondary security-check-container glassmorphism"
-                                                style={{
-                                                    borderBottomLeftRadius: openSection === 'open' ? '0' : '12px',
-                                                    borderBottomRightRadius: openSection === 'open' ? '0' : '12px',
-                                                    marginBottom: 0
-                                                }}
-                                                onClick={() => toggleSection('open')}
-                                            >
-                                                <h3 className="status-title" style={{margin:0}}>{t('found', {count: breachData.ExposedBreaches.breaches_details.length})}</h3>{openSection === 'open' ? <ChevronUp/> : <ChevronDown/>}
+                                                style={{margin: "0 auto"}}
+                                                onClick={() => {handleClear; setShowResults(false); setEmail("")}}
+                                                className="btn btn-primary">
+                                                <div className="button-content">
+                                                    {t('newScan')}
+                                                </div>
                                             </button>
-                                            <div 
-                                                className="data-content"
-                                                style={{
-                                                    maxHeight: openSection === 'open' ? '100%' : '0',
-                                                    opacity: openSection === 'open' ? 1 : 0,
-                                                    padding: openSection === 'open' ? '16px 20px' : '0 20px',
-                                                    visibility: openSection === 'open' ? 'visible' : 'hidden'
-                                                }}
-                                            >
-                                                {breachData && breachesFound && <EmailBreachDetails data={breachData} />}
-                                            </div>
                                         </div>
-                                    </>
-                                )}
-                            </>
-                        )}
+                                    </div>
+
+                                    {!safeEmail && (
+                                        <>
+                                            <div>
+                                                <button
+                                                    className="dropdown-button btn btn-secondary security-check-container glassmorphism"
+                                                    style={{
+                                                        borderBottomLeftRadius: openSection === 'open' ? '0' : '12px',
+                                                        borderBottomRightRadius: openSection === 'open' ? '0' : '12px',
+                                                        marginBottom: 0
+                                                    }}
+                                                    onClick={() => toggleSection('open')}
+                                                >
+                                                    <h3 className="status-title" style={{margin:0}}>{t('found', {count: breachData.ExposedBreaches.breaches_details.length})}</h3>{openSection === 'open' ? <ChevronUp/> : <ChevronDown/>}
+                                                </button>
+                                                <div 
+                                                    className="data-content"
+                                                    style={{
+                                                        maxHeight: openSection === 'open' ? '100%' : '0',
+                                                        opacity: openSection === 'open' ? 1 : 0,
+                                                        padding: openSection === 'open' ? '16px 20px' : '0 20px',
+                                                        visibility: openSection === 'open' ? 'visible' : 'hidden'
+                                                    }}
+                                                >
+                                                    {breachData && breachesFound && <EmailBreachDetails data={breachData} />}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    
+                                </>
+                            )}
+                        </>
+                    )}
                     </>
                 )}
 

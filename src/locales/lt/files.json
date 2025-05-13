@@ -12,11 +12,12 @@
     "prevScan": "Ankstesnis skenavimas",
     "select": "Pasirinkite arba nuvilkite failą skenavimui",
     "completedTime": "Skenavimas baigtas per {{seconds}} sekundes",
-    "safe": "Failas yra saugus",
-    "detected": "Aptiktos grėsmės",
+    "safe": "failas yra saugus",
+    "detected": "failas nesaugus",
     "results": "Skenavimo rezultatai",
     "fileName": "Failo pavadinimas:",
     "noScans": "Nerasta ankstesnių skenavimo įrašų",
     "lastChecked": "Paskutinis skenuotas failas",
-    "newChecked": "Skenavimo rezultatai"
+    "newChecked": "Skenavimo rezultatai",
+    "details": "Pažeidžiamumų informacija"
 }

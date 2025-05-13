@@ -33,7 +33,7 @@
     "pageName": "Svetainės saugumas",
     "enter": "Įveskite svetainės adresą...",
     "checkCurrent": "Tikrinti dabartinį URL",
-    "check": "Tikrinti",
+    "check": "Tikrinti URL",
     "clear": "Išvalyti",
     "cancel": "Atšaukti",
     "harmful": "Dėmesio: kenksminga svetainė!",
@@ -47,5 +47,7 @@
     "dontAsk": "Daugiau neklausti",
     "urlTitle": "Patikrinti URL saugumą",
     "urlDesc": "Nuskenuoti svetainės URL ir pamatyti ar ji nekelia potencialaus pavojaus",
-    "analyzing": "Tikrinamas URL..."
+    "analyzing": "Tikrinamas URL...",
+    "resultTitle": "Skenavimo rezultatai",
+    "newScan": "Naujas skenavimas"
 }

@@ -1,11 +1,11 @@
 {
-    "title": "Read Stored Cookies",
+    "title": "Cookie Detection",
     "readStoredData": "Read Stored Data",
     "reader": "Cookie Reader",
     "getCookies": "Get Cookies",
     "click": "Click to scan your browser for stored cookies.",
     "name": "Name",
-    "read": "Read",
+    "read": "Read Cookies",
     "value": "Value",
     "clear": "Clear",
     "cancel": "Cancel",
@@ -31,5 +31,7 @@
     "tips": "Tips",
     "confirmClear": "Confirm Clear",
     "areYouSure": "Are you sure you want to clear data?",
-    "dontAsk": "Don't ask me again"
+    "dontAsk": "Don't ask me again",
+    "back": "Go Back",
+    "tryAgain": "Refresh the page or try again later"
 }

@@ -390,6 +390,27 @@ function PhishStatus() {
                                 )}
                             </>
                         )}
+                        <div className="action-buttons" style={{justifyContent: "center"}}>
+                            <button
+                                style={{whiteSpace: "nowrap"}} 
+                                className="btn btn-primary" 
+                                onClick={PhishChecker}
+                                disabled={loading}>
+                                {loading ? t('process') : t('scan')}
+                            </button>
+
+                            <button 
+                                className={`btn btn-primary ${(!canCheck) ? "disabled-button" : ""}`} 
+                                disabled={!canCheck}
+                                style={{whiteSpace: "nowrap"}} 
+                                onClick={() => {
+                                    if (recentScan) checkPhishing(recentScan);
+                                }}
+                            >
+                                Check for phishing
+                            </button>
+                        </div>
+
                         </div>
                     )}
                     
@@ -398,10 +419,17 @@ function PhishStatus() {
                             <h3 className="recent-list-title">{t('lastScan')}</h3>
 
                             {!previousScan ? (
-                                <div className="no-scans-message">{t('noPrev')}</div>
+                                <div className="security-status">
+                                    <div className="status-icon">
+                                        <Info size={30} />
+                                    </div>
+                                    <div className="status-text">
+                                        <h3 className="status-title">{t('noPrev')}</h3>
+                                    </div>
+                                </div>
                             ) : (
+                                <>
                                 <div>
-                                    
                                     {previousScan.sender && (
                                         <div className="status-description">
                                             <strong>{t('sender')}</strong> {previousScan.sender}
@@ -464,43 +492,37 @@ function PhishStatus() {
                                     )}
 
                                 </div>
+                                </>
+                            )}
+
+                            { previousScan && (
+                                <div className="action-buttons" style={{justifyContent: "center"}}>
+                                <button 
+                                    className="btn btn-danger" 
+                                    onClick={async () => {
+                                        await browser.storage.local.remove('lastScan');
+                                        setPreviousScan(null);
+                                    }}>
+                                    {t('clearPrev')}
+                                </button>
+                            </div>
                             )}
                         </div>
                     )}
                 </div>
 
+                
+
+                
+
                 <div className="action-buttons" style={{justifyContent: "center"}}>
                     {activeTab === "checkNow" && (
                         <>
-                            <button
-                                style={{whiteSpace: "nowrap"}} 
-                                className="btn btn-primary" 
-                                onClick={PhishChecker}
-                                disabled={loading}>
-                                {loading ? t('process') : t('scan')}
-                            </button>
-
-                            <button 
-                                className={`btn btn-primary ${(!canCheck) ? "disabled-button" : ""}`} 
-                                disabled={!canCheck}
-                                style={{whiteSpace: "nowrap"}} 
-                                onClick={() => {
-                                    if (recentScan) checkPhishing(recentScan);
-                                }}
-                            >
-                                Check for phishing
-                            </button>
+                            
                         </>
                     )}
-                    {activeTab === "prevScan" && previousScan && (
-                        <button 
-                            className="btn btn-danger" 
-                            onClick={async () => {
-                                await browser.storage.local.remove('lastScan');
-                                setPreviousScan(null);
-                            }}>
-                            {t('clearPrev')}
-                        </button>
+                    {activeTab === "prevScan" &&  (
+                        <></>
                     )}
                 </div>
 

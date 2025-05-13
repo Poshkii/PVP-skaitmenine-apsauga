@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
-import { Lock, Book, Trash2 } from "lucide-react";
+import { Cookie, Book, Trash2 } from "lucide-react";
 import { BgMessageId } from "@/entrypoints/content/types/bg-message";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import CookieTips from "./CookieTips";
 import Select from 'react-select';
 import { StylesConfig } from 'react-select';
 import { useTranslation } from "react-i18next";
+import { ChevronDown, ChevronUp, Info, CircleAlert, CircleX, CircleCheckBig } from "lucide-react";
+
 
 function CookieReader() {
+    const [showResults, setShowResults] = useState(false);
     const [activeTab, setActiveTab] = useState<"reader" | "tips">("reader");
     const [cookies, setCookies] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -88,6 +91,7 @@ function CookieReader() {
                 }));
                 setCookies(enriched);
                 setError(null);
+                setShowResults(true);
             } else if (message.id === UiMessageId.CookiesError) {
                 setError(message.data.message);
             }
@@ -99,7 +103,8 @@ function CookieReader() {
         };
     }, []);
 
-    const handleClear = () => {        
+    const handleClear = () => {     
+        setShowResults(false);   
         setCookies([]);        
     };
 
@@ -167,13 +172,22 @@ function CookieReader() {
         }
 
         // Remove deleted cookies from state
-        setCookies(prev => prev.filter(c => 
+        setCookies(prev => {
+        const updatedCookies = prev.filter(c => 
             !cookieGroup.cookies.some((groupCookie: any) => 
                 groupCookie.name === c.name && 
                 groupCookie.domain === c.domain && 
                 groupCookie.path === c.path
             )
-        ));
+        );
+        
+        // If there are no cookies left after deletion, set showResults to false
+        if (updatedCookies.length === 0) {
+            setShowResults(false);
+        }
+        
+        return updatedCookies;
+    });
     };
 
     const deleteFilteredCookies = async () => {
@@ -199,7 +213,7 @@ function CookieReader() {
         backgroundColor: "transparent",
         color: "var(--text-primary)",
         border: "1px solid rgba(255, 255, 255, 0.2)",
-        borderRadius: "var(--border-radius-md)",
+        borderRadius: "var(--border-radius-lg)",
         minHeight: "44px", // instead of padding
         fontSize: "14px",
         fontWeight: 600,
@@ -331,7 +345,7 @@ function CookieReader() {
                         className={`btn ${activeTab === "reader" ? "btn-primary" : "btn-secondary"} tab-button`}
                     >
                         <div className="button-content">
-                            <Lock size={18} />
+                            <Cookie size={18} />
                             {t('reader')}
                         </div>
                     </button>
@@ -348,125 +362,144 @@ function CookieReader() {
 
                 {activeTab === "reader" && (
                     <>
-                        <div className="security-check-container glassmorphism">
-                            <div className="security-status">
-                                <div className="status-icon">
-                                    <Lock size={32} />
+                        {!showResults ? (
+                        <>
+                            <div className="security-check-container glassmorphism">
+                                <div className="security-status">
+                                    <div className="status-icon">
+                                        <Cookie size={30} />
+                                    </div>
+                                    <div className="status-text">
+                                        <h3 className="status-title">{t('readStoredData')}</h3>
+                                        <p className="status-description">
+                                            {t('click')}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="status-text">
-                                    <h3 className="status-title">{t('readStoredData')}</h3>
-                                    <p className="status-description">
-                                        {t('click')}
-                                    </p>
+
+                                <div className="action-buttons" style={{display:"flex", justifyContent:"center"}}>
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={fetchCookies}
+                                        type="button"
+                                    >
+                                        {t('read')}
+                                    </button>
                                 </div>
                             </div>
-
-                            <div className="action-buttons">
-                                <button
-                                    className="btn btn-primary"
-                                    style={{ width: "200px" }}
-                                    onClick={fetchCookies}
-                                    type="button"
-                                >
-                                    {t('read')}
-                                </button>
-
-                                <button
-                                    disabled={cookies.length === 0}
-                                    className="btn btn-secondary"
-                                    style={{ width: "200px" }}
-                                    onClick={clearData}
-                                    type="button"
-                                >
-                                    {t('clear')}
-                                </button>
-                            </div>
-                        </div>
-
-                        {cookies.length > 0 && (
+                        </>
+                        ) : (
                             <>
-                                {/* <div className="security-check-container glassmorphism"> */}
-                                    <div>
-                                    <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-                                        <div style={{ width: "50%" }}>
-                                            <Select
-                                                options={domainOptions}
-                                                value={domainOptions.find(opt => opt.value === domainFilter)}
-                                                onChange={(selectedOption) => {
-                                                    if (selectedOption) {
-                                                        setDomainFilter(selectedOption.value);
-                                                    }
-                                                }}
-                                                menuPortalTarget={document.body}
-                                                styles={ customSelectStyles }
-                                                />
-                                        </div>
-                                        <div style={{ width: "50%" }}>
-                                            <Select                                            
-                                                options={categoryOptions}
-                                                value={categoryOptions.find(opt => opt.value === categoryFilter)}
-                                                onChange={(selectedOption) => {
-                                                    if (selectedOption) {
-                                                        setCategoryFilter(selectedOption.value);
-                                                    }
-                                                }}
-                                                menuPortalTarget={document.body}
-                                                styles={ customSelectStyles }
-                                            />
-                                        </div>
-                                    </div>
-                                    
-                                    <div style={{ width: "100%" }}>
-                                    <table style={tableStyles}>
-                                        <thead>
-                                            <tr>
-                                                <th style={{...headerCellStyle, textAlign: "left"}}>{t('domain')}</th>
-                                                <th style={headerCellStyle}>{t('category')}</th>
-                                                <th style={headerCellStyle}>{t('qty')}</th>
-                                                <th style={headerCellStyle}></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {groupedCookiesArray.map((group: any, idx) => (
-                                                <tr key={idx} style={rowStyle(idx)}>
-                                                    <td style={cellStyle}>{group.domain}</td>
-                                                    <td style={{
-                                                        ...cellStyle,
-                                                        color: group.category === t('tracking') ? "var(--error-color, #ff4747)" : 
-                                                            group.category === t('essential') ? "var(--success-color, #47cf73)" :
-                                                            group.category === t('advert') ? "var(--warning-color, #ffbb47)" : 
-                                                            "var(--text-secondary, #a0aec0)",
-                                                        textAlign: "center"
-                                                    }}>
-                                                        {group.category}
-                                                    </td>
-                                                    <td style={{...cellStyle, textAlign: "center"}}>{group.quantity}</td>
-                                                    <td style={{ ...cellStyle, textAlign: "center", padding: "6px" }}>
-                                                        <button
-                                                            onClick={() => deleteCookiesInGroup(group)}
-                                                            className="btn btn-danger"
-                                                            style={{ fontSize: "12px", padding: "4px 8px", borderRadius: "4px" }}
-                                                        >
-                                                            <div className="button-content">
-                                                                <Trash2 size={16} />
-                                                            </div>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                    </div>
+                                <div className="security-check-container glassmorphism" style={{padding:"0"}}>
+                                    {cookies.length == 0 && (
+                                        <>
+                                            <div style={{padding:"20px 24px"}}>
+                                                <div className="security-status">
+                                                    <div className="status-icon">
+                                                        <Info size={30} />
+                                                    </div>
+                                                    <div className="status-text">
+                                                        <h3 className="status-title">{t('noCookies')}</h3>
+                                                        <p className="status-description">{t('tryAgain')}</p>
+                                                    </div>
+                                                </div>
 
-                                    <div style={{ marginTop: "10px" }}>
-                                        <button
-                                            className="btn btn-danger"
-                                            onClick={deleteFilteredCookies}
-                                            style={{ width: "200px" }}
-                                        >
-                                            {t('deleteAllFiltered')}
-                                        </button>
-                                    </div>
+                                                <div className="action-buttons" style={{display:"flex", justifyContent:"center"}}>
+                                                    <button
+                                                        className="btn btn-primary"
+                                                        onClick={() => setShowResults(false)}
+                                                        type="button"
+                                                    >
+                                                        {t('back')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                    {cookies.length > 0 && (
+                                    <>
+                                        {/* <div className="security-check-container glassmorphism"> */}
+                                            <div>
+                                            <div style={{ width: "100%", display: "flex", gap: "10px", padding: "16px 16px 0 16px" }}>
+                                                <div style={{ width: "50%" }}>
+                                                    <Select
+                                                        options={domainOptions}
+                                                        value={domainOptions.find(opt => opt.value === domainFilter)}
+                                                        onChange={(selectedOption) => {
+                                                            if (selectedOption) {
+                                                                setDomainFilter(selectedOption.value);
+                                                            }
+                                                        }}
+                                                        menuPortalTarget={document.body}
+                                                        styles={ customSelectStyles }
+                                                        />
+                                                </div>
+                                                <div style={{ width: "50%" }}>
+                                                    <Select                                            
+                                                        options={categoryOptions}
+                                                        value={categoryOptions.find(opt => opt.value === categoryFilter)}
+                                                        onChange={(selectedOption) => {
+                                                            if (selectedOption) {
+                                                                setCategoryFilter(selectedOption.value);
+                                                            }
+                                                        }}
+                                                        menuPortalTarget={document.body}
+                                                        styles={ customSelectStyles }
+                                                    />
+                                                </div>
+                                            </div>
+                                            
+                                            <div style={{ width: "100%" }}>
+                                                <table style={tableStyles}>
+                                                    <thead>
+                                                        <tr>
+                                                            <th style={{...headerCellStyle, textAlign: "left"}}>{t('domain')}</th>
+                                                            <th style={headerCellStyle}>{t('category')}</th>
+                                                            <th style={headerCellStyle}>{t('qty')}</th>
+                                                            <th style={headerCellStyle}></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {groupedCookiesArray.map((group: any, idx) => (
+                                                            <tr key={idx} style={rowStyle(idx)}>
+                                                                <td style={cellStyle}>{group.domain}</td>
+                                                                <td style={{
+                                                                    ...cellStyle,
+                                                                    color: group.category === t('tracking') ? "var(--error-color, #ff4747)" : 
+                                                                        group.category === t('essential') ? "var(--success-color, #47cf73)" :
+                                                                        group.category === t('advert') ? "var(--warning-color, #ffbb47)" : 
+                                                                        "var(--text-secondary, #a0aec0)",
+                                                                    textAlign: "center"
+                                                                }}>
+                                                                    {group.category}
+                                                                </td>
+                                                                <td style={{...cellStyle, textAlign: "center"}}>{group.quantity}</td>
+                                                                <td style={{ ...cellStyle, textAlign: "center", padding: "6px" }}>
+                                                                    <button
+                                                                        onClick={() => {deleteCookiesInGroup(group)}}
+                                                                        className="btn btn-danger"
+                                                                        style={{ fontSize: "12px", padding: "4px 8px", borderRadius: "4px" }}
+                                                                    >
+                                                                        <div className="button-content">
+                                                                            <Trash2 size={16} />
+                                                                        </div>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div style={{padding:"0 0 16px 0", display: "flex", justifyContent:"center"}}>
+                                                <div className="action-buttons">
+                                                    <button className="btn btn-danger" onClick={() => {deleteFilteredCookies; setShowResults(false)}}>
+                                                        {t('deleteAllFiltered')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                    )}
                                 </div>
                             </>
                         )}

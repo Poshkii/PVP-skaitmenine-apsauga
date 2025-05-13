@@ -1,4 +1,4 @@
-import { Upload, Info, Shield, AlertTriangle, Check } from "lucide-react"; 
+import { Upload, Info, CircleX, CircleAlert , CircleCheckBig  } from "lucide-react"; 
 import { useReport } from "../report-page/ReportContext";
 import React, {useEffect, useState} from "react";
 import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
@@ -454,47 +454,43 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         onChange={fileUpload}
                         className="hidden-input"
                         />
-                    </div>
-            
-                    <div className="action-buttons">
-                        <button
-                            style={{margin: "0 auto"}}
-                            onClick={FileChecker}
-                            disabled={!selectedFile || isChecking}
-                            className={`btn btn-primary ${(!selectedFile || isChecking) ? 'disabled-button' : ''}`}>
-                            {isChecking ? (
-                                <div className="button-content">
-                                <div className="loading-spinner"></div>
-                                    {t('analyzing')}
-                                </div>
-                            ) : (
-                                <div className="button-content">
-                                    {t('scan')}
-                                </div>
-                            )}
-                        </button>
+
+                        <div className="action-buttons">
+                            <button
+                                style={{margin: "0 auto"}}
+                                onClick={FileChecker}
+                                disabled={!selectedFile || isChecking}
+                                className={`btn btn-primary ${(!selectedFile || isChecking) ? 'disabled-button' : ''}`}>
+                                {isChecking ? (
+                                    <div className="button-content">
+                                    <div className="loading-spinner"></div>
+                                        {t('analyzing')}
+                                    </div>
+                                ) : (
+                                    <div className="button-content">
+                                        {t('scan')}
+                                    </div>
+                                )}
+                            </button>
+                        </div>
                     </div>
                     </>
                 ) : (
                     <div className="security-check-container glassmorphism">
                         <h3 className="recent-list-title">{t('newChecked')}</h3>
-                        <div>
-                            <div className="status-text overflow-text" style={{maxWidth:"95%"}}>
-                                {t('fileName')} <span ><strong>{params.name.split(/[/\\]/).pop()}</strong></span>
-                            </div>
-                        </div>
-                        <div className="security-status" style={{marginTop: "24px"}}>
-                            <div className="status-icon">
-                                {safety === "safe" ? (
-                                    <Check size={32}/>
-                                ) : safety === "unsafe" ? (
-                                    <AlertTriangle size={32} style={{color:"var(--error)"}}/>
-                                ) : (
-                                    <Info size={32} />
-                                )}
-                            </div>
+                        <div className="security-status">
+                            {safety === "safe" ? (
+                                <div className="status-icon status-success"><CircleCheckBig  size={30}/></div>
+                            ) : safety === "unsafe" ? (
+                                <div className="status-icon status-error"><CircleX size={30}/></div>
+                            ) : safety === "unknown" ?(
+                                <div className="status-icon status-warning"><CircleAlert size={30}/></div>
+                            ) : (
+                                <div className="status-icon"><Info size={30}/></div>
+                            )} 
                             <div className="status-text">
                                 <h3 className="status-title">
+                                    {params.name.split(/[/\\]/).pop()} <br></br>
                                     {safety === "safe" 
                                     ? t('safe')
                                     : safety === "unsafe" 
@@ -512,7 +508,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
             
                         {(params.scan_results_all && Object.entries(avThreats).length > 0) && (
                             <div style={{marginTop: "24px"}}>
-                                <h3 className="recent-list-title">Threat Details</h3>
+                                <h3 className="recent-list-title">{t('details')}</h3>
                                 <div className="recent-items">
                                     {Object.entries(avThreats).map(([engine, threat], index) => (
                                     <div key={index} className="status-badge suspicious">
@@ -549,26 +545,25 @@ function FileStatus({inputFile }: { inputFile: string }) {
             
                     {prevResult ? (
                         <>
-                        {prevParams.name && (
-                            <div>
-                                <div className="status-text overflow-text" style={{maxWidth:"95%"}}>
-                                    {t('fileName')} <span ><strong>{prevParams.name.split(/[/\\]/).pop()}</strong></span>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="security-status" style={{marginTop: "24px"}}>
-                            <div className="status-icon">
-                                {prevSafety === "safe" ? (
-                                    <Check size={30}/>
-                                ) : prevSafety === "unsafe" ? (
-                                    <AlertTriangle size={30} style={{color:"var(--error)"}}/>
-                                ) : (
-                                    <Info size={30} />
-                                )}
-                            </div>
+                        <div className="security-status">
+                            {prevSafety === "safe" ? (
+                                <div className="status-icon status-success"><CircleCheckBig  size={30}/></div>
+                            ) : prevSafety === "unsafe" ? (
+                                <div className="status-icon status-error"><CircleX size={30}/></div>
+                            ) : prevSafety === "unknown" ?(
+                                <div className="status-icon status-warning"><CircleAlert size={30}/></div>
+                            ) : (
+                                <div className="status-icon"><Info size={30}/></div>
+                            )}              
                             <div className="status-text">
                                 <h3 className="status-title">
+                                    {prevParams.name ? (
+                                        <>
+                                            {prevParams.name.split(/[/\\]/).pop()} <br></br>
+                                        </>
+                                    ) : (
+                                        <></>
+                                    )}
                                     {prevSafety === "safe" 
                                     ? t('safe')
                                     : prevSafety === "unsafe" 
@@ -586,7 +581,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
             
                         {(prevParams.scan_results_all && Object.entries(prevAvThreats).length > 0) && (
                             <div style={{marginTop: "24px"}}>
-                                <h3 className="recent-list-title">Threat Details</h3>
+                                <h3 className="recent-list-title">{t('details')}</h3>
                                 <div className="recent-items">
                                     {Object.entries(prevAvThreats).map(([engine, threat], index) => (
                                     <div key={index} className="status-badge suspicious">

@@ -10,13 +10,14 @@
     "unknown": "Unknown",
     "pageName": "Check Email Safety ",
     "enter": "Enter email address...",
-    "check": "Check",
+    "check": "Check Email",
     "clear": "Clear",
     "cancel": "Cancel",
-    "leaked": "Your email has been leaked!",
-    "safe": "Your email is safe",
+    "leaked": "has been leaked!",
+    "safe": "is safe",
     "badEmail": "Unknown email address",
     "risk": "Risk level is ",
+    "newScan": "New Scan",
     "riskMessages": {
         "low": "\"Prevention is better than cure.\" - Use strong passwords to keep threats at bay.",
         "medium": "\"Better safe than sorry.\" - Don't let your guard down, use extra security measures to protect your information.",
@@ -46,5 +47,6 @@
     "emailCheck": "Check Email",
     "emailTitle": "Lookup Email Breaches",
     "emailDesc": "See if your email has been a part of any known data breaches",
-    "analyzing": "Checking email..."
+    "analyzing": "Checking email...",
+    "resultTitle": "Scan Results"
 }

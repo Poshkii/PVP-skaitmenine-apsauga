@@ -1,7 +1,7 @@
 import {FormEvent, useState, useEffect } from "react";
 import URLScam from "./URLScam";
 import { useReport } from "../report-page/ReportContext";
-import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
+import { CircleX, CircleAlert , CircleCheckBig  } from 'lucide-react';
 import {useNavigate} from "react-router";
 import { Info, Link } from 'lucide-react';
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ const VT_API_URL = String(useAppConfig().virusTotalApiUrl);
 const US_API_URL = String(useAppConfig().urlScanApiUrl);
 
 function URLStatus({ inputURL }: { inputURL: string }) {
+    const [showResults, setShowResults] = useState(false);
     const [url, setUrl] = useState(inputURL);
     const [submittedUrl, setSubmittedUrl] = useState('');
     const [resultVT, setResultVT] = useState("");
@@ -45,34 +46,35 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     
     useEffect(() => {
         if (url && doCheck) {
-          const syntheticEvent = { preventDefault: () => {} } as FormEvent;
-          UrlChecker(syntheticEvent);
-          setDoCheck(false)
+            const syntheticEvent = { preventDefault: () => {} } as FormEvent;
+            UrlChecker(syntheticEvent);
+            setDoCheck(false)
         }
-      }, [url]); // Runs when 'url' changes
+    }, [url]); // Runs when 'url' changes
       
-      const handleUseCurrentURL = async () => {
-          if (chrome?.tabs) {
-              chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-                  if (tabs.length > 0 && tabs[0].url) {
-                      var strippedURL = handleStripURL(tabs[0].url);
-                      setDoCheck(true);
-                      if (strippedURL) {
-                          try {
-                            
-                              setUrl(strippedURL); // React will update state asynchronously
-                          } catch (error) {
-                              console.error("URL check failed:", error);
-                          }
-                      } else {
-                          console.error("Unable to strip URL");
-                      }
-                  }
-              });
-          } else {
-              console.error("Chrome API not available. Are you running this inside a Chrome extension?");
-          }
-      };
+    const handleUseCurrentURL = async () => {
+        if (chrome?.tabs) {
+            chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+                if (tabs.length > 0 && tabs[0].url) {
+                    var strippedURL = handleStripURL(tabs[0].url);
+                    setDoCheck(true);
+                    
+                    if (strippedURL) {
+                        try {
+                            setUrl(strippedURL);
+                            setTimeout(() => setDoCheck(true), 0);
+                        } catch (error) {
+                            console.error("URL check failed:", error);
+                        }
+                    } else {
+                        console.error("Unable to strip URL");
+                    }
+                }
+            });
+        } else {
+            console.error("Chrome API not available. Are you running this inside a Chrome extension?");
+        }
+    };
 
     function handleStripURL(url: string): string | null {
         try {
@@ -114,6 +116,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
     };
 
     const handleClear = () => {
+            setShowResults(false);
             setVtDone(false);
             setUioDone(false);
             setVtFinal("Unknown");
@@ -169,16 +172,6 @@ function URLStatus({ inputURL }: { inputURL: string }) {
         e.preventDefault();
         setShowURLScam(false);
         setLoading(true);
-        //setResult("🔍 Checking...");
-        
-        /* URL formatavimas
-        let formattedUrl = normalizeURL(url);
-        if (!isValidURL(formattedUrl)) {
-            setLoading(false);
-            setResult("❌ Įveskite tinkamą nuorodą.");
-            return;
-        }
-        */
 
         try {
             // Run both API checks in parallel
@@ -220,6 +213,7 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             setScanDone(true);
             setSubmittedUrl(url);
             setShowURLScam(true);
+            setShowResults(true);
         }
     };
 
@@ -572,137 +566,167 @@ function URLStatus({ inputURL }: { inputURL: string }) {
 
     const navigate = useNavigate();
 
+    const getOverallStatus = () => {
+        if (unsafeVT || unsafeUIO) return "harmful";
+        if (suspiciousVT || suspiciousUIO) return "risky";
+        if (safeVT && safeUIO) return "safe";
+        return "unknown";
+    };
+
+    // Helper function to get appropriate icon based on status
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case "harmful":
+                return <CircleX color="red" size={30} />;
+            case "safe":
+                return <CircleCheckBig color="green" size={30} />;
+            case "risky":
+            case "unknown":
+            default:
+                return <CircleAlert color="#FF5F15" size={30} />;
+        }
+    };
+
+    const getColor = (style: string) => {
+        switch (style) {
+            case "var(--error)":
+                return "var(--error)";
+            case "var(--warning)":
+                return "var(--warning)";
+            case "var(--success)":
+                return "var(--success)";
+            default:
+                return "var(--text-primary)";
+        }
+    }
+
     return (
         <>
             <div className="middle-menu" >
                 <h1 className="panel-title">{t('pageName')} <span onClick={() => navigate("/url-data")}><Info className="info-icon"/></span></h1>
 
-                <div className="security-check-container glassmorphism">
-                    <div className="security-status">
-                        <div className="status-icon">
-                            <Link size={30} />
+                {!showResults ? ( 
+                    <div className="security-check-container glassmorphism">
+                        <div className="security-status">
+                            <div className="status-icon">
+                                <Link size={30} />
+                            </div>
+                            <div className="status-text">
+                                <h3 className="status-title">{t('urlTitle')}</h3>
+                                <p className="status-description">{t('urlDesc')}</p>
+                            </div>
                         </div>
-                        <div className="status-text">
-                            <h3 className="status-title">{t('urlTitle')}</h3>
-                            <p className="status-description">{t('urlDesc')}</p>
-                        </div>
+                        <form style={{marginTop:"16px"}} onSubmit={UrlChecker}>
+                            <input
+                                type="text"
+                                placeholder= {t('enter')}
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                className="input-box"
+                            />
+
+                            <div className="action-buttons">                         
+                                {!url ?
+                                    <button
+                                        style={{margin: "0 auto"}}
+                                        onClick={handleUseCurrentURL}
+                                        disabled={loading}
+                                        className={`btn btn-primary ${loading ? 'disabled-button' : ''}`}
+                                        type="button"
+                                    >
+                                        {loading ? (
+                                            <div className="button-content">
+                                            <div className="loading-spinner"></div>
+                                                {t('analyzing')}
+                                            </div>
+                                        ) : (
+                                            <div className="button-content">
+                                                {t('checkCurrent')}
+                                            </div>
+                                        )}
+                                    </button>
+                                :
+                                    <button
+                                        style={{margin: "0 auto"}}
+                                        type="submit"
+                                        disabled={!url || loading}
+                                        className={`btn btn-primary ${!url || loading ? 'disabled-button' : ''}`}>
+                                        {loading ? (
+                                            <div className="button-content">
+                                            <div className="loading-spinner"></div>
+                                                {t('analyzing')}
+                                            </div>
+                                        ) : (
+                                            <div className="button-content">
+                                                {t('check')}
+                                            </div>
+                                        )}
+                                    </button>
+                                }
+                            </div>
+
+                        </form>
                     </div>
-                    <form style={{marginTop:"16px"}} onSubmit={UrlChecker}>
-                        <input
-                            type="text"
-                            placeholder= {t('enter')}
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            className="input-box"
-                        />
+                ):(
+                    <div className="security-check-container glassmorphism" style={{ overflowY: "auto"}}>
 
-                        <div className="action-buttons">                         
-                            {!url ?
-                                <button
-                                    style={{margin: "0 auto"}}
-                                    onClick={handleUseCurrentURL}
-                                    disabled={loading}
-                                    className={`btn btn-primary ${loading ? 'disabled-button' : ''}`}>
-                                    {loading ? (
-                                        <div className="button-content">
-                                        <div className="loading-spinner"></div>
-                                            {t('analyzing')}
-                                        </div>
-                                    ) : (
-                                        <div className="button-content">
-                                            {t('checkCurrent')}
-                                        </div>
-                                    )}
-                                </button>
-                            :
-                                <button
-                                    style={{margin: "0 auto"}}
-                                    type="submit"
-                                    disabled={!url || loading}
-                                    className={`btn btn-primary ${!url || loading ? 'disabled-button' : ''}`}>
-                                    {loading ? (
-                                        <div className="button-content">
-                                        <div className="loading-spinner"></div>
-                                            {t('analyzing')}
-                                        </div>
-                                    ) : (
-                                        <div className="button-content">
-                                            {t('check')}
-                                        </div>
-                                    )}
-                                </button>
-                            }
-                        </div>
-
-                    </form>
-                </div>
-                {scanDone && (               
-                <div className="security-check-container glassmorphism" style={{ maxHeight: "300px", overflowY: "auto", paddingTop:0 }}>
-
-                    {!loading && (
-                    <>
-
-                        <div className="security-status" style={{ marginTop: "24px" }}>
-                            {unsafeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                            {safeVT && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                            {(suspiciousVT || unknownVT || inprogressVT) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                        {!loading && (
+                        <>
+                            <h3 className="recent-list-title" style={{marginBottom:"24px"}}>{t('resultTitle')}</h3>
+                            <div className="security-status" >
+                                {unsafeVT && <div className="status-icon status-error"><CircleX  color="white" size={30} /></div> }
+                                {safeVT && <div className="status-icon status-success"><CircleCheckBig  color="white" size={30} /></div> }
+                                {(suspiciousVT || unknownVT || inprogressVT) && <div className="status-icon status-warning"><CircleAlert color="white" size={30} /></div> }
                                 <div className="status-text">
-                                {unsafeVT && <h3 className="status-title">{t('harmful')}</h3> }
-                                {safeVT && <h3 className="status-title">{t('safe')}</h3> }
-                                {suspiciousVT && <h3 className="status-title">{t('risky')}</h3> }
-                                {unknownVT && <h3 className="status-title">{t('error')}</h3> }
-                                {inprogressVT && <h3 className="status-title">{t('inProgress')}</h3> }
-                                <p className="status-description">
-                                    {resultVT}
-                                </p>
+                                    {unsafeVT && <h3 className="status-title">{t('harmful')}</h3> }
+                                    {safeVT && <h3 className="status-title">{t('safe')}</h3> }
+                                    {suspiciousVT && <h3 className="status-title">{t('risky')}</h3> }
+                                    {unknownVT && <h3 className="status-title">{t('error')}</h3> }
+                                    {inprogressVT && <h3 className="status-title">{t('inProgress')}</h3> }
+                                    <p className="status-description">
+                                        {resultVT}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="security-status" style={{ marginTop: "24px" }}>
+                                {unsafeUIO && <div className="status-icon status-error" style={{ backgroundColor: "var(--error)" }}><CircleX color="white" size={30} /></div> }
+                                {safeUIO && <div className="status-icon status-success" style={{ backgroundColor: "var(--error)" }}><CircleCheckBig  color="white" size={30} /></div> }
+                                {(suspiciousUIO || unknownUIO || inprogressUIO) && <div className="status-icon status-warning"><CircleAlert color="white" size={30} /></div> }
+                                <div className="status-text">
+                                    {unsafeUIO && <h3 className="status-title">{t('harmful')}</h3> }
+                                    {safeUIO && <h3 className="status-title">{t('safe')}</h3> }
+                                    {suspiciousUIO && <h3 className="status-title">{t('risky')}</h3> }
+                                    {unknownUIO && <h3 className="status-title">{t('error')}</h3> }
+                                    {inprogressUIO && <h3 className="status-title">{t('inProgress')}</h3> }
+                                    <p className="status-description" dangerouslySetInnerHTML={{ __html: resultUIO }}></p>
                                 </div>
 
-                        </div>
-
-                        <div className="security-status" style={{ marginTop: "24px" }}>
-                            {unsafeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                            {safeUIO && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={30} /></div> }
-                            {(suspiciousUIO || unknownUIO || inprogressUIO) && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
-                                <div className="status-text">
-                                {unsafeUIO && <h3 className="status-title">{t('harmful')}</h3> }
-                                {safeUIO && <h3 className="status-title">{t('safe')}</h3> }
-                                {suspiciousUIO && <h3 className="status-title">{t('risky')}</h3> }
-                                {unknownUIO && <h3 className="status-title">{t('error')}</h3> }
-                                {inprogressUIO && <h3 className="status-title">{t('inProgress')}</h3> }
-                                <p className="status-description" dangerouslySetInnerHTML={{ __html: resultUIO }}></p>
-                                </div>
-
-                        </div>
-                    </>
-                    )}
-
-
-                    <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
-                        {loading && <div className="loading-spinner"></div>}
-                    </div>
-
-                    <div style={{ marginTop: "0.5rem", color: "#aaa", fontSize: "0.8rem", whiteSpace: "pre-line" }}>
-                        {debug}
-                    </div>
-
-                    <div>
-                        {showURLScam && <URLScam scamURL={submittedUrl} />}
-                    </div>
-
-                    <div className="action-buttons" style={{margin: "24px auto 0  auto"}}>
-                        {scanDone && (
-                            <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
-                            {t('scanAgain')}
-                            </button>
+                            </div>
+                        </>
                         )}
-                    </div>
-                </div> )}
 
-                
+                        <div>
+                            {showURLScam && <URLScam scamURL={submittedUrl} />}
+                        </div>
+
+                        <div className="action-buttons" style={{margin: "24px auto 0  auto"}}>
+                            {scanDone && (
+                                <>
+                                    <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading} type="button">
+                                    {t('scanAgain')}
+                                    </button>
+                                    <button className="btn btn-primary" onClick={() => {handleClear(); setUrl("")}} disabled={!url || loading}>
+                                    {t('newScan')}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {showConfirmModal && (
                 <div 
-                    
                     style={{
                     position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
                     backgroundColor: "rgba(0,0,0,0.7)", display: "flex",

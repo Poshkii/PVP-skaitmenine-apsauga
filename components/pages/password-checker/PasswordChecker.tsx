@@ -67,7 +67,7 @@ function PasswordChecker() {
                     <div className="security-check-container glassmorphism">
                         <div className="security-status">
                             <div className="status-icon">
-                                <Lock size={32} />
+                                <Lock size={30} />
                             </div>
                             <div className="status-text">
                                 <h3 className="status-title">{t('statusTitle')}</h3>

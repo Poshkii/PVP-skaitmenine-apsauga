@@ -33,7 +33,7 @@
     "pageName": "Website Safety",
     "enter": "Enter website address...",
     "checkCurrent": "Check Current URL",
-    "check": "Check",
+    "check": "Check URL",
     "clear": "Clear",
     "cancel": "Cancel",
     "harmful": "Watchout: harmful website!",
@@ -47,5 +47,7 @@
     "dontAsk": "Don't ask me again",
     "urlTitle": "Check URL safety",
     "urlDesc": "Scan the URL of a website to see if poses any potential danger",
-    "analyzing": "Checking URL..."
+    "analyzing": "Checking URL...",
+    "resultTitle": "Scan Results",
+    "newScan": "New Scan"
 }
