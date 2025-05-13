@@ -12,6 +12,7 @@ import { Info, Mail, Book, ChevronDown, ChevronUp} from 'lucide-react';
 import EmailLeakTips from "@/components/pages/email-checker/EmailLeakTips.tsx";
 
 function EmailStatus({ inputEmail }: { inputEmail: string; }) {
+    const [checking, setChecking] = useState(false)
     const [email, setEmail] = useState(inputEmail);
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
@@ -96,9 +97,9 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                     setBreachData(response);
                     setStored(true);
                     setScanDone(true);
-                    
                     // Process the stored data
                     processBreachData(response, email);
+                    setChecking(false);
                 }
                 else {
                     // No stored data, fetch from API
@@ -137,6 +138,7 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                         console.error("API fetch error:", fetchError);
                         setResult(t('error'));
                     }
+                    setChecking(false);
                 }
             });
         } catch (error) {
@@ -243,8 +245,18 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
 
                 {activeTab === "scan" && ( 
                     <>
-                        <div className="security-check-container">
-                            <form onSubmit={EmailCheck}>
+                        <div className="security-check-container glassmorphism">
+                            <div className="security-status">
+                                <div className="status-icon">
+                                    <Mail size={30} />
+                                </div>
+                                <div className="status-text">
+                                    <h3 className="status-title">{t('emailTitle')}</h3>
+                                    <p className="status-description">{t('emailDesc')}</p>
+                                </div>
+                            </div>
+
+                            <form style={{marginTop:"16px"}} onSubmit={EmailCheck}>
                                 <input
                                     type="text"
                                     placeholder={t('enter')}
@@ -255,26 +267,21 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
 
                                 <div className="action-buttons">
                                     <button
-                                        disabled={!email || loading || !email.match(emailPattern)}
+                                        style={{margin: "0 auto"}}
+                                        onClick={() => setChecking(true)}
+                                        disabled={!email || loading || checking || !email.match(emailPattern)}
                                         type="submit"
-                                        className={`btn ${!email || loading || !email.match(emailPattern) ? "" : "btn-primary"}`}
-                                        style={{ 
-                                        width: "200px",
-                                        opacity: !email || loading || !email.match(emailPattern) ? "0.6" : "1",
-                                        cursor: !email || loading || !email.match(emailPattern) ? "not-allowed" : "pointer",
-                                        }}
-                                        >
-                                        {t('check')}
-                                    </button>                            
-                                    <button
-                                        className="btn btn-secondary"
-                                        style={{ 
-                                        width: "200px"
-                                        }}
-                                        onClick={() => setEmail('')}
-                                        type="button"
-                                        >
-                                        {t('clear')}
+                                        className={`btn btn-primary ${!email || loading || checking || !email.match(emailPattern) ? 'disabled-button' : ''}`}>
+                                        {checking ? (
+                                            <div className="button-content">
+                                            <div className="loading-spinner"></div>
+                                                {t('analyzing')}
+                                            </div>
+                                        ) : (
+                                            <div className="button-content">
+                                                {t('check')}
+                                            </div>
+                                        )}
                                     </button>
                                 </div>                        
                             </form>

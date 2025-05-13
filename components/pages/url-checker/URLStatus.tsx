@@ -3,7 +3,7 @@ import URLScam from "./URLScam";
 import { useReport } from "../report-page/ReportContext";
 import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import {useNavigate} from "react-router";
-import { Info } from 'lucide-react';
+import { Info, Link } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
 const VT_API_URL = String(useAppConfig().virusTotalApiUrl);
@@ -577,8 +577,17 @@ function URLStatus({ inputURL }: { inputURL: string }) {
             <div className="middle-menu" >
                 <h1 className="panel-title">{t('pageName')} <span onClick={() => navigate("/url-data")}><Info className="info-icon"/></span></h1>
 
-                <div className="security-check-container">
-                    <form onSubmit={UrlChecker}>
+                <div className="security-check-container glassmorphism">
+                    <div className="security-status">
+                        <div className="status-icon">
+                            <Link size={30} />
+                        </div>
+                        <div className="status-text">
+                            <h3 className="status-title">{t('urlTitle')}</h3>
+                            <p className="status-description">{t('urlDesc')}</p>
+                        </div>
+                    </div>
+                    <form style={{marginTop:"16px"}} onSubmit={UrlChecker}>
                             <input
                                 type="text"
                                 placeholder= {t('enter')}
@@ -587,53 +596,48 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                                 className="input-box"
                             />
 
-                        <div className="action-buttons">                            
-                            {!url ? 
-                                <button                               
-                                    className="btn btn-primary"
-                                    style={{
-                                        width: "200px"
-                                    }}
+                        <div className="action-buttons">                         
+                            {!url ?
+                                <button
+                                    style={{margin: "0 auto"}}
                                     onClick={handleUseCurrentURL}
-                                    type="button"
-                                    >
-                                    {t('checkCurrent')}
+                                    disabled={loading}
+                                    className={`btn btn-primary ${loading ? 'disabled-button' : ''}`}>
+                                    {loading ? (
+                                        <div className="button-content">
+                                        <div className="loading-spinner"></div>
+                                            {t('analyzing')}
+                                        </div>
+                                    ) : (
+                                        <div className="button-content">
+                                            {t('checkCurrent')}
+                                        </div>
+                                    )}
                                 </button>
                             :
                                 <button
-                                    disabled={!url || loading}
+                                    style={{margin: "0 auto"}}
                                     type="submit"
-                                    className={`btn ${!url || loading ? "" : "btn-primary"}`}
-                                    style={{ 
-                                    width: "200px",
-                                    opacity: !url || loading ? "0.6" : "1",
-                                    cursor: !url || loading ? "not-allowed" : "pointer",
-                                    }}
-                                    >
-                                    {t('check')}
-                                </button>                            
-                            }                            
-                            
-                            <button
-                                className="btn btn-secondary"
-                                style={{ 
-                                width: "200px"
-                                }}
-                                onClick={() => setUrl('')}
-                                type="button"
-                                >
-                                {t('clear')}
-                            </button>
+                                    disabled={!url || loading}
+                                    className={`btn btn-primary ${!url || loading ? 'disabled-button' : ''}`}>
+                                    {loading ? (
+                                        <div className="button-content">
+                                        <div className="loading-spinner"></div>
+                                            {t('analyzing')}
+                                        </div>
+                                    ) : (
+                                        <div className="button-content">
+                                            {t('check')}
+                                        </div>
+                                    )}
+                                </button>
+                            }
                         </div>
 
                     </form>
                 </div>
-                {loading && (
-                <div style={{ paddingTop: "16px", display: "flex", justifyContent: "center" }}>
-                        <div className="loading-spinner"></div>
-                </div>)}
                 {scanDone && (               
-                <div className="security-check-container" style={{ maxHeight: "300px", overflowY: "auto" }}>
+                <div className="security-check-container glassmorphism" style={{ maxHeight: "300px", overflowY: "auto", paddingTop:0 }}>
 
                     {!loading && (
                     <>
@@ -685,15 +689,16 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                         {showURLScam && <URLScam scamURL={submittedUrl} />}
                     </div>
 
+                    <div className="action-buttons">
+                        {scanDone && (
+                            <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
+                            {t('scanAgain')}
+                            </button>
+                        )}
+                    </div>
                 </div> )}
 
-                <div className="action-buttons">
-                    {scanDone && (
-                        <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading}>
-                        {t('scanAgain')}
-                        </button>
-                    )}
-                </div>
+                
 
                 {showConfirmModal && (
                 <div 

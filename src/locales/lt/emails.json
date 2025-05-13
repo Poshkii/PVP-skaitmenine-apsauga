@@ -43,5 +43,8 @@
     "confirmClear": "Patvirtinti išvalymą",
     "areYouSure": "Ar tikrai norite išvalyti duomenis?",
     "dontAsk": "Daugiau neklausti",
-    "emailCheck": "Patikrinti E. Paštą"
+    "emailCheck": "Patikrinti E. Paštą",
+    "emailTitle": "El. pašto pažeidimų patikra",
+    "emailDesc": "Patikrinkite ar jūsų el. paštas buvo įtrauktas į žinomus duomenų nutekėjimus",
+    "analyzing": "Tikrinamas e. paštas..."
 }

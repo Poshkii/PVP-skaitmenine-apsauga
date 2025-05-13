@@ -30,9 +30,9 @@
         "processingFailedNoScan": "URLScan.io: Rezultatai prieinami, bet nepavyko jų apdoroti."
     },
     "errorScan": "Klaida skenuojant URL.",
-    "pageName": "Patikrinkite svetainės saugumą",
+    "pageName": "Svetainės saugumas",
     "enter": "Įveskite svetainės adresą...",
-    "checkCurrent": "Patikrinti dabartinį URL",
+    "checkCurrent": "Tikrinti dabartinį URL",
     "check": "Tikrinti",
     "clear": "Išvalyti",
     "cancel": "Atšaukti",
@@ -44,5 +44,8 @@
     "scanAgain": "Skenuoti dar kartą",
     "confirmClear": "Patvirtinti išvalymą",
     "areYouSure": "Ar tikrai norite išvalyti duomenis?",
-    "dontAsk": "Daugiau neklausti"
+    "dontAsk": "Daugiau neklausti",
+    "urlTitle": "Patikrinti URL saugumą",
+    "urlDesc": "Nuskenuoti svetainės URL ir pamatyti ar ji nekelia potencialaus pavojaus",
+    "analyzing": "Tikrinamas URL..."
 }

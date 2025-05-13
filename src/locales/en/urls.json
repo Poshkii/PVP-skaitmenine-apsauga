@@ -30,7 +30,7 @@
         "processingFailedNoScan": "URLScan.io: Results available but failed to process."
     },
     "errorScan": "Error while scanning URL.",
-    "pageName": "Check Website Safety",
+    "pageName": "Website Safety",
     "enter": "Enter website address...",
     "checkCurrent": "Check Current URL",
     "check": "Check",
@@ -44,5 +44,8 @@
     "scanAgain": "Scan Again",
     "confirmClear": "Confirm Clear",
     "areYouSure": "Are you sure you want to clear data?",
-    "dontAsk": "Don't ask me again"
+    "dontAsk": "Don't ask me again",
+    "urlTitle": "Check URL safety",
+    "urlDesc": "Scan the URL of a website to see if poses any potential danger",
+    "analyzing": "Checking URL..."
 }

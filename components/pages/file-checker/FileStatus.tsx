@@ -469,7 +469,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 </div>
                             ) : (
                                 <div className="button-content">
-                                <Shield size={20} />
                                     {t('scan')}
                                 </div>
                             )}
@@ -535,7 +534,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 onClick={resetFileUpload}
                                 className="btn btn-primary">
                                 <div className="button-content">
-                                    <Upload size={20} />
                                     {t('newScan')}
                                 </div>
                             </button>
