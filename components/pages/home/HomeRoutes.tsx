@@ -20,6 +20,7 @@ import PasswordData from "../data-usage/Password/PasswordDataUsage";
 import EmailData from "../data-usage/Email/EmailDataUsage";
 import PhishData from "../data-usage/Phish/PhishDataUsage";
 import TrackerData from "../data-usage/Tracker/TrackerDataUsage";
+import CookiesData from "../data-usage/Cookies/CookiesDataUsage";
 
 
 function HomeRoutes(){
@@ -44,6 +45,7 @@ function HomeRoutes(){
             <Route path="/password-data" element={<PasswordData />}></Route>
             <Route path="/phish-data" element={<PhishData />}></Route>
             <Route path="/email-data" element={<EmailData />}></Route>
+            <Route path="/cookies-data" element={<CookiesData />}></Route>
             <Route path="/tracker-data" element={<TrackerData />}></Route>
         </Routes>
     );

@@ -53,6 +53,14 @@
         "serviceName2": "Apsauga nuo skaitmeninio pėdsako",
         "content2": "Siekiant užkirsti kelią naršyklės skaitmeninių pėdsakų rinkimui, atliekami nedideli tam tikrų naršyklės API, kurias svetainės naudoja vartotojų sekimui, pakeitimai. Tai apima nedidelius Canvas duomenų, garso duomenų, šriftų aptikimo ir aparatūros informacijos gavimo pakeitimus. Pakeitimai yra pakankamai subtilūs, kad netrukdytų įprastam svetainių veikimui, tačiau apsunkina nuoseklų vartotojų atpažinimą. Visi pakeitimai atliekami lokaliai jūsų naršyklėje ir nėra susieti su išoriniais serveriais.",
         "notice": "Ši funkcija sukurta atsižvelgiant į privatumą ir nesidalija naršymo duomenimis su jokiomis trečiosiomis šalimis."
+    },
+    "cookies": {
+        "title": "Slapukų duomenų naudojimas",
+        "infoBanner": "Skenuotų slapukų pavadinimai ir domenai patikrinami su lokaliai saugoma duomenų baze, kad nustatyti kategoriją. Duomenys nėra išsaugomi ar siunčiami. Štai informacija apie tai, kokie duomenys naudojami slapukų nuskaitymui:",
+        "serviceName": "Open Cookie Duomenų Bazė",
+        "content": "Slapukai skirstomi pagal jų pavadinimus ir domenus, panaudojant Open Cookie duomenų bazę, saugomą lokaliai. Jokie duomenys nėra saugomi ar siunčiami.",       
+        "notice": "Naudodami šią paslaugą, sutinkate, kad slapukų informacija bus nuskaitoma.",
+        "page": "Duomenų bazė"
     }
       
 }

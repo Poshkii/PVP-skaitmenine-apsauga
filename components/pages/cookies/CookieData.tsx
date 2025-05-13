@@ -3,12 +3,14 @@ import { BgMessageId } from "@/entrypoints/content/types/bg-message";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-
+import {useNavigate} from "react-router";
+import { Info } from 'lucide-react';
 
 const CookiesData = ({ cookieData } : {cookieData: any[] }) => {
     const cookies = cookieData;
     const [error, setError] = useState<string | null>(null);
     const { t } = useTranslation('cookies');
+    const navigate = useNavigate();
 
     const tableHeaderStyle = {
         border: "1px solid #000",
@@ -39,7 +41,7 @@ const CookiesData = ({ cookieData } : {cookieData: any[] }) => {
 
     return (
         <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-            <h1>{t('reader')}</h1>            
+            <h1>{t('reader')}<span onClick={() => navigate("/cookies-data")}><Info className="info-icon"/></span></h1>          
             {error && <p style={{ color: "red" }}>{error}</p>}
             {cookies.length > 0 ? (
                 <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>

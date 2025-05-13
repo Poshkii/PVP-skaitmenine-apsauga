@@ -108,6 +108,18 @@ export class PasswordChecker extends Module {
             flex-direction: column;
             align-items: center; /* centers children horizontally */
         }
+       .ff-colored-bullet {
+            list-style: none;
+            position: relative;
+            padding-left: 1.2em;
+        }
+        .ff-colored-bullet::before {
+            content: "•";
+            font-size: 16px;
+            position: absolute;
+            left: 0;
+            color: white;
+        }
         `;
         document.head.appendChild(styles);
 
@@ -140,6 +152,7 @@ export class PasswordChecker extends Module {
     box.style.position = "absolute";
     box.style.zIndex = "9999";
     box.style.background = "#0f172a";
+    box.style.color = "#ffffff"
     box.style.border = "1px solid #ddd";
     box.style.padding = "10px";
     box.style.borderRadius = "6px";
@@ -166,17 +179,19 @@ export class PasswordChecker extends Module {
 
     const label = document.createElement("div");
     label.style.fontSize = "24px";
-    label.textContent = `Strength: ${getLabel(score)}`;
+    label.textContent = `Strength: ${getLabel(score)}`;    
 
     const feedbackList = document.createElement("ul");
     feedbackList.style.margin = "8px 0 0 0";
-    feedbackList.style.padding = "0 0 0 16px";
+    feedbackList.style.padding = "0 0 0 12px";
 
     const customSuggestions = this.customPasswordAnalysis(password, t);
 
     customSuggestions.forEach(suggestion => {
         const li = document.createElement("li");
-        li.textContent = suggestion;
+        li.textContent = suggestion;     
+        li.style.paddingTop = "8px"
+        li.className = "ff-colored-bullet";   
         feedbackList.appendChild(li);
     });
 

@@ -53,5 +53,13 @@
         "serviceName2": "Fingerprinting Protection",
         "content2": "To prevent browser fingerprinting, minor modifications are applied to certain browser APIs that websites commonly use to track users. This includes slight alterations to Canvas data, Audio data, Font detection, and hardware information reporting. Alterations are subtle enough not to impact normal website functionality while preventing consistent identification. All modifications are applied locally in your browser and do not involve external servers.",
         "notice": "This feature is designed with privacy in mind and doesn't share browsing data with any 3rd parties."
+    },
+    "cookies": {
+        "title": "Cookies data usage",
+        "infoBanner": "When scanning browser cookie data, cookie and domain names are checked with local database. No personal data content is shared or saved. Click each service for details:",
+        "serviceName": "Open Cookie Database ",
+        "content": "Cookies are classified by their domain and name using Open Cookie Database, stored localy. No data is being saved or sent.",       
+        "notice": "By using this feature, you consent to cookie data reading.",
+        "page": "Database"
     }
 }

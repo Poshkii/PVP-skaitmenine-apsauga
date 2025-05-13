@@ -6,66 +6,49 @@ import CookieTips from "./CookieTips";
 import Select from 'react-select';
 import { StylesConfig } from 'react-select';
 import { useTranslation } from "react-i18next";
+import cookiesData from './cookiesData.json';
+import {useNavigate} from "react-router";
+import { Info } from 'lucide-react';
+
+interface Cookie {
+    name: string;
+    domain: string;
+    path: string;
+    category: string;
+    secure: boolean;
+}
+
+interface CookieGroup {
+    domain: string;
+    category: string;
+    quantity: number;
+    cookies: Cookie[];
+}
 
 function CookieReader() {
     const [activeTab, setActiveTab] = useState<"reader" | "tips">("reader");
-    const [cookies, setCookies] = useState<any[]>([]);
+    const [cookies, setCookies] = useState<Cookie[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [domainFilter, setDomainFilter] = useState<string>("all");
     const [categoryFilter, setCategoryFilter] = useState<string>("all");
     const { t } = useTranslation('cookies');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [skipConfirmation, setSkipConfirmation] = useState(
-    localStorage.getItem("skipClearConfirmation") === "true"
+        localStorage.getItem("skipClearConfirmation") === "true"
     );
+    const navigate = useNavigate();
 
-    const classifyCookie = (cookie: any): string => {
-        const name = cookie.name.toLowerCase();
-        const domain = cookie.domain.toLowerCase();
-
-        if (
-            name.includes("ga") || name.includes("gid") || name.includes("utm") ||
-            domain.includes("google-analytics") || domain.includes("analytics")
-        ) {
-            return t('tracking');
+    // Adjusted classifyCookie using external JSON data
+    const classifyCookie = (cookie: Cookie): string => {
+        const { domain, name } = cookie;       
+        for (const [cookieName, cookieInfo] of Object.entries(cookiesData)) {
+            for (const info of cookieInfo) {
+                // Checking against both domain and cookie name
+                if (domain.includes(info.domain) && (name.toLowerCase().includes(info.cookie.toLowerCase()))) {
+                    return t(info.category.toLowerCase());
+                }
+            }
         }
-
-        if (
-            domain.includes("doubleclick") || domain.includes("adnxs") ||
-            domain.includes("adservice") || domain.includes("adform") ||
-            domain.includes("googlesyndication") ||
-            domain.includes("imasdk.googleapis") ||
-            domain.includes("pubmatic") ||
-            domain.includes("criteo") ||
-            domain.includes("criteo") ||
-            domain.includes("outbrain") ||
-            domain.includes("amazon-adsystem") ||
-            domain.includes("ads-twitter") ||
-            domain.includes("adition.com") ||
-            domain.includes("moatads.com") ||
-            domain.includes("rubiconproject") ||
-            domain.includes("adnxs") ||
-            domain.includes("teads") ||
-            domain.includes("kameleoon") ||
-            domain.includes("3lift") ||
-            domain.includes("adpushup") ||
-            domain.includes("npttech") ||
-            domain.includes("trafficfactory.biz") ||
-            domain.includes("trafficjunky") ||
-            domain.includes("taboola") ||
-            domain.includes("ads") ||
-            domain.includes("addthis")
-
-        ) {
-            return t('advert');
-        }
-
-        if (
-            name.includes("session") || name.includes("auth") || name.includes("csrf")
-        ) {
-            return t('essential');
-        }
-
         return t('unknown');
     };
 
@@ -80,10 +63,9 @@ function CookieReader() {
     useEffect(() => {
         const handleMessage = (message: any) => {
             if (message.id === UiMessageId.CookiesRetrieved) {
-                const enriched = message.data.map((c: any) => ({
+                const enriched = message.data.map((c: Cookie) => ({
                     ...c,
                     category: classifyCookie(c),
-                    // Remove leading dot from domain if present
                     domain: c.domain.startsWith(".") ? c.domain.substring(1) : c.domain
                 }));
                 setCookies(enriched);
@@ -109,7 +91,7 @@ function CookieReader() {
         } else {
             setShowConfirmModal(true);
         }
-    };     
+    };
 
     // Get unique domains for the filter dropdown
     const uniqueDomains = Array.from(new Set(cookies.map(c => c.domain)));
@@ -145,9 +127,9 @@ function CookieReader() {
       
     const categoryOptions = [
         { value: 'all', label: t('allCategories') },
-        { value: t('essential'), label: t('essential') },
-        { value: t('tracking'), label: t('tracking') },
-        { value: t('advert'), label: t('advert') },
+        { value: t('functional'), label: t('functional') },
+        { value: t('analytics'), label: t('analytics') },
+        { value: t('marketing'), label: t('marketing') },
         { value: t('unknown'), label: t('unknown') }
     ];
 
@@ -323,7 +305,7 @@ function CookieReader() {
     return (
         <>
             <div className="middle-menu">
-                <h1 className="panel-title">{t('title')}</h1>
+                <h1 className="panel-title">{t('title')}<span onClick={() => navigate("/cookies-data")}><Info className="info-icon"/></span></h1>    
 
                 <div className="tab-buttons">
                     <button
@@ -432,9 +414,9 @@ function CookieReader() {
                                                     <td style={cellStyle}>{group.domain}</td>
                                                     <td style={{
                                                         ...cellStyle,
-                                                        color: group.category === t('tracking') ? "var(--error-color, #ff4747)" : 
-                                                            group.category === t('essential') ? "var(--success-color, #47cf73)" :
-                                                            group.category === t('advert') ? "var(--warning-color, #ffbb47)" : 
+                                                        color: group.category === t('marketing') ? "var(--error-color, #ff4747)" : 
+                                                            group.category === t('functional') ? "var(--success-color, #47cf73)" :
+                                                            group.category === t('analytics') ? "var(--warning-color, #ffbb47)" : 
                                                             "var(--text-secondary, #a0aec0)",
                                                         textAlign: "center"
                                                     }}>
