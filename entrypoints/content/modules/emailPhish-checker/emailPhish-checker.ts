@@ -45,7 +45,7 @@ export class PhishChecker extends Module {
     private parseGmailEmail() {
 
         const gmailHash = window.location.hash;
-        const isEmailOpen = /#(inbox|starred|sent|imp|snoozed|drafts|spam|trash|all)\/[a-zA-Z0-9]+/.test(gmailHash);
+        const isEmailOpen = /#(inbox|starred|sent|imp|snoozed|drafts|spam|trash|all|category)\/[a-zA-Z0-9]+/.test(gmailHash);
         const hasEmailElements = !!document.querySelector('.gD') && !!document.querySelector('.hP');
 
         if (!isEmailOpen || !hasEmailElements) {
