@@ -122,6 +122,9 @@ function URLScam({ scamURL }: { scamURL: string }) {
                     {unsafe && <h3 className="status-title">Warning: Potential Crypto Scam</h3> }
                     {safe && <h3 className="status-title">Good to go!</h3> }
                     {unknown && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
+                    <p className="status-description">
+                        {result}
+                    </p>
                     </div>
 
             </div>
