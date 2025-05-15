@@ -183,6 +183,7 @@ function CookieReader() {
         }
 
         setCookies(prev => prev.filter(c => !filtered.includes(c)));
+        setShowResults(false)
     };
 
     type OptionType = { value: string; label: string };
@@ -472,7 +473,7 @@ function CookieReader() {
                                             </div>
                                             <div style={{padding:"0 0 16px 0", display: "flex", justifyContent:"center"}}>
                                                 <div className="action-buttons">
-                                                    <button className="btn btn-danger" onClick={() => {deleteFilteredCookies; setShowResults(false)}}>
+                                                    <button className="btn btn-danger" onClick={deleteFilteredCookies}>
                                                         {t('deleteAllFiltered')}
                                                     </button>
                                                 </div>
