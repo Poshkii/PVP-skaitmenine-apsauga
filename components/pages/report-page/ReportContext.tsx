@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { Info, CircleX, CircleCheckBig } from 'lucide-react';
 
 // Define the interface for the report
 interface Report {
@@ -26,7 +27,98 @@ const ReportContext = createContext<{
     addScannedUrl: (url: string, result: string) => Promise<void>;
     addScannedPaswd: (hash: string, breachCount: number) => Promise<void>;
     addScannedFile: (name: string, result: string) => Promise<void>;
+
+     toast: {
+        show: boolean;
+        message: string;
+        type: 'success' | 'error' | 'info';
+    };
+    showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+    hideToast: () => void;
 } | undefined>(undefined);
+
+interface ToastProps {
+    message: string;
+    type: 'success' | 'error' | 'info';
+    onClose: () => void;
+}
+
+// Toast notification component
+export const Toast = ({ message, type, onClose }: ToastProps) => {
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            onClose();
+        }, 3000); // Auto close after 3 seconds
+        
+        return () => clearTimeout(timer);
+    }, [onClose]);
+    
+    const getIcon = () => {
+        switch (type) {
+            case 'success':
+                return <CircleCheckBig size={20} />;
+            case 'error':
+                return <CircleX size={20} />;
+            case 'info':
+                return <Info size={20} />;
+            default:
+                return null;
+        }
+    };
+    
+    const getBackgroundColor = () => {
+        switch (type) {
+            case 'success':
+                return 'var(--accent-gradient)';
+            case 'error':
+                return 'rgba(220, 38, 38, 0.9)';
+            case 'info':
+                return 'rgba(59, 130, 246, 0.9)';
+            default:
+                return 'rgba(100, 116, 139, 0.9)';
+        }
+    };
+    
+    return (
+        <div
+            style={{
+                position: 'fixed',
+                bottom: '24px',
+                right: '24px',
+                background: getBackgroundColor(),
+                color: 'white',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 9999,
+                maxWidth: '300px',
+                backdropFilter: 'blur(8px)',
+                animation: 'fadeIn 0.3s ease-out'
+            }}
+        >
+            {getIcon()}
+            <div style={{ flex: 1 }}>{message}</div>
+            <button 
+                onClick={onClose}
+                style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'white',
+                    cursor: 'pointer',
+                    opacity: 0.7,
+                    transition: 'opacity 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+            >
+                <CircleX size={16} />
+            </button>
+        </div>
+    );
+};
 
 // Provider component to wrap around the application
 export const ReportProvider = ({ children }: { children: ReactNode }) => {
@@ -40,8 +132,33 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
         ScannedFiles: []
     };
 
-    const [report, setReport] = useState<Report>(defaultReport);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [report, setReport] = useState<Report>(defaultReport);    
+    const [isLoaded, setIsLoaded] = useState(false);    
+
+    // Toast notification state
+    const [toast, setToast] = useState<{
+        show: boolean;
+        message: string;
+        type: 'success' | 'error' | 'info';
+    }>({
+        show: false,
+        message: '',
+        type: 'info'
+    });
+
+    // Show toast notification
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({
+            show: true,
+            message,
+            type
+        });
+    };
+
+    // Hide toast notification
+    const hideToast = () => {
+        setToast(prev => ({ ...prev, show: false }));
+    };
 
     // Load initial data from browser.storage.local
     useEffect(() => {
@@ -237,7 +354,11 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
         try {
             await browser.storage.local.remove(["UrlScans", "FileScans", "ScannedEmails",
                                                 "ScannedUrls", "ScannedPasswords", "scannedFiles"]);
-            setReport(defaultReport);
+            setReport(defaultReport);        
+            showToast(
+            `Successfully cleared data`,
+            'success'
+        );    
         } catch (error) {
             console.error("Error clearing data from browser.storage.local:", error);
         }
@@ -249,7 +370,8 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <ReportContext.Provider value={{ report, updateReport, clearReport, addScannedEmail, 
-                                         addScannedFile, addScannedPaswd, addScannedUrl }}>
+                                         addScannedFile, addScannedPaswd, addScannedUrl,
+                                         toast, showToast, hideToast  }}>
             {children}
         </ReportContext.Provider>
     );
@@ -263,3 +385,5 @@ export const useReport = () => {
     }
     return context;
 };
+
+

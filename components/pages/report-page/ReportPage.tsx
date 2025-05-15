@@ -3,12 +3,14 @@ import { useTranslation } from "react-i18next";
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { Mail, Link, File } from "lucide-react";
+import { ReportProvider, Toast } from './ReportContext';
 
 function ReportPage() {
     const { report, clearReport } = useReport();
     const { t } = useTranslation('report');
     const [activeTab, setActiveTab] = useState('emails');
-
+    const { toast, hideToast } = useReport();
+    
     const calculateSecurityScore = () => {
         const totalEmails = report.ScannedEmails.length;
         const breachedEmails = report.ScannedEmails.filter(email => email.BreachCount > 0).length;
@@ -294,6 +296,15 @@ function ReportPage() {
             <button className="btn btn-danger" onClick={clearReport}>
                 {t('clear')}
             </button>
+
+            {toast.show && (
+                <Toast 
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={hideToast}
+                />
+            )}
+
         </div>
     );
 }

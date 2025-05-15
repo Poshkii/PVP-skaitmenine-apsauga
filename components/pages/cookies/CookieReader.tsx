@@ -25,6 +25,89 @@ interface CookieGroup {
     cookies: Cookie[];
 }
 
+interface ToastProps {
+    message: string;
+    type: 'success' | 'error' | 'info';
+    onClose: () => void;
+}
+
+// Toast notification component
+const Toast = ({ message, type, onClose }: ToastProps) => {
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            onClose();
+        }, 3000); // Auto close after 3 seconds
+        
+        return () => clearTimeout(timer);
+    }, [onClose]);
+    
+    const getIcon = () => {
+        switch (type) {
+            case 'success':
+                return <CircleCheckBig size={20} />;
+            case 'error':
+                return <CircleX size={20} />;
+            case 'info':
+                return <Info size={20} />;
+            default:
+                return null;
+        }
+    };
+    
+    const getBackgroundColor = () => {
+        switch (type) {
+            case 'success':
+                return 'var(--accent-gradient)';
+            case 'error':
+                return 'rgba(220, 38, 38, 0.9)';
+            case 'info':
+                return 'rgba(59, 130, 246, 0.9)';
+            default:
+                return 'rgba(100, 116, 139, 0.9)';
+        }
+    };
+    
+    return (
+        <div
+            style={{
+                position: 'fixed',
+                bottom: '24px',
+                right: '24px',
+                background: getBackgroundColor(),
+                color: 'white',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 9999,
+                maxWidth: '300px',
+                backdropFilter: 'blur(8px)',
+                animation: 'fadeIn 0.3s ease-out'
+            }}
+        >
+            {getIcon()}
+            <div style={{ flex: 1 }}>{message}</div>
+            <button 
+                onClick={onClose}
+                style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'white',
+                    cursor: 'pointer',
+                    opacity: 0.7,
+                    transition: 'opacity 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+            >
+                <CircleX size={16} />
+            </button>
+        </div>
+    );
+};
+
 function CookieReader() {
     const [showResults, setShowResults] = useState(false);
     const [activeTab, setActiveTab] = useState<"reader" | "tips">("reader");
@@ -38,6 +121,31 @@ function CookieReader() {
         localStorage.getItem("skipClearConfirmation") === "true"
     );
     const navigate = useNavigate();
+    
+    // Toast notification state
+    const [toast, setToast] = useState<{
+        show: boolean;
+        message: string;
+        type: 'success' | 'error' | 'info';
+    }>({
+        show: false,
+        message: '',
+        type: 'info'
+    });
+
+    // Show toast notification
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({
+            show: true,
+            message,
+            type
+        });
+    };
+
+    // Hide toast notification
+    const hideToast = () => {
+        setToast(prev => ({ ...prev, show: false }));
+    };
 
     // Adjusted classifyCookie using external JSON data
     const classifyCookie = (cookie: Cookie): string => {
@@ -58,6 +166,7 @@ function CookieReader() {
             .catch((err) => {
                 console.error("Error sending message:", err);
                 setError(`Error sending message to background: ${err.message}`);
+                showToast(`Error loading cookies: ${err.message}`, 'error');
             });
     };
 
@@ -74,6 +183,7 @@ function CookieReader() {
                 setShowResults(true);
             } else if (message.id === UiMessageId.CookiesError) {
                 setError(message.data.message);
+                showToast(`Error: ${message.data.message}`, 'error');
             }
         };
 
@@ -140,50 +250,71 @@ function CookieReader() {
     const groupedCookiesArray = Object.values(groupedCookies);
 
     const deleteCookiesInGroup = async (cookieGroup: any) => {
+        const totalCount = cookieGroup.cookies.length;
+        let successCount = 0;
+        
         for (const cookie of cookieGroup.cookies) {
             const protocol = cookie.secure ? "https://" : "http://";
             const url = `${protocol}${cookie.domain}${cookie.path}`;
 
             try {
                 await browser.cookies.remove({ name: cookie.name, url });
+                successCount++;
             } catch (err) {
                 console.error(`Failed to delete cookie "${cookie.name}":`, err);
+                showToast(`Failed to delete cookie "${cookie.name}"`)
             }
         }
 
         // Remove deleted cookies from state
         setCookies(prev => {
-        const updatedCookies = prev.filter(c => 
-            !cookieGroup.cookies.some((groupCookie: any) => 
-                groupCookie.name === c.name && 
-                groupCookie.domain === c.domain && 
-                groupCookie.path === c.path
-            )
+            const updatedCookies = prev.filter(c => 
+                !cookieGroup.cookies.some((groupCookie: any) => 
+                    groupCookie.name === c.name && 
+                    groupCookie.domain === c.domain && 
+                    groupCookie.path === c.path
+                )
+            );
+            
+            // If there are no cookies left after deletion, set showResults to false
+            if (updatedCookies.length === 0) {
+                setShowResults(false);
+            }
+            
+            return updatedCookies;
+        });
+        
+        // Show success message
+        showToast(
+            `Successfully deleted ${successCount} ${successCount === 1 ? 'cookie' : 'cookies'} from ${cookieGroup.domain}`,
+            'success'
         );
-        
-        // If there are no cookies left after deletion, set showResults to false
-        if (updatedCookies.length === 0) {
-            setShowResults(false);
-        }
-        
-        return updatedCookies;
-    });
     };
 
     const deleteFilteredCookies = async () => {
+        const count = filtered.length;
+        let successCount = 0;
+        
         for (const cookie of filtered) {
             const protocol = cookie.secure ? "https://" : "http://";
             const url = `${protocol}${cookie.domain}${cookie.path}`;
 
             try {
                 await browser.cookies.remove({ name: cookie.name, url });
+                successCount++;
             } catch (err) {
                 console.error(`Error deleting cookie: ${cookie.name}`, err);
             }
         }
 
         setCookies(prev => prev.filter(c => !filtered.includes(c)));
-        setShowResults(false)
+        setShowResults(filtered.length === cookies.length);
+        
+        // Show success message
+        showToast(
+            `Successfully deleted ${successCount} ${successCount === 1 ? 'cookie' : 'cookies'}`,
+            'success'
+        );
     };
 
     type OptionType = { value: string; label: string };
@@ -195,7 +326,7 @@ function CookieReader() {
         color: "var(--text-primary)",
         border: "1px solid rgba(255, 255, 255, 0.2)",
         borderRadius: "var(--border-radius-lg)",
-        minHeight: "44px", // instead of padding
+        minHeight: "44px", 
         fontSize: "14px",
         fontWeight: 600,
         cursor: "pointer",
@@ -255,10 +386,8 @@ function CookieReader() {
     }),
     menuList: (base) => ({
         ...base,
-        // Firefox
         scrollbarWidth: 'thin',
         scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
-        // Chrome, Edge, Safari
         '&::-webkit-scrollbar': {
           width: '8px',
           height: '8px',
@@ -536,6 +665,7 @@ function CookieReader() {
                         onClick={() => {
                             handleClear();
                             setShowConfirmModal(false);
+                            showToast(t('cookiesCleared'), 'success');
                         }}
                         className="btn btn-danger"
                         style={{ width: "120px" }}
@@ -554,6 +684,13 @@ function CookieReader() {
                 </div>
                 )}
 
+                {toast.show && (
+                    <Toast 
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={hideToast}
+                    />
+                )}
             </div>
         </>
     );
