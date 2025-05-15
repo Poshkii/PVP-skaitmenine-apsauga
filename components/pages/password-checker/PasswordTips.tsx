@@ -5,17 +5,17 @@ import { useTranslation } from "react-i18next";
 function PasswordTips() {
     const { t } = useTranslation('passwords');
     const slides = [
-    { id: 1, content: t('slide1'), img: "/pswd_images/complexity.png"  },
-    { id: 2, content: t('slide2'), img: "/pswd_images/length.png"  },
-    { id: 3, content: t('slide3'), img: "/pswd_images/dictionary.png"  },
-    { id: 4, content: t('slide4'), img: "/pswd_images/repetition.png"  },
-    { id: 5, content: t('slide5'), img: "/pswd_images/personal.png"  },
-    { id: 6, content: t('slide6'), img: "/pswd_images/manager.png"  },
-    { id: 7, content: t('slide7'), img: "/pswd_images/leaks.png"  },
-    { id: 8, content: t('slide8'), img: "/pswd_images/reuse.png"  },
-    { id: 9, content: t('slide9'), img: "/pswd_images/hints.png"  },
-    { id: 10, content: t('slide10'), img: "/pswd_images/2fa.png"  }
-];
+        { id: 1, content: t('slide1'), title: t('title1') },
+        { id: 2, content: t('slide2'), title: t('title2') },
+        { id: 3, content: t('slide3'), title: t('title3') },
+        { id: 4, content: t('slide4'), title: t('title4') },
+        { id: 5, content: t('slide5'), title: t('title5') },
+        { id: 6, content: t('slide6'), title: t('title6') },
+        { id: 7, content: t('slide7'), title: t('title7') },
+        { id: 8, content: t('slide8'), title: t('title8') },
+        { id: 9, content: t('slide9'), title: t('title9') },
+        { id: 10, content: t('slide10'), title: t('title10') }
+    ];
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const nextSlide = () => {
@@ -30,55 +30,35 @@ function PasswordTips() {
             <div className="security-check-container glassmorphism">
                 <div className="security-status">
                     <div className="status-icon" style={{background: "var(--accent-gradient)"}}>
-                        <span><Lightbulb/></span>
+                        <span><Lightbulb size={30}/></span>
                     </div>
                     <div className="status-text">
-                        <h3 className="status-title">{t('tips')}</h3>
-                        <p className="status-description">
-                            {t('recommend')}
-                        </p>
+                        {slides.map((title, index) => (
+                            <div key={title.id} style={{ display: index === currentIndex ? "block" : "none" }}>
+                                <h3 className="status-title" style={{margin: 0}}>{title.title}</h3>
+                            </div>
+                        ))}
                     </div>
                 </div>
-                
-                <div className="recent-items" style={{marginTop: "20px"}}>
-                    {slides.map((slide, index) => (
-                        <div key={slide.id} 
-                            className="recent-item" 
-                            style={{ 
-                                display: index === currentIndex ? "block" : "none",
-                                padding: "16px",
-                                textAlign: "left"
-                            }}
-                        >
-                            <div className="status-text">
-                                <p className="status-description">{slide.content}</p>
-                            </div>
-                            <div style={{textAlign: "center", marginTop: "16px"}}>
-                                <img 
-                                    src={slide.img} 
-                                    alt={`Tip ${slide.id}`} 
-                                    style={{maxWidth:"90%", objectFit: "contain"}} 
-                                />
+
+                <div style={{marginTop: "20px"}}>
+                    {slides.map((desc, index) => (
+                        <div key={desc.id} style={{
+                            display: index === currentIndex ? "block" : "none"
+                        }}>
+                            <div style={{ color: "#ADADAD", fontSize: "1rem" }}>
+                                {desc.content}
                             </div>
                         </div>
                     ))}
                 </div>
                 
                 <div className="action-buttons slide-buttons" style={{marginTop: "16px"}}>
-                    <button onClick={prevSlide} className="btn btn-secondary" style={{width:"35%"}}>
-                        {t('prev')}
-                    </button>
-                    <div style={{
-                        display: "flex", 
-                        alignItems: "center", 
-                        justifyContent: "center",
-                        color: "var(--text-primary)"
-                    }}>
+                    <button className="btn btn-secondary" onClick={prevSlide}>❮</button>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent:"center", color: "var(--text-primary)", width: "50px" }}>
                         {currentIndex + 1} / {slides.length}
                     </div>
-                    <button onClick={nextSlide} className="btn btn-secondary" style={{width:"35%"}}>
-                        {t('next')}
-                    </button>
+                    <button className="btn btn-secondary" onClick={nextSlide}>❯</button>
                 </div>
             </div>
         </>

@@ -10,13 +10,14 @@
     "unknown": "Nežinoma",
     "pageName": "Patikrinti el. pašto saugumą ",
     "enter": "Įveskite el. pašto adresą...",
-    "check": "Tikrinti",
+    "check": "Tikrinti e. paštą",
     "clear": "Išvalyti",
     "cancel": "Atšaukti",
-    "leaked": "Jūsų el. paštas buvo nutekėjęs!",
-    "safe": "Jūsų el. paštas yra saugus",
+    "leaked": "buvo nutekėjęs!",
+    "safe": "yra saugus",
     "badEmail": "Nežinomas el. pašto adresas",
     "risk": "Rizikos lygis yra ",
+    "newScan": "Naujas skenavimas",
     "riskMessages": {
         "low": "\"Geriau užkirsti kelią, nei bandyti tvarkyti.\" - Naudokite stiprius slaptažodžius, kad apsisaugotumėte nuo grėsmių.",
         "medium": "\"Geriau būti saugiam negu gailėtis.\" - Neatsipalaiduokite, naudokite papildomas saugumo priemones savo informacijai apsaugoti.",
@@ -42,5 +43,10 @@
     "pswdRisk": "Slaptažodžio rizika: ",
     "confirmClear": "Patvirtinti išvalymą",
     "areYouSure": "Ar tikrai norite išvalyti duomenis?",
-    "dontAsk": "Daugiau neklausti"
+    "dontAsk": "Daugiau neklausti",
+    "emailCheck": "Patikrinti E. Paštą",
+    "emailTitle": "El. pašto pažeidimų patikra",
+    "emailDesc": "Patikrinkite ar jūsų el. paštas buvo įtrauktas į žinomus duomenų nutekėjimus",
+    "analyzing": "Tikrinamas e. paštas...",
+    "resultTitle": "Skenavimo rezultatai"
 }

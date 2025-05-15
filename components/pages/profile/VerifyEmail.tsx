@@ -1,5 +1,6 @@
 import React from "react";
 import {useTranslation} from "react-i18next";
+import { Info } from "lucide-react"; 
 
 const API_URL = useAppConfig().privacyApiUrl;
 
@@ -51,16 +52,23 @@ function VerifyEmail() {
                 {error && <div className="alert alert-danger">{error}</div>}
                 {success && <div className="alert alert-success">{t('sent')}</div>}
                 <form onSubmit={handleSubmit}>
-                    <h4>{t('unverified')}</h4>
-                    <div className="action-buttons">
-                        <button
-                            className="btn btn-primary"
-                            style={{width: '100%'}}
-                            type="submit"
-                            disabled={loading}
-                        >
-                            {loading ? t('loading') : t('resend')}
-                        </button>
+
+                    <div className="security-status" style={{}}>
+                        <div className="status-icon">
+                            <Info size={30} />
+                        </div>
+                        <div className="status-text">
+                            <h3 className="status-title">
+                                {t('unverified')}
+                            </h3>
+                            <button
+                                className="btn btn-primary"
+                                type="submit"
+                                disabled={loading}
+                            >
+                                {loading ? t('loading') : t('resend')}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

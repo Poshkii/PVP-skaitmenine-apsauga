@@ -1,4 +1,4 @@
-import { Upload, Info, Shield, AlertTriangle, Check } from "lucide-react"; 
+import { Upload, Info, CircleX, CircleAlert , CircleCheckBig  } from "lucide-react"; 
 import { useReport } from "../report-page/ReportContext";
 import React, {useEffect, useState} from "react";
 import {useModuleMessaging} from "@/hooks/useModuleMessaging.ts";
@@ -94,6 +94,7 @@ async function getScanResult(url: string) {
 }
 
 function FileStatus({inputFile }: { inputFile: string }) {
+    const [noPrev, setNoPrev] = useState(true)
     const { t } = useTranslation('files');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState(inputFile || "");
@@ -112,7 +113,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
         scan_results_all: "",
     });
     const [safety, setSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
-    const [prevSafety, setPrevSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
+    const [prevSafety, setPrevSafety] = useState<"safe" | "unsafe" | "unknown" | "">("");
     const [avThreats, setAvThreats] = useState ({});
     const [prevAvThreats, setPrevAvThreats] = useState ({});
     
@@ -140,6 +141,16 @@ function FileStatus({inputFile }: { inputFile: string }) {
         setAvThreats({});
     };
 
+    const handlePrevResult = async () => {
+        const prevResult = await browser.storage.local.get(["previousFileScanUrl"]);
+        const url = prevResult["previousFileScanUrl"];
+        if (!url)
+            return
+        else {
+            viewPreviousScan()
+        }
+    }
+
     const viewPreviousScan = async () => {
         const prevResult = await browser.storage.local.get(["previousFileScanUrl"]);
         const url = prevResult["previousFileScanUrl"];
@@ -159,9 +170,11 @@ function FileStatus({inputFile }: { inputFile: string }) {
         }
 
         processPreviousApiResponse(data);
+        
     }
 
     const viewCurrentScan = async () => {
+        
         const result = await browser.storage.local.get(["previousFileScanUrl"]);
         const url = result["previousFileScanUrl"];
 
@@ -419,7 +432,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         {t('newScan')}
                     </button>
                     <button
-                        onClick={() => { viewPreviousScan(); setActiveTab("history"); }}
+                        onClick={() => { handlePrevResult(); setActiveTab("history"); }}
                         className={`btn ${activeTab === "history" ? "btn-primary" : "btn-secondary"} tab-button`}>
                         {t('prevScan')}
                     </button>
@@ -454,48 +467,43 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         onChange={fileUpload}
                         className="hidden-input"
                         />
-                    </div>
-            
-                    <div className="action-buttons">
-                        <button
-                            style={{margin: "0 auto"}}
-                            onClick={FileChecker}
-                            disabled={!selectedFile || isChecking}
-                            className={`btn btn-primary ${(!selectedFile || isChecking) ? 'disabled-button' : ''}`}>
-                            {isChecking ? (
-                                <div className="button-content">
-                                <div className="loading-spinner"></div>
-                                    {t('analyzing')}
-                                </div>
-                            ) : (
-                                <div className="button-content">
-                                <Shield size={20} />
-                                    {t('scan')}
-                                </div>
-                            )}
-                        </button>
+
+                        <div className="action-buttons">
+                            <button
+                                style={{margin: "0 auto"}}
+                                onClick={FileChecker}
+                                disabled={!selectedFile || isChecking}
+                                className={`btn btn-primary ${(!selectedFile || isChecking) ? 'disabled-button' : ''}`}>
+                                {isChecking ? (
+                                    <div className="button-content">
+                                    <div className="loading-spinner"></div>
+                                        {t('analyzing')}
+                                    </div>
+                                ) : (
+                                    <div className="button-content">
+                                        {t('scan')}
+                                    </div>
+                                )}
+                            </button>
+                        </div>
                     </div>
                     </>
                 ) : (
                     <div className="security-check-container glassmorphism">
                         <h3 className="recent-list-title">{t('newChecked')}</h3>
-                        <div>
-                            <div className="status-text overflow-text" style={{maxWidth:"95%"}}>
-                                {t('fileName')} <span ><strong>{params.name.split(/[/\\]/).pop()}</strong></span>
-                            </div>
-                        </div>
-                        <div className="security-status" style={{marginTop: "24px"}}>
-                            <div className="status-icon">
-                                {safety === "safe" ? (
-                                    <Check size={32}/>
-                                ) : safety === "unsafe" ? (
-                                    <AlertTriangle size={32} style={{color:"var(--error)"}}/>
-                                ) : (
-                                    <Info size={32} />
-                                )}
-                            </div>
+                        <div className="security-status">
+                            {safety === "safe" ? (
+                                <div className="status-icon status-success"><CircleCheckBig  size={30}/></div>
+                            ) : safety === "unsafe" ? (
+                                <div className="status-icon status-error"><CircleX size={30}/></div>
+                            ) : safety === "unknown" ?(
+                                <div className="status-icon status-warning"><CircleAlert size={30}/></div>
+                            ) : (
+                                <div className="status-icon"><Info size={30}/></div>
+                            )} 
                             <div className="status-text">
-                                <h3 className="status-title">
+                                <h3 className="status-title overflow-text" style={{maxWidth:"280px"}}>
+                                    {params.name.split(/[/\\]/).pop()} <br></br>
                                     {safety === "safe" 
                                     ? t('safe')
                                     : safety === "unsafe" 
@@ -513,7 +521,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
             
                         {(params.scan_results_all && Object.entries(avThreats).length > 0) && (
                             <div style={{marginTop: "24px"}}>
-                                <h3 className="recent-list-title">Threat Details</h3>
+                                <h3 className="recent-list-title">{t('details')}</h3>
                                 <div className="recent-items">
                                     {Object.entries(avThreats).map(([engine, threat], index) => (
                                     <div key={index} className="status-badge suspicious">
@@ -535,7 +543,6 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 onClick={resetFileUpload}
                                 className="btn btn-primary">
                                 <div className="button-content">
-                                    <Upload size={20} />
                                     {t('newScan')}
                                 </div>
                             </button>
@@ -551,26 +558,25 @@ function FileStatus({inputFile }: { inputFile: string }) {
             
                     {prevResult ? (
                         <>
-                        {prevParams.name && (
-                            <div>
-                                <div className="status-text overflow-text" style={{maxWidth:"95%"}}>
-                                    {t('fileName')} <span ><strong>{prevParams.name.split(/[/\\]/).pop()}</strong></span>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="security-status" style={{marginTop: "24px"}}>
-                            <div className="status-icon">
+                        <div className="security-status">
                             {prevSafety === "safe" ? (
-                                <Check size={32}/>
+                                <div className="status-icon status-success"><CircleCheckBig  size={30}/></div>
                             ) : prevSafety === "unsafe" ? (
-                                <AlertTriangle size={32} style={{color:"var(--error)"}}/>
+                                <div className="status-icon status-error"><CircleX size={30}/></div>
+                            ) : prevSafety === "unknown" ?(
+                                <div className="status-icon status-warning"><CircleAlert size={30}/></div>
                             ) : (
-                                <Info size={32} />
-                            )}
-                            </div>
+                                <div className="status-icon"><Info size={30}/></div>
+                            )}              
                             <div className="status-text">
-                                <h3 className="status-title">
+                                <h3 className="status-title overflow-text" style={{maxWidth:"280px"}}>
+                                    {prevParams.name ? (
+                                        <>
+                                            {prevParams.name.split(/[/\\]/).pop()} <br></br>
+                                        </>
+                                    ) : (
+                                        <></>
+                                    )}
                                     {prevSafety === "safe" 
                                     ? t('safe')
                                     : prevSafety === "unsafe" 
@@ -588,7 +594,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
             
                         {(prevParams.scan_results_all && Object.entries(prevAvThreats).length > 0) && (
                             <div style={{marginTop: "24px"}}>
-                                <h3 className="recent-list-title">Threat Details</h3>
+                                <h3 className="recent-list-title">{t('details')}</h3>
                                 <div className="recent-items">
                                     {Object.entries(prevAvThreats).map(([engine, threat], index) => (
                                     <div key={index} className="status-badge suspicious">
@@ -605,8 +611,13 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         )}
                         </>
                     ) : (
-                        <div style={{marginTop: "16px", color: "var(--text-muted)"}}>
-                            {t('noScans')}
+                        <div className="security-status">
+                            <div className="status-icon"><Info size={30}/></div>
+                            <div className="status-text">
+                                <h3 className="status-title">
+                                    {t('noScans')}
+                                </h3>
+                            </div>
                         </div>
                     )}
                 </div>

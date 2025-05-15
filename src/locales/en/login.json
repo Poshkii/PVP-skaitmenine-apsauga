@@ -18,5 +18,7 @@
     "delete": "Delete account",
     "resend": "Resend verification",
     "unverified": "Your email is unverified",
-    "sent": "Verification was sent to your inbox"
+    "sent": "Verification was sent to your inbox",
+    "deleteTitle": "Delete Account",
+    "deleteDesc": "Permanently delete account from the system"
 }

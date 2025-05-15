@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import scamList from "./crypto_scam_data.csv?url";
-import { AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
+import { CircleX, CircleAlert , CircleCheckBig  } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 
 // Define types for PapaParse results
@@ -115,9 +115,9 @@ function URLScam({ scamURL }: { scamURL: string }) {
     return (
         <>
             <div className="security-status" style={{ marginTop: "24px" }}>
-                {unsafe && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertCircle color="red" size={30} /></div> }
-                {safe && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><CheckCircle color="green" size={24} /></div> }
-                {unknown && <div className="status-icon" style={{ backgroundColor: "var(--error)" }}><AlertTriangle color="#FF5F15" size={30} /></div> }
+                {unsafe && <div className="status-icon status-error"><CircleX color="white" size={30} /></div> }
+                {safe && <div className="status-icon status-success"><CircleCheckBig  color="white" size={30} /></div> }
+                {unknown && <div className="status-warning"><CircleAlert color="white" size={30} /></div> }
                     <div className="status-text">
                     {unsafe && <h3 className="status-title">Warning: Potential Crypto Scam</h3> }
                     {safe && <h3 className="status-title">Good to go!</h3> }

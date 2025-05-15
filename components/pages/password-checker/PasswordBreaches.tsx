@@ -129,7 +129,7 @@ function PasswordBreachChecker({ inputPassword } : {inputPassword: string }) {
                 </button>
             </div>
             {result && (
-                <div className="security-check-container" style={{marginTop: "16px"}}>
+                <div className="security-check-container glassmorphism" style={{marginTop: "16px"}}>
                     <div className="security-status" style={{marginTop: "16px"}}>
                         <div className="status-icon" style={{ background: getColor(result.breached)}}>
                             {result.breached ? (

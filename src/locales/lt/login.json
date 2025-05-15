@@ -18,5 +18,7 @@
     "delete": "Ištrinti paskyrą",
     "resend": "Išsiųsti patvirtinimą",
     "unverified": "Jūsų el. paštas nėra patvirtintas",
-    "sent": "Patvirtinimas buvo išsiųstas į Jūsų el. pašto dežutę"
+    "sent": "Patvirtinimas buvo išsiųstas į Jūsų el. pašto dežutę",
+    "deleteTitle": "Ištrinti paskyrą",
+    "deleteDesc": "Visam laikui ištrinti paskyrą iš sistemos"
 }

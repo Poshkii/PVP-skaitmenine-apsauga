@@ -43,21 +43,21 @@ function PasswordChecker() {
                 </button>
                 <button 
                     style={ {marginRight: "8px"} }
-                    onClick={() => setActiveTab("tips")} 
-                    className={`btn ${activeTab === "tips" ? "btn-primary" : "btn-secondary"} tab-button`}
-                >
-                    <div className="button-content">
-                        <Book size={18} />
-                        {t('secTips')}
-                    </div>
-                </button>
-                <button 
                     onClick={() => setActiveTab("generator")} 
                     className={`btn ${activeTab === "generator" ? "btn-primary" : "btn-secondary"} tab-button`}
                 >
                     <div className="button-content">
                         <Sparkles size={18} />
                         {t('generator')}
+                    </div>
+                </button>
+                <button 
+                    onClick={() => setActiveTab("tips")} 
+                    className={`btn ${activeTab === "tips" ? "btn-primary" : "btn-secondary"} tab-button`}
+                >
+                    <div className="button-content">
+                        <Book size={18} />
+                        {t('secTips')}
                     </div>
                 </button>
             </div>
@@ -67,7 +67,7 @@ function PasswordChecker() {
                     <div className="security-check-container glassmorphism">
                         <div className="security-status">
                             <div className="status-icon">
-                                <Lock size={32} />
+                                <Lock size={30} />
                             </div>
                             <div className="status-text">
                                 <h3 className="status-title">{t('statusTitle')}</h3>
@@ -106,9 +106,8 @@ function PasswordChecker() {
                     {password && <PasswordBreaches inputPassword={password} />}
                 </>
             )}
-
-            {activeTab === "tips" && <PasswordTips />}
             {activeTab === "generator" && <PasswordGenerator />}
+            {activeTab === "tips" && <PasswordTips />}
         </div>
     );
 }

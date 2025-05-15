@@ -99,7 +99,7 @@ function PasswordGenerator() {
       <div className="security-check-container glassmorphism">
         <div className="security-status">
           <div className="status-icon">
-            <KeyRound size={32} />
+            <KeyRound size={30} />
           </div>
           <div className="status-text">
             <h3 className="status-title">{t("generateSecurePassword")}</h3>

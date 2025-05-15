@@ -84,6 +84,13 @@ function ReportPage() {
     ];
     const recentVulnerableItems = vulnerableItems.sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
 
+    const getColorForScore = (score: number) => {
+        if (score > 75) return "var(--success)";
+        if (score > 50) return "var(--warning)";
+        if (score > 25) return "var(--error)";
+        return "var(--bg-tertiary)";
+    };
+
     return (
         <div className="middle-menu">
             <h1 className="panel-title">{t('overview')}</h1>
@@ -100,11 +107,27 @@ function ReportPage() {
                                 t('critical')}
                             </p>
                         </div>
-                        <div className="status-icon" style={{
-                            background: `conic-gradient(var(--accent-primary) ${securityScore}%, var(--bg-tertiary) 0%)`,
-                            position: 'relative'
-                        }}>
-                            <span style={{position: 'absolute'}}>{securityScore}%</span>
+                        <div
+                            className={"status-icon"}
+                            style={{
+                                background: `conic-gradient(${getColorForScore(securityScore)} ${securityScore}%, var(--bg-primary) 0%)`,
+                                position: "relative",
+                            }}
+                        >
+                            <span
+                            className={`score-text-container ${
+                                securityScore > 75
+                                ? 'score-high'
+                                : securityScore > 50
+                                ? 'score-medium'
+                                : securityScore > 25
+                                ? 'score-low'
+                                : 'score-critical'
+                            }`}
+                            style={{ position: 'absolute' }}
+                            >
+                            {securityScore}
+                            </span>
                         </div>
                         
                     </div>
@@ -114,15 +137,15 @@ function ReportPage() {
                     <h3 className="recent-list-title">{t('summary')}</h3>
                     <div className="security-status" style={{gap:"0"}}>
                         <div style={{width:"34%"}}>
-                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto"}}>{report.ScannedEmails.length}</p>
+                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto", fontWeight: "600"}}>{report.ScannedEmails.length}</p>
                             <p style={{marginBottom: "0", textAlign: "center"}}><strong>{t('emails')}</strong></p>
                         </div>
                         <div style={{width:"33%"}}>
-                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto"}}>{report.ScannedUrls.length}</p>
+                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto", fontWeight: "600"}}>{report.ScannedUrls.length}</p>
                             <p style={{marginBottom: "0", textAlign: "center"}}><strong>{t('urls')}</strong></p>
                         </div>
                         <div style={{width:"33%"}}>
-                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto"}}>{report.ScannedFiles.length}</p>
+                            <p className="status-icon" style={{marginLeft: "auto", marginRight: "auto", fontWeight: "600"}}>{report.ScannedFiles.length}</p>
                             <p style={{marginBottom: "0", textAlign: "center"}}><strong>{t('files')}</strong></p>
                         </div>
                     </div>
@@ -268,7 +291,7 @@ function ReportPage() {
                 </div>
             </div>
 
-            <button className="btn btn-secondary" onClick={clearReport}>
+            <button className="btn btn-danger" onClick={clearReport}>
                 {t('clear')}
             </button>
         </div>

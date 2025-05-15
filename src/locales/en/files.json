@@ -12,11 +12,12 @@
     "prevScan": "Previous Scan",
     "select": "Select or drag & drop file to scan",
     "completedTime": "Scan completed in {{seconds}} seconds",
-    "safe": "File is Safe",
-    "detected": "Threats Detected",
+    "safe": "file is Safe",
+    "detected": "file unsafe",
     "results": "Scan Results",
     "fileName": "File Name:",
-    "noScans": "No previous scan records found",
+    "noScans": "No previous scans found",
     "lastChecked": "Last Scanned File",
-    "newChecked": "Scan Results"
+    "newChecked": "Scan Results",
+    "details": "Threat Information"
 }
