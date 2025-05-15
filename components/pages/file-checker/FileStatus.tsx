@@ -94,6 +94,7 @@ async function getScanResult(url: string) {
 }
 
 function FileStatus({inputFile }: { inputFile: string }) {
+    const [noPrev, setNoPrev] = useState(true)
     const { t } = useTranslation('files');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileName, setFileName] = useState(inputFile || "");
@@ -112,7 +113,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
         scan_results_all: "",
     });
     const [safety, setSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
-    const [prevSafety, setPrevSafety] = useState<"safe" | "unsafe" | "unknown">("unknown");
+    const [prevSafety, setPrevSafety] = useState<"safe" | "unsafe" | "unknown" | "">("");
     const [avThreats, setAvThreats] = useState ({});
     const [prevAvThreats, setPrevAvThreats] = useState ({});
     
@@ -140,6 +141,16 @@ function FileStatus({inputFile }: { inputFile: string }) {
         setAvThreats({});
     };
 
+    const handlePrevResult = async () => {
+        const prevResult = await browser.storage.local.get(["previousFileScanUrl"]);
+        const url = prevResult["previousFileScanUrl"];
+        if (!url)
+            return
+        else {
+            viewPreviousScan()
+        }
+    }
+
     const viewPreviousScan = async () => {
         const prevResult = await browser.storage.local.get(["previousFileScanUrl"]);
         const url = prevResult["previousFileScanUrl"];
@@ -159,9 +170,11 @@ function FileStatus({inputFile }: { inputFile: string }) {
         }
 
         processPreviousApiResponse(data);
+        
     }
 
     const viewCurrentScan = async () => {
+        
         const result = await browser.storage.local.get(["previousFileScanUrl"]);
         const url = result["previousFileScanUrl"];
 
@@ -419,7 +432,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         {t('newScan')}
                     </button>
                     <button
-                        onClick={() => { viewPreviousScan(); setActiveTab("history"); }}
+                        onClick={() => { handlePrevResult(); setActiveTab("history"); }}
                         className={`btn ${activeTab === "history" ? "btn-primary" : "btn-secondary"} tab-button`}>
                         {t('prevScan')}
                     </button>
@@ -489,7 +502,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 <div className="status-icon"><Info size={30}/></div>
                             )} 
                             <div className="status-text">
-                                <h3 className="status-title">
+                                <h3 className="status-title overflow-text" style={{maxWidth:"280px"}}>
                                     {params.name.split(/[/\\]/).pop()} <br></br>
                                     {safety === "safe" 
                                     ? t('safe')
@@ -556,7 +569,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 <div className="status-icon"><Info size={30}/></div>
                             )}              
                             <div className="status-text">
-                                <h3 className="status-title">
+                                <h3 className="status-title overflow-text" style={{maxWidth:"280px"}}>
                                     {prevParams.name ? (
                                         <>
                                             {prevParams.name.split(/[/\\]/).pop()} <br></br>
@@ -598,8 +611,13 @@ function FileStatus({inputFile }: { inputFile: string }) {
                         )}
                         </>
                     ) : (
-                        <div style={{marginTop: "16px", color: "var(--text-muted)"}}>
-                            {t('noScans')}
+                        <div className="security-status">
+                            <div className="status-icon"><Info size={30}/></div>
+                            <div className="status-text">
+                                <h3 className="status-title">
+                                    {t('noScans')}
+                                </h3>
+                            </div>
                         </div>
                     )}
                 </div>

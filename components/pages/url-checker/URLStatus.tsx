@@ -710,18 +710,20 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                             {showURLScam && <URLScam scamURL={submittedUrl} />}
                         </div>
 
-                        <div className="action-buttons" style={{margin: "24px auto 0  auto"}}>
-                            {scanDone && (
-                                <>
-                                    <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading} type="button">
-                                    {t('scanAgain')}
-                                    </button>
-                                    <button className="btn btn-primary" onClick={() => {handleClear(); setUrl("")}} disabled={!url || loading}>
-                                    {t('newScan')}
-                                    </button>
-                                </>
-                            )}
-                        </div>
+                        <div style={{margin: "24px auto 0  auto", display:"flex", justifyContent: 'center'}}>
+                            <div className="action-buttons">
+                                {scanDone && (
+                                    <>
+                                        <button className="btn btn-primary" onClick={UrlChecker} disabled={!url || loading} type="button">
+                                        {t('scanAgain')}
+                                        </button>
+                                        <button className="btn btn-primary" onClick={() => {handleClear(); setUrl("")}} disabled={!url || loading}>
+                                        {t('newScan')}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div >
                     </div>
                 )}
 

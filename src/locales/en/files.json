@@ -16,7 +16,7 @@
     "detected": "file unsafe",
     "results": "Scan Results",
     "fileName": "File Name:",
-    "noScans": "No previous scan records found",
+    "noScans": "No previous scans found",
     "lastChecked": "Last Scanned File",
     "newChecked": "Scan Results",
     "details": "Threat Information"
