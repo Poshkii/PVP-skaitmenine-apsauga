@@ -117,7 +117,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated, b
       </div>
         
       <div className="action-buttons">
-        <button className="btn btn-primary" onClick={clearData}>
+        <button className="btn btn-danger" onClick={clearData}>
           {t('resetStats')}
         </button>
       </div>
