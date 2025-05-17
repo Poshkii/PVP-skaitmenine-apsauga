@@ -329,6 +329,7 @@ h1, h2, h3, h4, h5, h6 {
   transition: all var(--transition-medium);
   scrollbar-width: thin;
   scrollbar-color: var(--bg-tertiary) transparent;
+  scrollbar-gutter: stable;
 }
 
 .right-panel::before {
