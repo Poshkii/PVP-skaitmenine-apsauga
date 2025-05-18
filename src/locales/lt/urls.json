@@ -24,7 +24,7 @@
         "malicious": "URLScan.io: Svetainė yra kenkėjiška! Rizikos įvertinimas: {{score}}/100",
         "categories": "Kategorijos:",
         "suspicious": "URLScan.io: Svetainė gali būti įtartina. Rizikos įvertinimas: {{score}}/100",
-        "safe": "URLScan.io: Svetainė atrodo saugi. Rizikos įvertinimas: {{score}}/100",
+        "safe": "URLScan.io: Svetainė atrodo saugi. Rizikos įvertinimas: {{score}}/100.",
         "fullReport": "Pilna ataskaita - <a href='{{reportUrl}}' target='_blank' style='color: #3b82f6; text-decoration: underline;'>čia</a>",
         "processingFailed": "URLScan.io: Rezultatai prieinami, bet nepavyko jų apdoroti. Peržiūrėkite pilnus rezultatus adresu: {{url}}",
         "processingFailedNoScan": "URLScan.io: Rezultatai prieinami, bet nepavyko jų apdoroti."
@@ -49,5 +49,10 @@
     "urlDesc": "Nuskenuoti svetainės URL ir pamatyti ar ji nekelia potencialaus pavojaus",
     "analyzing": "Tikrinamas URL...",
     "resultTitle": "Skenavimo rezultatai",
-    "newScan": "Naujas skenavimas"
+    "newScan": "Naujas skenavimas",
+    "scamError": "Klaida užkraunant duomenų bazę.",
+    "invalidURL": "Neteisingas URL formatas.",
+    "alert": "Atsargiai! Ši nuoroda aptikta kaip: {{match}}.",
+    "no": "Nerasta krypto apgaulių šioje nuorodoje.",
+    "warning": "Įspėjimas: galima krypto apgaulė."
 }

@@ -49,5 +49,10 @@
     "urlDesc": "Scan the URL of a website to see if poses any potential danger",
     "analyzing": "Checking URL...",
     "resultTitle": "Scan Results",
-    "newScan": "New Scan"
+    "newScan": "New Scan",
+    "scamError": "Error loading scam database.",
+    "invalidURL": "Invalid URL format.",
+    "alert": "Alert! This URL appears to be a {{match}}.",
+    "no": "No crypto scam reports found for this URL.",
+    "warning": "Warning: Potential Crypto Scam"
 }

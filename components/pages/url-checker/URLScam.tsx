@@ -61,7 +61,7 @@ function URLScam({ scamURL }: { scamURL: string }) {
             } catch (error) {
                 console.error("Error loading CSV data:", error);
                 setUnknown(true);
-                setResult("Error loading scam database.");
+                setResult(t('scamError'));
             }
         };
 
@@ -91,16 +91,18 @@ function URLScam({ scamURL }: { scamURL: string }) {
             );
             
             if (match) {
-                setResult(`Alert! ${formattedUrl} appears to be a ${match[1]}.`);
+                setResult(t('alert', {form: formattedUrl, match: match[1]}));
+                //setResult(`Alert! ${formattedUrl} appears to be a ${match[1]}.`);
                 setUnsafe(true);
             } else {
-                setResult(`No crypto scam reports found for ${url}.`);
+                setResult(t('no', {url: url}));
+                //setResult(`No crypto scam reports found for ${url}.`);
                 setSafe(true);
             }
         } catch (error) {
             console.error("Error checking scam status:", error);
             setUnknown(true);
-            setResult("Error checking scam database.");
+            setResult(t('scamError'));
         }
         setLoading(false);
     };
@@ -119,9 +121,9 @@ function URLScam({ scamURL }: { scamURL: string }) {
                 {safe && <div className="status-icon status-success"><CircleCheckBig  color="white" size={30} /></div> }
                 {unknown && <div className="status-warning"><CircleAlert color="white" size={30} /></div> }
                     <div className="status-text">
-                    {unsafe && <h3 className="status-title">Warning: Potential Crypto Scam</h3> }
-                    {safe && <h3 className="status-title">Good to go!</h3> }
-                    {unknown && <h3 className="status-title">Uh oh! Something went wrong.</h3> }
+                    {unsafe && <h3 className="status-title">{t('warning')}</h3> }
+                    {safe && <h3 className="status-title">{t('safe')}</h3> }
+                    {unknown && <h3 className="status-title">{t('error')}</h3> }
                     <p className="status-description">
                         {result}
                     </p>
