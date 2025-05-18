@@ -533,6 +533,12 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
+.status-badge.unknown {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 1, 0.2);
+}
+
 /* Action Buttons */
 .action-buttons {
   display: flex;

@@ -12,8 +12,10 @@
     "recentVulns": "Neseniai aptikti pažeidžiamumai: ",
     "nothing": "Kol kas grėsmių nerasta...",
     "date": "Nuskenuota ",
-    "breaches": "{{count}} nutekėjimai",
+    "breaches": "{{count}} nutekėjimų",
     "secure": "Saugu",
+    "unsafe": "Nesaugu",
+    "unknown": "Nežinoma",
     "recent": "Naujausi saugos tikrinimai",
     "tabEmails": "El. paštai",
     "recentEmail": "Naujausi el. pašto patikrinimai:",
@@ -24,5 +26,11 @@
     "tabFiles": "Failai",
     "recentFiles": "Naujausi failų patikrinimai:",
     "noFiles": "Kol kas failai nebuvo skenuoti...",
-    "clear": "Išvalyti visus duomenis"
+    "clear": "Išvalyti visus duomenis",
+    "successClear": "Sėkmingai ištrinti duomenys",
+    "confirmClear": "Patvirtinti išvalymą",
+    "areYouSure": "Ar tikrai norite išvalyti duomenis?",
+    "dontAsk": "Daugiau neklausti",
+    "delete": "Išvalyti",
+    "cancel": "Atšaukti"
 }

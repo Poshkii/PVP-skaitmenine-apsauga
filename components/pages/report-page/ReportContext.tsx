@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Info, CircleX, CircleCheckBig } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 // Define the interface for the report
 interface Report {
@@ -122,6 +123,7 @@ export const Toast = ({ message, type, onClose }: ToastProps) => {
 
 // Provider component to wrap around the application
 export const ReportProvider = ({ children }: { children: ReactNode }) => {
+    const { t } = useTranslation('report');
     // Default report state
     const defaultReport: Report = {
         UrlScans: 0,
@@ -355,10 +357,7 @@ export const ReportProvider = ({ children }: { children: ReactNode }) => {
             await browser.storage.local.remove(["UrlScans", "FileScans", "ScannedEmails",
                                                 "ScannedUrls", "ScannedPasswords", "scannedFiles"]);
             setReport(defaultReport);        
-            showToast(
-            `Successfully cleared data`,
-            'success'
-        );    
+            showToast(t('successClear'), 'success');    
         } catch (error) {
             console.error("Error clearing data from browser.storage.local:", error);
         }

@@ -10,13 +10,18 @@ function ReportPage() {
     const { t } = useTranslation('report');
     const [activeTab, setActiveTab] = useState('emails');
     const { toast, hideToast } = useReport();
+
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [skipConfirmation, setSkipConfirmation] = useState(
+        localStorage.getItem("skipClearConfirmation") === "true"
+    );
     
     const calculateSecurityScore = () => {
         const totalEmails = report.ScannedEmails.length;
         const breachedEmails = report.ScannedEmails.filter(email => email.BreachCount > 0).length;
         
         const totalUrls = report.ScannedUrls.length;
-        const unsafeUrls = report.ScannedUrls.filter(url => url.Result !== "Safe").length;
+        const unsafeUrls = report.ScannedUrls.filter(url => url.Result !== "Safe" && url.Result !== "Unknown").length;
         
         const totalFiles = report.ScannedFiles.length;
         const unsafeFiles = report.ScannedFiles.filter(file => file.Result === "unsafe").length;
@@ -91,6 +96,14 @@ function ReportPage() {
         if (score > 50) return "var(--warning)";
         if (score > 25) return "var(--error)";
         return "var(--bg-tertiary)";
+    };
+
+    const clearData = () => {
+        if (skipConfirmation) {
+            clearReport();            
+        } else {
+            setShowConfirmModal(true);
+        }       
     };
 
     return (
@@ -175,7 +188,7 @@ function ReportPage() {
                                         <p className="status-description">{new Date(item.timestamp).toLocaleString()}</p>
                                     </div>
                                     <span className="status-badge suspicious">
-                                        {item.status}
+                                        {item.type === 'email' ? item.status: t('unsafe')}
                                     </span>
                                 </li>
                             ))}
@@ -231,7 +244,7 @@ function ReportPage() {
                                                     <p className="status-description">{new Date(email.timestamp).toLocaleString()}</p>
                                                 </div>
                                                 <span className={`status-badge ${email.BreachCount > 0 ? 'suspicious' : 'safe'}`}>
-                                                    {email.BreachCount > 0 ? t('breaches', {count: email.BreachCount}) : t('safe')}
+                                                    {email.BreachCount > 0 ? t('breaches', {count: email.BreachCount}) : t('secure')}
                                                 </span>
                                             </li>
                                         ))}
@@ -255,8 +268,8 @@ function ReportPage() {
                                                     <p className="status-description">{t('date')}</p>
                                                     <p className="status-description">{new Date(url.timestamp).toLocaleString()}</p>
                                                 </div>
-                                                <span className={`status-badge ${url.Result !== "Safe" ? 'suspicious' : 'safe'}`}>
-                                                    {url.Result !== "Safe" ? url.Result : url.Result}
+                                                <span className={`status-badge ${url.Result === "Safe" ? 'safe' : url.Result === "Unknown" ? 'unknown' : 'suspicious'}`}>
+                                                    {url.Result === "Safe" ? t('secure') : url.Result === "Unknown" ? t('unknown') : "t('unsafe')"}
                                                 </span>
                                             </li>
                                         ))}
@@ -281,7 +294,7 @@ function ReportPage() {
                                                     <p className="status-description">{new Date(name.timestamp).toLocaleString()}</p>
                                                 </div>
                                                 <span className={`status-badge ${name.Result === "unsafe" ? 'suspicious' : 'safe'}`}>
-                                                    {name.Result === "unsafe" ? name.Result : t('safe')}
+                                                    {name.Result === "unsafe" ? t('unsafe') : t('secure')}
                                                 </span>
                                             </li>
                                         ))}
@@ -293,9 +306,74 @@ function ReportPage() {
                 </div>
             </div>
 
-            <button className="btn btn-danger" onClick={clearReport}>
+            <button className="btn btn-danger" onClick={clearData}>
                 {t('clear')}
             </button>
+
+            {showConfirmModal && (
+            <div 
+                
+                style={{
+                position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.7)", display: "flex",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                justifyContent: "center", alignItems: "center", zIndex: 9999
+            }}>
+                <div 
+                className="security-check-container glassmorphism"
+                style={{
+                backgroundColor: "var(--bg-primary)", padding: "30px", borderRadius: "8px",
+                width: "90%", maxWidth: "400px", textAlign: "center",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.5)"
+                }}>
+                <h2 className="panel-title" style={{marginBottom: "20px" }}>
+                    {t('confirmClear')}
+                </h2>
+                <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
+                    {t('areYouSure')}
+                </p>
+                <div style={{ marginBottom: "20px" }}>
+                    <label style={{ color: "var(--text-primary)", fontSize: "14px" }}>
+                    <input
+                        type="checkbox"
+                        onChange={(e) => {
+                        if (e.target.checked) {
+                            localStorage.setItem("skipClearConfirmation", "true");
+                            setSkipConfirmation(true);
+                        } else {
+                            localStorage.removeItem("skipClearConfirmation");
+                            setSkipConfirmation(false);
+                        }
+                        }}
+                        defaultChecked={skipConfirmation}
+                        style={{ marginRight: "8px" }}
+                    />
+                    {t('dontAsk')}
+                    </label>
+                </div>
+                <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                    <button
+                    onClick={() => {
+                        clearReport();
+                        setShowConfirmModal(false);
+                    }}
+                    className="btn btn-danger"
+                    style={{ width: "120px" }}
+                    >
+                    {t('delete')}
+                    </button>
+                    <button
+                    onClick={() => setShowConfirmModal(false)}
+                    className="btn btn-secondary"
+                    style={{ width: "120px" }}
+                    >
+                    {t('cancel')}
+                    </button>
+                </div>
+                </div>
+            </div>
+            )}
 
             {toast.show && (
                 <Toast 

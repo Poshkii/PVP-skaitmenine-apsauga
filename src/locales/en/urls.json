@@ -54,5 +54,6 @@
     "invalidURL": "Invalid URL format.",
     "alert": "Alert! This URL appears to be a {{match}}.",
     "no": "No crypto scam reports found for this URL.",
-    "warning": "Warning: Potential Crypto Scam"
+    "warning": "Warning: Potential Crypto Scam",
+    "invalidUrl": "Invalid URL format."
 }

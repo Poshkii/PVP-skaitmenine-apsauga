@@ -77,7 +77,7 @@ function URLScam({ scamURL }: { scamURL: string }) {
 
         if (!isValidURL(formattedUrl)) {
             setUnknown(true);
-            setResult("Invalid URL format.");
+            setResult(t('invalidUrl'));
             setLoading(false);
             return;
         }
@@ -119,7 +119,7 @@ function URLScam({ scamURL }: { scamURL: string }) {
             <div className="security-status" style={{ marginTop: "24px" }}>
                 {unsafe && <div className="status-icon status-error"><CircleX color="white" size={30} /></div> }
                 {safe && <div className="status-icon status-success"><CircleCheckBig  color="white" size={30} /></div> }
-                {unknown && <div className="status-warning"><CircleAlert color="white" size={30} /></div> }
+                {unknown && <div className="status-icon status-warning"><CircleAlert color="white" size={30} /></div> }
                     <div className="status-text">
                     {unsafe && <h3 className="status-title">{t('warning')}</h3> }
                     {safe && <h3 className="status-title">{t('safe')}</h3> }

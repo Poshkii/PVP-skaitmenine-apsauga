@@ -33,5 +33,12 @@
     "areYouSure": "Ar tikrai norite išvalyti duomenis?",
     "dontAsk": "Daugiau neklausti",
     "back": "Grįžti atgal",
-    "tryAgain": "Perkraukite puslapį arba bandykite vėliau"
+    "tryAgain": "Perkraukite puslapį arba bandykite vėliau",
+    "toastError": "Nepavyko užkrauti sausainių",
+    "toastDeleteSingleError": "Nepavyko ištrinti sausainio",
+    "toastDeleteSingle1": "Sėkmingai ištrintas {{count}} sausainis iš {{group}}",
+    "toastDeleteMultiple1": "Sėkmingai ištrinti {{count}} sausainių iš {{group}}",
+    "toastDeleteSingle2": "Sėkmingai ištrintas {{count}} sausainis.",
+    "toastDeleteMultiple2": "Sėkmingai ištrinti {{count}} sausainių.",
+    "error": "Klaida: "
 }

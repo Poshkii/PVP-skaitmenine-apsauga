@@ -14,6 +14,8 @@
     "date": "Scanned on ",
     "breaches": "{{count}} Breaches",
     "secure": "Secure",
+    "unsafe": "Dangerous",
+    "unknown": "Unknown",
     "recent": "Latest Safety Checks",
     "tabEmails": "Emails",
     "recentEmail": "Recent Email Checks:",
@@ -24,5 +26,12 @@
     "tabFiles": "Files",
     "recentFiles": "Recent File Checks:",
     "noFiles": "No files have been scanned so far...",
-    "clear": "Clear All Data"
+    "clear": "Clear All Data",
+    "successClear": "Successfully cleared data",
+    "confirmClear": "Confirm Clear",
+    "areYouSure": "Are you sure you want to clear data?",
+    "dontAsk": "Don't ask me again",
+    "delete": "Clear",
+    "cancel": "Cancel"
+
 }

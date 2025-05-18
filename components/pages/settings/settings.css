@@ -73,5 +73,5 @@ input:checked + .slider:before {
     color: rgba(255, 255, 255, 0.6);
 }
 .setting-text {
-    width: 350px;
+    width: 300px;
 }

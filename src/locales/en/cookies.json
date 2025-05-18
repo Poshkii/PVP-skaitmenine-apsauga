@@ -33,5 +33,12 @@
     "areYouSure": "Are you sure you want to clear data?",
     "dontAsk": "Don't ask me again",
     "back": "Go Back",
-    "tryAgain": "Refresh the page or try again later"
+    "tryAgain": "Refresh the page or try again later",
+    "toastError": "Could not load cookies",
+    "toastDeleteSingleError": "Failed to delete cookie",
+    "toastDeleteSingle1": "Successfully deleted {{count}} cookie from {{group}}",
+    "toastDeleteMultiple1": "Successfully deleted {{count}} cookies from {{group}}",
+    "toastDeleteSingle2": "Successfully deleted {{count}} cookie.",
+    "toastDeleteMultiple2": "Successfully deleted {{count}} cookies.",
+    "error": "Error: "
 }

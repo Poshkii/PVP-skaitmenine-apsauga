@@ -54,5 +54,6 @@
     "invalidURL": "Neteisingas URL formatas.",
     "alert": "Atsargiai! Ši nuoroda aptikta kaip: {{match}}.",
     "no": "Nerasta krypto apgaulių šioje nuorodoje.",
-    "warning": "Įspėjimas: galima krypto apgaulė."
+    "warning": "Įspėjimas: galima krypto apgaulė.",
+    "invalidUrl": "Neteisingas URL formatas."
 }

@@ -166,7 +166,8 @@ function CookieReader() {
             .catch((err) => {
                 console.error("Error sending message:", err);
                 setError(`Error sending message to background: ${err.message}`);
-                showToast(`Error loading cookies: ${err.message}`, 'error');
+                const message = t('toastError');
+                showToast(`${message}: ${err.message}`, 'error');
             });
     };
 
@@ -183,7 +184,7 @@ function CookieReader() {
                 setShowResults(true);
             } else if (message.id === UiMessageId.CookiesError) {
                 setError(message.data.message);
-                showToast(`Error: ${message.data.message}`, 'error');
+                showToast(`${t('error')} ${message.data.message}`, 'error');
             }
         };
 
@@ -262,7 +263,8 @@ function CookieReader() {
                 successCount++;
             } catch (err) {
                 console.error(`Failed to delete cookie "${cookie.name}":`, err);
-                showToast(`Failed to delete cookie "${cookie.name}"`)
+                const message = t('toastDeleteSingleError');
+                showToast(`${message} ${cookie.name}`)
             }
         }
 
@@ -283,12 +285,16 @@ function CookieReader() {
             
             return updatedCookies;
         });
-        
         // Show success message
+        successCount === 1 ? showToast(t('toastDeleteSingle1', {count: successCount, group:cookieGroup.domain}), 'success'):
+        showToast(t('toastDeleteMultiple1', {count: successCount, group:cookieGroup.domain}), 'success')
+        /*
         showToast(
+            
             `Successfully deleted ${successCount} ${successCount === 1 ? 'cookie' : 'cookies'} from ${cookieGroup.domain}`,
             'success'
         );
+        */
     };
 
     const deleteFilteredCookies = async () => {
@@ -311,10 +317,14 @@ function CookieReader() {
         setShowResults(filtered.length === cookies.length);
         
         // Show success message
+        successCount === 1 ? showToast(t('toastDeleteSingle2', {count: successCount}), 'success'):
+        showToast(t('toastDeleteMultiple2', {count: successCount}), 'success')
+        /*
         showToast(
             `Successfully deleted ${successCount} ${successCount === 1 ? 'cookie' : 'cookies'}`,
             'success'
         );
+        */
     };
 
     type OptionType = { value: string; label: string };
