@@ -308,9 +308,9 @@ function EmailStatus({ inputEmail }: { inputEmail: string; }) {
                                             {safeEmail && <div className="status-icon status-success"><CircleCheckBig size={30} /></div> }
                                             {(warningEmail || unknownEmail) && <div className="status-icon status-alert"><CircleAlert size={30} /></div> }
                                             <div className="status-text">
-                                                {(dangerEmail || warningEmail) && <h3 className="status-title">{email}<br></br>{t('leaked')}</h3>}
-                                                {safeEmail && <h3 className="status-title">{email}<br></br>{t('safe')}</h3> }
-                                                {unknownEmail && <h3 className="status-title">{t('badEmail')}</h3> }                        
+                                                {(dangerEmail || warningEmail) && <h3 className="status-title overflow-text" style={{width:"250px"}} >{email}<br></br>{t('leaked')}</h3>}
+                                                {safeEmail && <h3 className="status-title overflow-text" style={{width:"250px"}} >{email}<br></br>{t('safe')}</h3> }
+                                                {unknownEmail && <h3 className="status-title overflow-text" style={{width:"250px"}} >{t('badEmail')}</h3> }                        
                                                 <p className="status-description">
                                                     {(unknownEmail || dangerEmail || warningEmail) && result}
                                                 </p>
