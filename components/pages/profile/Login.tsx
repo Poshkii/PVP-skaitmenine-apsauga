@@ -30,7 +30,12 @@ function Login() {
             });
 
             if (!response.ok) {
-                throw new Error('Login failed');
+                if (response.status === 401) {
+                    throw new Error('Invalid credentials. Please try again.')
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.error);
+                }
             }
 
             const data = await response.json();
