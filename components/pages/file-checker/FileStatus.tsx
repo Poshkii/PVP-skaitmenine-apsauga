@@ -502,7 +502,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 <div className="status-icon"><Info size={30}/></div>
                             )} 
                             <div className="status-text">
-                                <h3 className="status-title overflow-text" style={{maxWidth:"280px"}}>
+                                <h3 className="status-title overflow-text" style={{width:"260px"}}>
                                     {params.name.split(/[/\\]/).pop()} <br></br>
                                     {safety === "safe" 
                                     ? t('safe')
@@ -569,7 +569,7 @@ function FileStatus({inputFile }: { inputFile: string }) {
                                 <div className="status-icon"><Info size={30}/></div>
                             )}              
                             <div className="status-text">
-                                <h3 className="status-title overflow-text" style={{maxWidth:"280px"}}>
+                                <h3 className="status-title overflow-text" style={{width:"260px"}}>
                                     {prevParams.name ? (
                                         <>
                                             {prevParams.name.split(/[/\\]/).pop()} <br></br>

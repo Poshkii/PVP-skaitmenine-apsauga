@@ -177,7 +177,7 @@ function ReportPage() {
                             {recentVulnerableItems.map((item, index) => (
                                 <li className="recent-item" key={index}>
                                     <div>
-                                        <span className="item-url overflow-text">
+                                        <span className="item-url overflow-text" style={{width:"200px"}}>
                                             <span style={{marginRight: "8px", opacity: 0.7}}>
                                                 {item.type === 'email' ? <Mail size={15}/>: 
                                                  item.type === 'url' ? <Link size={15}/> : <File size={15}/>}
@@ -239,7 +239,7 @@ function ReportPage() {
                                         {report.ScannedEmails.slice(-10).reverse().map((email, index) => (
                                             <li className="recent-item" key={index}>
                                                 <div>
-                                                    <span className="item-url overflow-text">{email.email}</span>
+                                                    <span className="item-url overflow-text" style={{width:"200px"}}>{email.email}</span>
                                                     <p className="status-description">{t('date')}</p>
                                                     <p className="status-description">{new Date(email.timestamp).toLocaleString()}</p>
                                                 </div>
@@ -264,7 +264,7 @@ function ReportPage() {
                                         {report.ScannedUrls.slice(-10).reverse().map((url, index) => (
                                             <li className="recent-item" key={index}>
                                                 <div>
-                                                    <span className="item-url overflow-text">{url.url}</span>
+                                                    <span className="item-url overflow-text" style={{width:"200px"}}>{url.url}</span>
                                                     <p className="status-description">{t('date')}</p>
                                                     <p className="status-description">{new Date(url.timestamp).toLocaleString()}</p>
                                                 </div>
@@ -289,7 +289,7 @@ function ReportPage() {
                                         {report.ScannedFiles.slice(-10).reverse().map((name, index) => (
                                             <li className="recent-item" key={index}>
                                                 <div>
-                                                    <span className="item-url overflow-text">{name.name}</span>
+                                                    <span className="item-url overflow-text" style={{width:"200px"}}>{name.name}</span>
                                                     <p className="status-description">{t('date')}</p>
                                                     <p className="status-description">{new Date(name.timestamp).toLocaleString()}</p>
                                                 </div>

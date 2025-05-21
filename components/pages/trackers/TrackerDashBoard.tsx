@@ -87,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated, b
               }}
               onClick={() => toggleSection('open')}
           >
-              <h3 className="status-title" style={{margin:0}}>{t('blockedTitle')} <br></br><span className="overflow-text" style={{maxWidth: "300px"}}>{url}</span></h3>{openSection === 'open' ? <ChevronUp/> : <ChevronDown/>}
+              <h3 className="status-title" style={{margin:0}}>{t('blockedTitle')} <br></br><span className="overflow-text" style={{width: "300px"}}>{url}</span></h3>{openSection === 'open' ? <ChevronUp/> : <ChevronDown/>}
           </button>
           <div 
               className="data-content"
