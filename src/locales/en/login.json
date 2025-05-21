@@ -20,5 +20,6 @@
     "unverified": "Your email is unverified",
     "sent": "Verification was sent to your inbox",
     "deleteTitle": "Delete Account",
-    "deleteDesc": "Permanently delete account from the system"
+    "deleteDesc": "Permanently delete account from the system",
+    "accountCreated": "Account created successfully. You may log in now."
 }

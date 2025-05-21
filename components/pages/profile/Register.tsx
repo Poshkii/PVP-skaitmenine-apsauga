@@ -42,7 +42,7 @@ function Register() {
             }
 
             // Successful registration, redirect to login
-            navigate('/login');
+            navigate('/login', {state: {message: t("accountCreated")}});
         } catch (error) {
             setError(error instanceof Error ? error.message : 'An unknown error occurred');
         } finally {

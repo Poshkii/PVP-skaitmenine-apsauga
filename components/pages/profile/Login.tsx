@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {useNavigate} from 'react-router';
+import {useLocation, useNavigate} from 'react-router';
 import {useTranslation} from "react-i18next";
 
 const API_URL = useAppConfig().privacyApiUrl;
@@ -11,6 +11,9 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const {t} = useTranslation('login');
+    const location = useLocation();
+
+    const message = location.state?.message || '';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,6 +50,7 @@ function Login() {
         <>
             <h1 className="panel-title">{t('login')}</h1>
             <div className="security-check-container glassmorphism">
+                {message && <div className="alert alert-success">{message}</div>}
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={handleSubmit}>
                     <div>
