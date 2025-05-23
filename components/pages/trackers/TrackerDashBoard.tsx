@@ -105,9 +105,9 @@ const Dashboard: React.FC<DashboardProps> = ({ stats, resetStats, lastUpdated, b
                   {blocked.map((tracker, index) => (
                     <li className="recent-item" key={index}>
                       <div>
-                        <span className="recent-item-text overflow-text" style={{maxWidth: "350px"}}><strong >{t('type')}: </strong>{tracker.type}</span>
+                        <span className="recent-item-text overflow-text" style={{width: "350px"}}><strong >{t('type')}: </strong>{tracker.type}</span>
                         <br></br>
-                        <span className="recent-item-text overflow-text" style={{maxWidth: "350px"}}><strong >{t('filter')}: </strong>{tracker.filter}</span>
+                        <span className="recent-item-text overflow-text" style={{width: "350px"}}><strong >{t('filter')}: </strong>{tracker.filter}</span>
                       </div>
                     </li>
                   ))}

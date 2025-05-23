@@ -95,7 +95,7 @@ function ReportPage() {
         if (score > 75) return "var(--success)";
         if (score > 50) return "var(--warning)";
         if (score > 25) return "var(--error)";
-        return "var(--bg-tertiary)";
+        return "var(--error)";
     };
 
     const clearData = () => {
@@ -177,7 +177,7 @@ function ReportPage() {
                             {recentVulnerableItems.map((item, index) => (
                                 <li className="recent-item" key={index}>
                                     <div>
-                                        <span className="item-url overflow-text" style={{width:"200px"}}>
+                                        <span className="item-url overflow-text" style={{maxWidth:"200px", width:"auto"}}>
                                             <span style={{marginRight: "8px", opacity: 0.7}}>
                                                 {item.type === 'email' ? <Mail size={15}/>: 
                                                  item.type === 'url' ? <Link size={15}/> : <File size={15}/>}
@@ -239,7 +239,7 @@ function ReportPage() {
                                         {report.ScannedEmails.slice(-10).reverse().map((email, index) => (
                                             <li className="recent-item" key={index}>
                                                 <div>
-                                                    <span className="item-url overflow-text" style={{width:"200px"}}>{email.email}</span>
+                                                    <span className="item-url overflow-text" style={{maxWidth:"200px", width:"auto"}}>{email.email}</span>
                                                     <p className="status-description">{t('date')}</p>
                                                     <p className="status-description">{new Date(email.timestamp).toLocaleString()}</p>
                                                 </div>
@@ -269,7 +269,7 @@ function ReportPage() {
                                                     <p className="status-description">{new Date(url.timestamp).toLocaleString()}</p>
                                                 </div>
                                                 <span className={`status-badge ${url.Result === "Safe" ? 'safe' : url.Result === "Unknown" ? 'unknown' : 'suspicious'}`}>
-                                                    {url.Result === "Safe" ? t('secure') : url.Result === "Unknown" ? t('unknown') : "t('unsafe')"}
+                                                    {url.Result === "Safe" ? t('secure') : url.Result === "Unknown" ? t('unknown') : t('unsafe')}
                                                 </span>
                                             </li>
                                         ))}

@@ -42,7 +42,7 @@
 .score-medium {
   color: var(--warning) !important;
 }
-.score-low {
+.score-low, .score-critical {
   color: var(--error) !important;
 }
 
