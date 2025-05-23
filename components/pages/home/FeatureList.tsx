@@ -41,14 +41,12 @@ function FeatureList() {
       route: "/trackers",
       icon: <Radar size={18} />
     },
-    /*
     { 
       nameKey: "phishEmail.name", 
       hintKey: "phishEmail.hint", 
       route: "/phish-email",
       icon: <Fish size={18} />
     },
-    */
     { 
       nameKey: "info.name", 
       hintKey: "info.hint", 
