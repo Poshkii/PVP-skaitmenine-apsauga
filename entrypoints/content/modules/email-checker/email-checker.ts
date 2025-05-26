@@ -2,6 +2,8 @@ import {Module, ModuleId} from "../../types/module.ts";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 import { UiMessageId } from "@/entrypoints/content/types/ui-message";
 import infoBtn from "@/public/btn_images/info_btn.png"
+import i18n from "../translation-init.ts";
+
 
 export class EmailChecker extends Module { 
     readonly id = ModuleId.EmailChecker;
@@ -53,7 +55,7 @@ export class EmailChecker extends Module {
         img.style.height = "100%";    
         
         const tooltip = document.createElement("span");
-        tooltip.innerText = "Scan for breaches";
+        tooltip.innerText = i18n.t("scanForBreaches");
         tooltip.style.position = "absolute";
         tooltip.style.backgroundColor = "#0f172a";
         tooltip.style.color = "white";
@@ -96,9 +98,6 @@ export class EmailChecker extends Module {
         // Append the button to the body
         document.body.appendChild(button);
 
-        // Add a click event listener (optional)
-        console.log("Button created:", button);
-
         const updateButtonPosition = () => {
             const rect = emailField.getBoundingClientRect();
             const zoomLevel = window.visualViewport?.scale || 1; // Adjust size based on zoom level
@@ -132,7 +131,7 @@ export class EmailChecker extends Module {
             const email = emailField.value.trim();
 
             if (!email) {
-                alert("Please enter an email address.");
+                alert(i18n.t("pleaseEnter"));
                 return;
             }
 
@@ -335,11 +334,16 @@ export class EmailChecker extends Module {
             const riskColor = breaches.BreachMetrics.risk[0]?.risk_label === "High" ? "red" : breaches.BreachMetrics.risk[0]?.risk_label === "Low" ? "orange" : "green";   
             
             summaryDiv.style.textAlign = "center";
-            summaryDiv.innerHTML = `<h2>Found ${breachesCount} breach${breachesCount > 1 ? "es" : ""}</h2><p>Risk level is <span style="color: ${riskColor}; font-weight: 600;">${riskLevel}</span></p>`;           
+
+            var breachText = i18n.t('foundBreaches', {
+            count: breachesCount 
+            });            
+
+            summaryDiv.innerHTML = `<h2>${breachText}</h2><p>${i18n.t("risk")} <span style="color: ${riskColor}; font-weight: 600;">${i18n.t(riskLevel.toLowerCase())}</span></p>`;
         }
         else {            
             summaryDiv.style.textAlign = "center";
-            summaryDiv.innerHTML = `<h2>Your email is safe</h2>`
+            summaryDiv.innerHTML = `<h2>${i18n.t("emailSafe")}</h2>`
         }
         // Create buttons
         const buttonsWrapper = document.createElement("div");
@@ -352,7 +356,7 @@ export class EmailChecker extends Module {
         const closeButton = document.createElement("button");
         
         closeButton.className = "ff-btn ff-btn-secondary";
-        closeButton.innerText = "Close";
+        closeButton.innerText = i18n.t("close");
         closeButton.addEventListener("click", () => {
             infoDiv.remove();
         });
@@ -360,7 +364,7 @@ export class EmailChecker extends Module {
         const detailsButton = document.createElement("button");
         
         detailsButton.className = "ff-btn ff-btn-primary";
-        detailsButton.innerText = "Details";
+        detailsButton.innerText = i18n.t("details");
         detailsButton.addEventListener("click", () => {            
             console.log("Sending ScanEmail");
             this.sendToRuntime({
