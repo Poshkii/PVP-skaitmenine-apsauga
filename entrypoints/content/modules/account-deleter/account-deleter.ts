@@ -4,6 +4,7 @@ import {ArrowRight, createElement, Trash, X} from "lucide";
 import {DeletionDetails} from "@/entrypoints/background/deletion-provider.ts";
 import {marked} from "marked";
 import DOMPurify from "dompurify";
+import i18n from "../translation-init.ts";
 
 export class AccountDeleter extends Module {
     readonly id = ModuleId.AccountDeleter;
@@ -91,7 +92,7 @@ export class AccountDeleter extends Module {
         });
 
         const title = document.createElement('h3');
-        title.textContent = 'Account Deletion';
+        title.textContent = i18n.t("accountDeletion");
         Object.assign(title.style, {
             margin: '0',
             fontSize: '16px',
@@ -137,7 +138,7 @@ export class AccountDeleter extends Module {
             emailInfo.style.fontSize = '14px';
 
             const emailLabel = document.createElement('span');
-            emailLabel.textContent = 'Contact: ';
+            emailLabel.textContent = i18n.t("contact");
 
             const emailLink = document.createElement('a');
             emailLink.href = `mailto:${details.email}`;
@@ -151,7 +152,7 @@ export class AccountDeleter extends Module {
         }
 
         const deletionButton = document.createElement('div');
-        deletionButton.textContent = 'Go to Deletion Page';
+        deletionButton.textContent = i18n.t("goToDeletion");
         Object.assign(deletionButton.style, {
             background: 'linear-gradient(135deg, #0ea5e9, #2dd4bf)',
             color: 'white',

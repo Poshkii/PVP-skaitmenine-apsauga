@@ -2,7 +2,7 @@ import {Module, ModuleId} from "../../types/module.ts";
 import {BgMessageId} from "@/entrypoints/content/types/bg-message.ts";
 import infoBtn from "@/public/btn_images/info_btn.png";
 import zxcvbn from 'zxcvbn';
-import i18next from "i18next";
+import i18n from "../translation-init.ts";
 
 export class PasswordChecker extends Module {
     readonly id = ModuleId.PasswordChecker;
@@ -123,9 +123,6 @@ export class PasswordChecker extends Module {
         `;
         document.head.appendChild(styles);
 
-    await i18next.loadNamespaces('passwords');
-    const t = i18next.getFixedT(null, 'passwords');
-
     const existing = document.getElementById("password-strength-meter");
     if (existing) existing.remove();
 
@@ -144,7 +141,7 @@ export class PasswordChecker extends Module {
     };
 
     const getLabel = (score: number) => {
-        return ["Very Weak", "Weak", "Average", "Strong", "Very Strong"][score] || "";
+        return i18n.t((["Very Weak", "Weak", "Average", "Strong", "Very Strong"][score] || "").toLowerCase());
     };
 
     const box = document.createElement("div");
@@ -179,13 +176,13 @@ export class PasswordChecker extends Module {
 
     const label = document.createElement("div");
     label.style.fontSize = "24px";
-    label.textContent = `Strength: ${getLabel(score)}`;    
+    label.textContent = `${i18n.t("strength")}: ${getLabel(score)}`;    
 
     const feedbackList = document.createElement("ul");
     feedbackList.style.margin = "8px 0 0 0";
     feedbackList.style.padding = "0 0 0 12px";
 
-    const customSuggestions = this.customPasswordAnalysis(password, t);
+    const customSuggestions = this.customPasswordAnalysis(password);
 
     customSuggestions.forEach(suggestion => {
         const li = document.createElement("li");
@@ -202,7 +199,7 @@ export class PasswordChecker extends Module {
 
     const closeButton = document.createElement("button");
     closeButton.className = "ff-btn ff-btn-secondary";
-    closeButton.innerText = "Close";
+    closeButton.innerText = i18n.t("close");
     closeButton.style.marginTop = "10px";
     closeButton.addEventListener("click", () => {
         box.remove();
@@ -223,29 +220,29 @@ export class PasswordChecker extends Module {
 }
 
 
-    private customPasswordAnalysis(password: string, t: (key: string) => string): string[] {
+    private customPasswordAnalysis(password: string): string[] {
         const suggestions: string[] = [];
 
         // Emphasize length
         if (password.length < 8) {
-            suggestions.push("Use at least 8 characters. Longer passwords are much stronger.");
+            suggestions.push(i18n.t("use8"));
         } else if (password.length < 12) {
-            suggestions.push("Consider using 12 or more characters for better security.");
+            suggestions.push(i18n.t("use12"));
         }
 
         // Optional: flag common weak patterns (even though zxcvbn catches many)
         if (/^[a-z]{1,}$/i.test(password)) {
-            suggestions.push("Avoid simple dictionary words alone. Try a longer passphrase.");
+            suggestions.push(i18n.t("avoidSimple"));
         }
 
         // Optional: warn about very repetitive characters
         if (/([a-zA-Z0-9])\1{3,}/.test(password)) {
-            suggestions.push("Avoid repeating the same character multiple times.");
+            suggestions.push(i18n.t("avoidRepeat"));
         }
 
         // Optional: warn if it's all one character type
         if (/^[a-z]+$/.test(password) || /^[A-Z]+$/.test(password) || /^[0-9]+$/.test(password)) {
-            suggestions.push("Mixing character types can help avoid guessable patterns.");
+            suggestions.push(i18n.t("mixCharacters"));
         }
 
         return suggestions;

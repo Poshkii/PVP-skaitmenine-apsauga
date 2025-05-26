@@ -20,6 +20,19 @@ function Settings() {
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
         setCurrentLanguage(lng);
+        chrome.storage.sync.set({ language: lng });
+
+        // Broadcast the language change to all tabs
+        chrome.tabs.query({}, (tabs) => {
+            for (const tab of tabs) {
+            if (tab.id) {
+                chrome.tabs.sendMessage(tab.id, {
+                type: "LANGUAGE_CHANGED",
+                language: lng,
+                });
+            }
+            }
+        });
     };
 
     return (
