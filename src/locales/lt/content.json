@@ -12,6 +12,7 @@
     "foundBreaches_other": "Rasta {{count}} nutekėjimų",
     "details" : "Daugiau",
     "close" : "Uždaryti",
+    "emailSafe" : "Nutekėjimų nerasta!",
     "use8" : "Slaptažodis turėtų būti bent 8 simbolių ilgio. Ilgesni slaptažodžiai yra žymiai stipresni.",
     "use12" : "Jei norite užtikrinti gerą saugumą, naudokite bent 12 simbolių ilgio slaptažodį.",
     "avoidSimple" : "Venkite paprastų žodžių naudojimą, geriau rinkitės frazę.",

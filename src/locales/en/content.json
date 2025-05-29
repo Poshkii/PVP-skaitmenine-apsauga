@@ -9,6 +9,7 @@
     "foundBreaches_one" : "Found {{count}} breach",
     "foundBreaches_other" : "Found {{count}} breaches",
     "details" : "Details",
+    "emailSafe" : "Email is safe!",
     "close" : "Close",
     "use8" : "Use at least 8 characters. Longer passwords are much stronger.",
     "use12" : "Consider using 12 or more characters for better security.",
