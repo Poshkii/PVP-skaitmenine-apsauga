@@ -549,12 +549,19 @@ function URLStatus({ inputURL }: { inputURL: string }) {
                 //return `VirusTotal: Website is malicious! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
                 return t('VirusTotal.malicious', {total: totalDetections, vendors: totalVendors});
             }
-            else
+            else if (stats.suspicious >= 5)
             {
                 setSuspiciousVT(true);
                 setVtFinal("Suspicious");
                 //return `VirusTotal: Website could be dangerous! Found ${totalDetections} threats out of ${totalVendors} vendors.`;
                 return t('VirusTotal.dangerous', {total: totalDetections, vendors: totalVendors});
+            }
+            else
+            {
+                setSafeVT(true);
+                setVtFinal("Safe");
+                //return `VirusTotal: Website is safe. No threats found out of ${totalVendors} vendors.`;
+                return t('VirusTotal.safe', {vendors: totalVendors});
             }
         } else {
             setSafeVT(true);
